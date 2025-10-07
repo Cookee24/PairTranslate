@@ -40,6 +40,7 @@ export default (): WebsiteParser => ({
 				'[role="button"]',
 				// Code blocks
 				".highlight",
+				'div[id^="highlight"]',
 				// Text under issue titles
 				'[class^="Description-module__container"]',
 				// Text on issue search input
