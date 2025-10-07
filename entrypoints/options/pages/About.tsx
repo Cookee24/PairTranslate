@@ -59,7 +59,7 @@ export default (props: { navId: string }) => {
 								<ExternalLink size={14} />
 							</a>
 							<a
-								href="https://github.com/Cookee24/PairTranslate/issues/new"
+								href="https://github.com/Cookee24/PairTranslate/issues/new/choose"
 								target="_blank"
 								rel="noopener noreferrer"
 								class="flex items-center gap-2 text-primary hover:underline"
