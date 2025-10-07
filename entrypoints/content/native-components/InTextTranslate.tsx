@@ -99,6 +99,7 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 
 					setRenderList((prev) => {
 						for (const element of currentElements) {
+							// TODO: optimize batch allocation algorithm
 							let batchId = batchIds.get(element);
 							if (batchId === undefined) {
 								// biome-ignore lint/style/noNonNullAssertion: list initialized as [[]]
@@ -241,33 +242,10 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					)}
 				</NativeButton>
 			</NativeTooltip>
-			{!props.loading && !props.error && <TextRender text={props.text} />}
-		</MPortal>
-	);
-};
-
-const TextRender = (props: { text?: string }) => {
-	const [textList, setTextList] = createSignal<string[]>([]);
-
-	createEffect(() => {
-		const text = props.text;
-		if (!text) {
-			setTextList([]);
-			return;
-		}
-		const parts = text.split("\n").filter((part) => part.trim() !== "");
-		setTextList(parts);
-	});
-
-	return (
-		<For each={textList()}>
-			{(part, index) => (
-				<>
-					{part}
-					{index() < textList().length - 1 && <br />}
-				</>
+			{!props.loading && !props.error && (
+				<span style={{ "white-space": "pre-line" }}>{props.text?.trim()}</span>
 			)}
-		</For>
+		</MPortal>
 	);
 };
 
