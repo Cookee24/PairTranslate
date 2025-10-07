@@ -1,0 +1,146 @@
+---
+name: 🐛 Bug Report
+description: Report a bug or problem with the PairTranslate extension
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug! Please fill out this form as completely as possible.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened and what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Reproduction Steps
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: A clear description of what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+    validations:
+      required: true
+
+  - type: dropdown
+    id: translation-service
+    attributes:
+      label: Translation Service
+      description: Which translation service were you using when the bug occurred?
+      options:
+        - Google Translate
+        - DeepL
+        - Bing Translate
+        - ChatGPT
+        - Claude
+        - Gemini
+        - Multiple services
+      default: 0
+    validations:
+      required: false
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      description: Which browser are you using?
+      options:
+        - Chrome
+        - Firefox
+        - Edge
+        - Safari
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: Browser Version
+      description: Please provide your browser version
+      placeholder: e.g., Chrome 120.0.6099.109
+    validations:
+      required: true
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension Version
+      description: Please provide the PairTranslate extension version
+      placeholder: e.g., 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: Please provide your operating system
+      placeholder: e.g., Windows 11, macOS 14.0, Ubuntu 22.04
+
+  - type: textarea
+    id: website-url
+    attributes:
+      label: Website URL (if applicable)
+      description: If the bug occurred on a specific website, please provide the URL
+      placeholder: https://example.com
+
+  - type: textarea
+    id: console-errors
+    attributes:
+      label: Console Errors
+      description: Please copy and paste any error messages from the browser console
+      placeholder: Paste console errors here
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem
+      placeholder: Drag and drop images here or paste them
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: Any additional information that might be helpful
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues for similar problems
+          required: true
+        - label: I have provided all the requested information
+          required: true
+        - label: This is not a security vulnerability (use security template for security issues)
+          required: true

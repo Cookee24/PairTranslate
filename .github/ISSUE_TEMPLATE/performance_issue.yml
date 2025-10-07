@@ -1,0 +1,176 @@
+---
+name: ⚡ Performance Issue
+description: Report performance problems with PairTranslate (slow translations, memory usage, etc.)
+title: "[Performance]: "
+labels: ["performance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for performance-related issues including slow translations, high memory usage, browser slowdowns, or extension crashes.
+
+  - type: dropdown
+    id: performance-type
+    attributes:
+      label: Performance Issue Type
+      description: What type of performance issue are you experiencing?
+      options:
+        - Slow Translation Response
+        - High Memory Usage
+        - Browser Slowdown/Frozen Tabs
+        - Extension Crashing
+        - CPU Usage Issues
+        - Network Requests Too Slow
+        - Translation Lag/Delay
+        - Multiple Performance Issues
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: Describe the performance problem in detail
+      placeholder: PairTranslate is causing performance issues by...
+    validations:
+      required: true
+
+  - type: textarea
+    id: performance-metrics
+    attributes:
+      label: Performance Metrics
+      description: Please provide any performance measurements you can
+      placeholder: |
+        - Translation takes ~5 seconds to appear
+        - Browser memory usage increases by 500MB
+        - CPU usage spikes to 80%
+        - Page becomes unresponsive for 10+ seconds
+
+  - type: textarea
+    id: triggers
+    attributes:
+      label: Triggers
+      description: What triggers the performance issue?
+      placeholder: The issue occurs when I... (translate large text blocks, use the extension on specific websites, have multiple tabs open, etc.)
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Issue Frequency
+      description: How often does this performance issue occur?
+      options:
+        - Constant (every time I use the extension)
+        - Frequently (multiple times per session)
+        - Sometimes (occasionally)
+        - Rarely (only under specific conditions)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment-info
+    attributes:
+      label: Environment Information
+      description: Please provide details about your environment
+      placeholder: |
+        - Browser: Chrome 120.0.6099.109
+        - OS: Windows 11
+        - RAM: 16GB
+        - CPU: Intel i7-10700K
+        - Number of browser tabs: 15-20
+        - Other heavy extensions: uBlock Origin, LastPass
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Reproduction Steps
+      description: Steps to reproduce the performance issue
+      placeholder: |
+        1. Open browser with 10+ tabs
+        2. Go to https://example.com
+        3. Select a large paragraph
+        4. Attempt to translate
+        5. Notice browser becomes slow/unresponsive
+    validations:
+      required: true
+
+  - type: textarea
+    id: browser-task-manager
+    attributes:
+      label: Browser Task Manager Info
+      description: If available, please provide information from your browser's task manager
+      placeholder: Memory usage, CPU usage, background processes, etc.
+
+  - type: textarea
+    id: console-errors
+    attributes:
+      label: Console Errors
+      description: Any JavaScript errors or warnings related to performance?
+      placeholder: Paste console errors/warnings here
+      render: shell
+
+  - type: dropdown
+    id: text-size
+    attributes:
+      label: Text Size Impact
+      description: Does the performance issue depend on the amount of text being translated?
+      options:
+        - Worse with large text blocks
+        - Worse with small frequent translations
+        - No correlation with text size
+        - Not applicable
+    validations:
+      required: true
+
+  - type: dropdown
+    id: specific-websites
+    attributes:
+      label: Website Specific
+      description: Does this issue occur on specific websites or all websites?
+      options:
+        - All websites
+        - Specific websites (please list below)
+        - Only complex/heavy websites
+        - Only on certain types of content
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-websites
+    attributes:
+      label: Affected Websites (if applicable)
+      description: List specific websites where the performance issue occurs
+      placeholder: https://example.com, https://news.ycombinator.com, etc.
+
+  - type: checkboxes
+    id: troubleshooting
+    attributes:
+      label: Troubleshooting Steps
+      description: What troubleshooting steps have you already tried?
+      options:
+        - label: I've tried disabling other extensions
+        - label: I've tried different translation services
+        - label: I've tested in a new browser profile
+        - label: I've restarted my browser
+        - label: I've tried translating smaller text blocks
+        - label: I've tested on different websites
+        - label: I've checked for browser updates
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other information about the performance issue
+      placeholder: Recent changes, system load, network conditions, etc.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      description: Please confirm the following
+      options:
+        - label: I have provided information about my system environment
+          required: true
+        - label: I have attempted basic troubleshooting steps
+          required: true
+        - label: This is a performance issue, not a functional bug
+          required: true

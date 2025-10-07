@@ -1,0 +1,102 @@
+---
+name: ✨ Feature Request
+description: Suggest a new feature or improvement for PairTranslate
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a feature! Please fill out this form to help us understand your request.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of the feature you'd like to see
+      placeholder: Describe the feature you want to add
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? If so, please describe it
+      placeholder: I'm frustrated when... I need... It would be helpful if...
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see implemented
+      placeholder: I would like PairTranslate to...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: Feature Category
+      description: What category does your feature request fall under?
+      options:
+        - New Translation Service
+        - User Interface Improvement
+        - Settings/Configuration
+        - Performance Optimization
+        - Website Compatibility
+        - Translation Quality
+        - Keyboard Shortcuts
+        - Accessibility
+        - Mobile Support
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-benefits
+    attributes:
+      label: User Benefits
+      description: How would this feature benefit users?
+      placeholder: This feature would help users by...
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation Ideas
+      description: Do you have any ideas on how this could be implemented?
+      placeholder: This could be implemented by...
+
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: I've also considered...
+
+  - type: textarea
+    id: screenshots-mockups
+    attributes:
+      label: Screenshots / Mockups
+      description: If applicable, add screenshots, mockups, or diagrams to help explain your feature
+      placeholder: Drag and drop images here or paste them
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples about the feature request here
+      placeholder: Any additional information that might be helpful
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues and feature requests
+          required: true
+        - label: I have provided a clear description of the requested feature
+          required: true
+        - label: I understand that this is a request and not guaranteed to be implemented
+          required: true
