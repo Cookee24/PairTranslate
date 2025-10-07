@@ -1,0 +1,20 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"linter": {
+		"rules": {
+			"suspicious": {
+				"noTsIgnore": "off"
+			},
+			"a11y": {
+				"noStaticElementInteractions": "off",
+				"noLabelWithoutControl": "off",
+				"noSvgWithoutTitle": "off"
+			}
+		}
+	}
+}

@@ -1,0 +1,366 @@
+[meta]
+name = "페어 번역"
+description = "웹 페이지의 나란히 번역을 위한 브라우저 확장 프로그램"
+
+# Navigation
+
+[nav]
+basic = "기본 설정"
+translation = "번역 서비스"
+llmServices = "LLM 서비스"
+traditionalServices = "전통 번역"
+advanced = "고급 설정"
+about = "정보"
+
+# Common UI Elements
+
+[common]
+save = "저장"
+cancel = "취소"
+add = "추가"
+edit = "편집"
+delete = "삭제"
+close = "닫기"
+loading = "로딩 중..."
+enabled = "활성화"
+disabled = "비활성화"
+configure = "구성"
+manage = "관리"
+service = "서비스"
+services = "서비스"
+allChangesSaved = "모든 변경 사항이 저장되었습니다"
+selectModel = "모델 선택"
+modelsLoaded = "$1개의 모델을 로드했습니다"
+retry = "재시도"
+positionLeft = "왼쪽"
+positionRight = "오른쪽"
+floatingBallIcon = "플로팅 볼 아이콘"
+translationTasks = "번역 작업"
+completed = "완료"
+running = "실행 중"
+resize = "크기 조정"
+resetFilter = "필터 재설정"
+
+# Settings Pages
+
+[settings]
+title = "설정"
+
+[settings.basic]
+title = "기본 설정"
+enableExtension = "확장 프로그램 활성화"
+enableExtensionDesc = "번역 확장 프로그램을 활성화하거나 비활성화합니다"
+theme = "테마"
+themeDesc = "인터페이스 테마를 선택합니다"
+themeLight = "라이트"
+themeDark = "다크"
+themeSystem = "시스템"
+showTip = "선택 번역 활성화"
+showTipDesc = "선택한 텍스트에 대한 번역 팝업을 표시합니다"
+autoPin = "팝업 자동 고정"
+autoPinDesc = "번역 결과 팝업을 자동으로 고정합니다"
+floatingBallEnabled = "플로팅 볼 활성화"
+floatingBallEnabledDesc = "웹 페이지에 플로팅 번역 볼을 표시합니다"
+floatingBallPosition = "플로팅 볼 위치"
+floatingBallPositionDesc = "플로팅 볼이 화면의 어느 쪽에 나타날지 선택합니다"
+positionLeft = "화면 왼쪽"
+positionRight = "화면 오른쪽"
+keyboardShortcutEnabled = "키보드 단축키 활성화"
+keyboardShortcutEnabledDesc = "키보드 단축키로 번역을 전환합니다"
+keyboardShortcut = "키보드 단축키"
+keyboardShortcutDesc = "번역을 트리거하는 키 조합"
+keyboardShortcutHint = "Ctrl+Alt+Shift+문자 조합 사용"
+keyboardShortcutInvalid = "잘못된 단축키 형식입니다"
+keyboardShortcutTest = "단축키 테스트:"
+keyboardShortcutTestHint = "여기를 클릭하고 단축키를 누르세요"
+
+[settings.advanced]
+title = "고급 설정"
+cleanCache = "캐시 정리"
+cleanCacheDesc = "모든 번역 캐시 데이터를 지웁니다. 캐시가 재구축되면서 일시적으로 번역이 느려질 수 있습니다."
+clearingCache = "정리 중..."
+clearCacheSuccess = "캐시가 성공적으로 정리되었습니다"
+clearCacheFailed = "캐시 정리에 실패했습니다"
+resetSettings = "설정 재설정"
+resetSettingsDesc = "모든 설정을 기본값으로 재설정합니다. 이 작업은 되돌릴 수 없습니다."
+resettingSettings = "재설정 중..."
+resetSettingsSuccess = "설정이 성공적으로 재설정되었습니다"
+resetSettingsFailed = "설정 재설정에 실패했습니다"
+resetSettingsConfirm = "모든 설정을 기본값으로 재설정하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+
+[settings.translation]
+title = "번역 설정"
+concurrentRequests = "동시 요청 수"
+concurrentRequestsDesc = "동시에 처리할 번역 요청의 수"
+cacheSize = "캐시 크기"
+cacheSizeDesc = "캐시할 번역 결과의 수"
+maxBatchSize = "최대 배치 크기"
+maxBatchSizeDesc = "단일 배치에서 번역할 텍스트의 최대 수"
+sourceLanguage = "소스 언어"
+targetLanguage = "대상 언어"
+autoDetect = "자동 감지"
+noModel = "모델 없음"
+inTextTranslateModel = "텍스트 내 번역 모델"
+floatingTranslateModel = "플로팅 번역 모델"
+floatingExplainModel = "플로팅 설명 모델"
+filterTargetLanguage = "대상 언어 필터링"
+filterTargetLanguageDesc = "성능 향상을 위해 이미 대상 언어인 텍스트를 건너뜁니다(`franc`가 부정확하고 성능 소모가 크기 때문에 현재 비활성화됨)"
+filterInteractive = "인터랙티브 요소 필터링"
+filterInteractiveDesc = "버튼, 헤더, 내비게이션, 푸터 등 인터랙티브 요소를 건너뛰어 원치 않는 번역을 방지합니다"
+
+[settings.translation.languages]
+en = "영어"
+es = "스페인어"
+fr = "프랑스어"
+de = "독일어"
+it = "이탈리아어"
+pt = "포르투갈어"
+ru = "러시아어"
+ja = "일본어"
+ko = "한국어"
+zh = "중국어"
+
+[settings.llmServices]
+title = "LLM 서비스"
+addService = "서비스 추가"
+editService = "서비스 편집"
+deleteService = "서비스 삭제"
+noServicesConfigured = "구성된 LLM 서비스가 없습니다"
+noServicesDesc = "LLM 기반 번역을 사용하려면 서비스를 추가하세요"
+
+[settings.llmServices.serviceDetails]
+model = "모델"
+api = "API"
+url = "URL"
+temperature = "온도"
+
+[settings.llmModal]
+addTitle = "LLM 서비스 추가"
+editTitle = "LLM 서비스 편집"
+serviceTemplate = "서비스 템플릿"
+serviceName = "서비스 이름"
+serviceNamePlaceholder = "내 LLM 서비스"
+baseUrl = "기본 URL"
+baseUrlPlaceholder = "https://api.example.com"
+apiSpec = "API 사양"
+apiKey = "API 키"
+apiKeyPlaceholder = "API 키를 입력하세요"
+modelName = "모델 이름"
+modelNamePlaceholder = "gpt-3.5-turbo, claude-3-sonnet 등"
+temperature = "온도"
+maxTokens = "최대 토큰 수"
+customService = "사용자 정의"
+
+[settings.llmModal.apiSpecs]
+openai = "OpenAI 호환"
+anthropic = "Anthropic"
+gemini = "Google Gemini"
+
+[settings.traditionalServices]
+title = "전통 번역 서비스"
+addService = "서비스 추가"
+editService = "서비스 편집"
+deleteService = "서비스 삭제"
+noServicesConfigured = "구성된 전통 번역 서비스가 없습니다"
+noServicesDesc = "전통 번역 API를 사용하려면 서비스를 추가하세요"
+
+[settings.traditionalServices.serviceDetails]
+api = "API"
+url = "URL"
+apiKey = "API 키"
+maskedKey = "••••••••"
+
+[settings.traditionalModal]
+addTitle = "전통 서비스 추가"
+editTitle = "전통 서비스 편집"
+serviceName = "서비스 이름"
+serviceNamePlaceholder = "내 번역 서비스"
+apiSpec = "API 사양"
+baseUrl = "기본 URL"
+baseUrlPlaceholder = "https://api.example.com"
+baseUrlDesc = "기본 서비스 엔드포인트를 사용하려면 비워두세요"
+apiKey = "API 키"
+apiKeyPlaceholder = "API 키를 입력하세요"
+apiKeyDesc = "대부분의 번역 서비스에 필요합니다"
+region = "지역"
+regionPlaceholder = "예: eastus, westeurope"
+regionDesc = "Microsoft Translator 지역 리소스에 필요합니다"
+
+[settings.traditionalModal.apiSpecs]
+microsoft = "Microsoft Bing 번역"
+google = "Google 번역"
+deepl = "DeepL"
+
+[settings.about]
+title = "PairTranslate 정보"
+version = "버전"
+description = "설명"
+descriptionText = """
+PairTranslate는 웹 페이지를 위한 나란히 번역을 제공하는 브라우저 확장 프로그램입니다.
+전통적인 번역 도구와 달리 번역된 텍스트를 원본 텍스트에 추가하여,
+사용자가 더 나은 이해와 언어 학습을 위해 두 버전을 동시에 볼 수 있습니다.
+"""
+features = "기능"
+links = "링크"
+sourceCode = "소스 코드"
+reportIssues = "문제 보고"
+thirdParty = "제3자 서비스"
+thirdPartyDesc = "이 확장 프로그램은 다양한 번역 서비스를 통합합니다:"
+thirdPartyNote = "참고: 사용자는 이 서비스에 대한 자체 API 키를 제공해야 합니다."
+footer = "언어 학습자와 다국어 웹 브라우징을 위해 ❤️를 담아 만들었습니다"
+extensionName = "PairTranslate"
+extensionVersion = "0.0.0"
+
+[settings.about.featuresList]
+_1 = "다양한 LLM 서비스 지원(OpenAI, Anthropic, Gemini 등)"
+_2 = "전통 번역 API(Bing, Google)"
+_3 = "동시 번역 처리"
+_4 = "지능형 캐시 시스템"
+_5 = "사용자 정의 테마 및 설정"
+_6 = "개인 정보 보호 중심(가능한 로컬에서 처리)"
+
+[settings.about.thirdPartyList]
+_1 = "OpenAI API(GPT 모델)"
+_2 = "Anthropic Claude API"
+_3 = "Google Gemini API"
+_4 = "Microsoft Bing 번역"
+_5 = "Google 번역 API"
+_6 = "기타 OpenAI 호환 서비스"
+
+# Action Items (for content scripts)
+
+[actions]
+translate = "번역"
+explain = "설명"
+example = "예시"
+contextMean = "문맥 의미"
+mean = "의미"
+loading = "로딩 중..."
+fetchModels = "모델 가져오기"
+
+# Error Messages
+
+[errors]
+modelNotFound = "설정에서 ID '$1' 모델을 찾을 수 없습니다"
+missingApiSpec = "모델 '$1'에 API 사양이 누락되었습니다"
+invalidModelId = "모델 ID가 필요합니다"
+invalidTextContext = "텍스트 컨텍스트가 필요하며 객체여야 합니다"
+invalidContent = "텍스트 컨텍스트 내용이 필요하며 문자열이어야 합니다"
+invalidBefore = "텍스트 컨텍스트 이전 내용은 문자열이어야 합니다"
+invalidAfter = "텍스트 컨텍스트 이후 내용은 문자열이어야 합니다"
+cacheKeyFailed = "캐시 키 생성에 실패했습니다"
+cacheRetrieveFailed = "캐시된 결과 검색에 실패했습니다"
+invalidLlmConfig = "잘못된 LLM 모델 구성입니다"
+llmServiceFailed = "LLM 서비스 호출에 실패했습니다"
+invalidTraditionalConfig = "잘못된 전통 번역 모델 구성입니다"
+traditionalServiceFailed = "전통 번역 서비스 호출에 실패했습니다"
+translationFailed = "번역에 실패했습니다"
+streamingNotSupported = "전통 번역 서비스는 스트리밍을 지원하지 않습니다"
+streamingTranslationFailed = "스트리밍 번역에 실패했습니다"
+explainOnlyLlm = "설명 기능은 LLM 모델만 지원합니다"
+explanationFailed = "설명에 실패했습니다"
+streamingExplanationFailed = "스트리밍 설명에 실패했습니다"
+noTranslationModel = "번역 모델이 구성되지 않았습니다"
+noExplanationModel = "설명 모델이 구성되지 않았습니다"
+batchResponseMismatch = "배치 응답 불일치, $1항을 예상했지만 $2항을 받았습니다"
+
+# Template Names
+
+[templates.llm]
+openai = "OpenAI"
+azureOpenai = "Azure OpenAI(예제 리소스)"
+anthropic = "Anthropic"
+googleGemini = "Google(Gemini / Vertex AI)"
+lmStudio = "LM Studio"
+ollama = "Ollama"
+
+# LLM Service Errors
+
+[errors.llm]
+baseUrlRequired = "모델을 가져오려면 기본 URL이 필요합니다"
+fetchModelsFailed = "모델 가져오기에 실패했습니다"
+
+# OpenAI API Errors
+
+[errors.openai]
+apiError = "OpenAI API 오류"
+invalidApiKey = "제공된 API 키가 유효하지 않습니다"
+rateLimitExceeded = "속도 제한을 초과했습니다"
+serverError = "OpenAI 서버 오류"
+
+# Anthropic API Errors
+
+[errors.anthropic]
+apiError = "Anthropic API 오류"
+invalidApiKey = "제공된 API 키가 유효하지 않습니다"
+rateLimitExceeded = "속도 제한을 초과했습니다"
+serverError = "Anthropic 서버 오류"
+
+# Settings Errors
+
+[errors.settings]
+failedToSet = "설정에 실패했습니다"
+streamFailed = "스트림 설정에 실패했습니다"
+
+# RPC System Errors
+
+[errors.rpc]
+transportDisposed = "전송이 닫혔습니다"
+streamError = "스트림 전송 중 오류가 발생했습니다"
+
+# Language Names
+
+[languages]
+en = "영어"
+es = "스페인어"
+fr = "프랑스어"
+de = "독일어"
+it = "이탈리아어"
+pt = "포르투갈어"
+ru = "러시아어"
+ja = "일본어"
+ko = "한국어"
+zhCN = "중국어 간체"
+zhTW = "중국어 번체"
+ar = "아랍어"
+hi = "힌디어"
+th = "태국어"
+vi = "베트남어"
+nl = "네덜란드어"
+sv = "스웨덴어"
+no = "노르웨이어"
+da = "덴마크어"
+fi = "핀란드어"
+pl = "폴란드어"
+cs = "체코어"
+sk = "슬로바키아어"
+hu = "헝가리어"
+ro = "루마니아어"
+bg = "불가리아어"
+hr = "크로아티아어"
+sr = "세르비아어"
+uk = "우크라이나어"
+
+# Keyboard Shortcuts
+
+[shortcuts]
+cancel = "취소 (ESC)"
+record = "기록"
+pressCombination = "단축키를 누르거나 ESC로 취소"
+
+# Additional Error Messages
+
+[errors.additional]
+customOperationNotSupported = "사용자 지정 작업은 아직 지원되지 않습니다"
+googleInvalidRequest = "잘못된 요청 매개변수입니다"
+googleInvalidApiKey = "제공된 API 키가 유효하지 않습니다"
+googleRateLimitExceeded = "속도 제한을 초과했습니다"
+googleServerError = "Google 서버 오류"
+microsoftFetchFailed = "Edge에서 API 키 가져오기에 실패했습니다"
+microsoftInvalidResponse = "Microsoft Translator API에서 잘못된 응답 형식입니다"
+microsoftNetworkError = "네트워크 오류: Microsoft Translator API 연결에 실패했습니다"
+googleTranslateInvalidResponse = "Google Translate API에서 잘못된 응답 형식입니다"
+googleTranslateNetworkError = "네트워크 오류: Google Translate API 연결에 실패했습니다"
+deeplInvalidResponse = "DeepL API에서 잘못된 응답 형식입니다"
+deeplNetworkError = "네트워크 오류: DeepL API 연결에 실패했습니다"
+taskTerminated = "작업이 종료되었습니다"

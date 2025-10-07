@@ -1,0 +1,13 @@
+/** biome-ignore-all lint/correctness/noUnknownProperty: DaisyUI */
+/** biome-ignore-all lint/suspicious/noUnknownAtRules: DaisyUI */
+@import "tailwindcss";
+@plugin "daisyui" {
+	root: ":host";
+	themes:
+		nord --default,
+		dracula --prefersdark;
+}
+
+:host {
+	all: initial;
+}

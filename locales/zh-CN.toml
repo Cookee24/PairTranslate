@@ -1,0 +1,366 @@
+[meta]
+name = "配对翻译"
+description = "一个用于网页对照翻译的浏览器扩展"
+
+# Navigation
+
+[nav]
+basic = "基本设置"
+translation = "翻译服务"
+llmServices = "LLM 服务"
+traditionalServices = "传统翻译"
+advanced = "高级设置"
+about = "关于"
+
+# Common UI Elements
+
+[common]
+save = "保存"
+cancel = "取消"
+add = "添加"
+edit = "编辑"
+delete = "删除"
+close = "关闭"
+loading = "加载中..."
+enabled = "已启用"
+disabled = "已禁用"
+configure = "配置"
+manage = "管理"
+service = "服务"
+services = "服务"
+allChangesSaved = "所有更改已保存"
+selectModel = "选择模型"
+modelsLoaded = "已加载 $1 个模型"
+retry = "重试"
+positionLeft = "左侧"
+positionRight = "右侧"
+floatingBallIcon = "悬浮球图标"
+translationTasks = "翻译任务"
+completed = "已完成"
+running = "运行中"
+resize = "调整大小"
+resetFilter = "重置筛选"
+
+# Settings Pages
+
+[settings]
+title = "设置"
+
+[settings.basic]
+title = "基本设置"
+enableExtension = "启用扩展"
+enableExtensionDesc = "启用或禁用翻译扩展"
+theme = "主题"
+themeDesc = "选择界面主题"
+themeLight = "浅色"
+themeDark = "深色"
+themeSystem = "系统"
+showTip = "启用选区翻译"
+showTipDesc = "为选中的文本显示翻译弹框"
+autoPin = "自动置顶弹窗"
+autoPinDesc = "自动置顶翻译结果弹窗"
+floatingBallEnabled = "启用悬浮球"
+floatingBallEnabledDesc = "在网页上显示悬浮翻译球"
+floatingBallPosition = "悬浮球位置"
+floatingBallPositionDesc = "选择悬浮球出现在屏幕的哪一侧"
+positionLeft = "屏幕左侧"
+positionRight = "屏幕右侧"
+keyboardShortcutEnabled = "启用键盘快捷键"
+keyboardShortcutEnabledDesc = "使用键盘快捷键切换翻译"
+keyboardShortcut = "键盘快捷键"
+keyboardShortcutDesc = "触发翻译的按键组合"
+keyboardShortcutHint = "使用 Ctrl+Alt+Shift+字母组合"
+keyboardShortcutInvalid = "无效的快捷键格式"
+keyboardShortcutTest = "测试您的快捷键："
+keyboardShortcutTestHint = "点击此处并按下您的快捷键组合"
+
+[settings.advanced]
+title = "高级设置"
+cleanCache = "清理缓存"
+cleanCacheDesc = "清除所有翻译缓存数据。这可能会暂时减慢翻译速度，因为缓存需要重建。"
+clearingCache = "清理中..."
+clearCacheSuccess = "缓存已成功清理"
+clearCacheFailed = "清理缓存失败"
+resetSettings = "重置设置"
+resetSettingsDesc = "将所有设置重置为默认值。此操作无法撤销。"
+resettingSettings = "重置中..."
+resetSettingsSuccess = "设置已成功重置"
+resetSettingsFailed = "重置设置失败"
+resetSettingsConfirm = "您确定要将所有设置重置为默认值吗？此操作无法撤销。"
+
+[settings.translation]
+title = "翻译设置"
+concurrentRequests = "并发请求数"
+concurrentRequestsDesc = "同时翻译请求数量"
+cacheSize = "缓存大小"
+cacheSizeDesc = "缓存翻译结果数量"
+maxBatchSize = "最大批量大小"
+maxBatchSizeDesc = "单个批次中翻译的文本最大数量"
+sourceLanguage = "源语言"
+targetLanguage = "目标语言"
+autoDetect = "自动检测"
+noModel = "无模型"
+inTextTranslateModel = "文本内翻译模型"
+floatingTranslateModel = "浮窗翻译模型"
+floatingExplainModel = "浮窗解释模型"
+filterTargetLanguage = "过滤目标语言"
+filterTargetLanguageDesc = "跳过已是目标语言的文本以提升性能（因 `franc` 准确度较低且资源消耗较高，当前已禁用）"
+filterInteractive = "过滤交互元素"
+filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素，以避免不必要的翻译"
+
+[settings.translation.languages]
+en = "英语"
+es = "西班牙语"
+fr = "法语"
+de = "德语"
+it = "意大利语"
+pt = "葡萄牙语"
+ru = "俄语"
+ja = "日语"
+ko = "韩语"
+zh = "中文"
+
+[settings.llmServices]
+title = "LLM 服务"
+addService = "添加服务"
+editService = "编辑服务"
+deleteService = "删除服务"
+noServicesConfigured = "未配置 LLM 服务"
+noServicesDesc = "添加服务以开始使用 LLM 驱动的翻译"
+
+[settings.llmServices.serviceDetails]
+model = "模型"
+api = "API"
+url = "URL"
+temperature = "温度"
+
+[settings.llmModal]
+addTitle = "添加 LLM 服务"
+editTitle = "编辑 LLM 服务"
+serviceTemplate = "服务模板"
+serviceName = "服务名称"
+serviceNamePlaceholder = "我的 LLM 服务"
+baseUrl = "基础 URL"
+baseUrlPlaceholder = "https://api.example.com"
+apiSpec = "API 规范"
+apiKey = "API 密钥"
+apiKeyPlaceholder = "输入您的 API 密钥"
+modelName = "模型名称"
+modelNamePlaceholder = "gpt-3.5-turbo, claude-3-sonnet, 等"
+temperature = "温度"
+maxTokens = "最大令牌数"
+customService = "自定义"
+
+[settings.llmModal.apiSpecs]
+openai = "OpenAI 兼容"
+anthropic = "Anthropic"
+gemini = "Google Gemini"
+
+[settings.traditionalServices]
+title = "传统翻译服务"
+addService = "添加服务"
+editService = "编辑服务"
+deleteService = "删除服务"
+noServicesConfigured = "未配置传统翻译服务"
+noServicesDesc = "添加服务以使用传统翻译 API"
+
+[settings.traditionalServices.serviceDetails]
+api = "API"
+url = "URL"
+apiKey = "API 密钥"
+maskedKey = "••••••••"
+
+[settings.traditionalModal]
+addTitle = "添加传统服务"
+editTitle = "编辑传统服务"
+serviceName = "服务名称"
+serviceNamePlaceholder = "我的翻译服务"
+apiSpec = "API 规范"
+baseUrl = "基础 URL"
+baseUrlPlaceholder = "https://api.example.com"
+baseUrlDesc = "留空以使用默认服务端点"
+apiKey = "API 密钥"
+apiKeyPlaceholder = "输入您的 API 密钥"
+apiKeyDesc = "大多数翻译服务都需要"
+region = "区域"
+regionPlaceholder = "例如：eastus, westeurope"
+regionDesc = "Microsoft Translator 区域资源需要"
+
+[settings.traditionalModal.apiSpecs]
+microsoft = "微软必应翻译"
+google = "谷歌翻译"
+deepl = "DeepL"
+
+[settings.about]
+title = "关于 PairTranslate"
+version = "版本"
+description = "描述"
+descriptionText = """
+PairTranslate 是一个浏览器扩展，为网页提供并排翻译服务。
+与传统翻译工具不同，它会将翻译文本附加到原始文本后，
+允许用户同时查看两个版本，以便更好地理解和语言学习。
+"""
+features = "功能"
+links = "链接"
+sourceCode = "源代码"
+reportIssues = "报告问题"
+thirdParty = "第三方服务"
+thirdPartyDesc = "此扩展集成了各种翻译服务："
+thirdPartyNote = "注意：用户必须为这些服务提供自己的 API 密钥。"
+footer = "用 ❤️ 为语言学习者和多语言网页浏览而制作"
+extensionName = "PairTranslate"
+extensionVersion = "0.0.0"
+
+[settings.about.featuresList]
+_1 = "支持多种 LLM 服务（OpenAI、Anthropic、Gemini 等）"
+_2 = "传统翻译 API（必应、谷歌）"
+_3 = "并发翻译处理"
+_4 = "智能缓存系统"
+_5 = "可定制的主题和设置"
+_6 = "注重隐私（尽可能本地处理）"
+
+[settings.about.thirdPartyList]
+_1 = "OpenAI API (GPT 模型)"
+_2 = "Anthropic Claude API"
+_3 = "Google Gemini API"
+_4 = "微软必应翻译"
+_5 = "谷歌翻译 API"
+_6 = "及其他 OpenAI 兼容服务"
+
+# Action Items (for content scripts)
+
+[actions]
+translate = "翻译"
+explain = "解释"
+example = "示例"
+contextMean = "语境含义"
+mean = "含义"
+loading = "加载中..."
+fetchModels = "获取模型"
+
+# Error Messages
+
+[errors]
+modelNotFound = "设置中未找到 ID 为 '$1' 的模型"
+missingApiSpec = "模型 '$1' 缺少 API 规范"
+invalidModelId = "模型 ID 是必需的"
+invalidTextContext = "文本上下文是必需的，且必须是对象"
+invalidContent = "文本上下文内容是必需的，且必须是字符串"
+invalidBefore = "文本上下文之前的内容必须是字符串"
+invalidAfter = "文本上下文之后的内容必须是字符串"
+cacheKeyFailed = "生成缓存密钥失败"
+cacheRetrieveFailed = "检索缓存结果失败"
+invalidLlmConfig = "无效的 LLM 模型配置"
+llmServiceFailed = "LLM 服务调用失败"
+invalidTraditionalConfig = "无效的传统翻译模型配置"
+traditionalServiceFailed = "传统翻译服务调用失败"
+translationFailed = "翻译失败"
+streamingNotSupported = "传统翻译服务不支持流式传输"
+streamingTranslationFailed = "流式翻译失败"
+explainOnlyLlm = "解释功能仅支持 LLM 模型"
+explanationFailed = "解释失败"
+streamingExplanationFailed = "流式解释失败"
+noTranslationModel = "未配置翻译模型"
+noExplanationModel = "未配置解释模型"
+batchResponseMismatch = "批处理响应数量不匹配，预期 $1 项但收到 $2 项"
+
+# Template Names
+
+[templates.llm]
+openai = "OpenAI"
+azureOpenai = "Azure OpenAI (示例资源)"
+anthropic = "Anthropic"
+googleGemini = "Google (Gemini / Vertex AI)"
+lmStudio = "LM Studio"
+ollama = "Ollama"
+
+# LLM Service Errors
+
+[errors.llm]
+baseUrlRequired = "获取模型需要基础 URL"
+fetchModelsFailed = "获取模型失败"
+
+# OpenAI API Errors
+
+[errors.openai]
+apiError = "OpenAI API 错误"
+invalidApiKey = "提供的 API 密钥无效"
+rateLimitExceeded = "超过速率限制"
+serverError = "OpenAI 服务器错误"
+
+# Anthropic API Errors
+
+[errors.anthropic]
+apiError = "Anthropic API 错误"
+invalidApiKey = "提供的 API 密钥无效"
+rateLimitExceeded = "超过速率限制"
+serverError = "Anthropic 服务器错误"
+
+# Settings Errors
+
+[errors.settings]
+failedToSet = "设置失败"
+streamFailed = "设置流失败"
+
+# RPC System Errors
+
+[errors.rpc]
+transportDisposed = "传输已被关闭"
+streamError = "发送流时出错"
+
+# Language Names
+
+[languages]
+en = "英语"
+es = "西班牙语"
+fr = "法语"
+de = "德语"
+it = "意大利语"
+pt = "葡萄牙语"
+ru = "俄语"
+ja = "日语"
+ko = "韩语"
+zhCN = "简体中文"
+zhTW = "繁体中文"
+ar = "阿拉伯语"
+hi = "印地语"
+th = "泰语"
+vi = "越南语"
+nl = "荷兰语"
+sv = "瑞典语"
+no = "挪威语"
+da = "丹麦语"
+fi = "芬兰语"
+pl = "波兰语"
+cs = "捷克语"
+sk = "斯洛伐克语"
+hu = "匈牙利语"
+ro = "罗马尼亚语"
+bg = "保加利亚语"
+hr = "克罗地亚语"
+sr = "塞尔维亚语"
+uk = "乌克兰语"
+
+# Keyboard Shortcuts
+
+[shortcuts]
+cancel = "取消 (ESC)"
+record = "录制"
+pressCombination = "按下您的快捷键组合或 ESC 取消"
+
+# Additional Error Messages
+
+[errors.additional]
+customOperationNotSupported = "自定义操作尚不支持"
+googleInvalidRequest = "无效的请求参数"
+googleInvalidApiKey = "提供的 API 密钥无效"
+googleRateLimitExceeded = "超过速率限制"
+googleServerError = "Google 服务器错误"
+microsoftFetchFailed = "从 Edge 获取 API 密钥失败"
+microsoftInvalidResponse = "Microsoft Translator API 响应格式无效"
+microsoftNetworkError = "网络错误：无法连接到 Microsoft Translator API"
+googleTranslateInvalidResponse = "Google Translate API 响应格式无效"
+googleTranslateNetworkError = "网络错误：无法连接到 Google Translate API"
+deeplInvalidResponse = "DeepL API 响应格式无效"
+deeplNetworkError = "网络错误：无法连接到 DeepL API"
+taskTerminated = "任务已终止"

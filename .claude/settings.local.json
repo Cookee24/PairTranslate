@@ -1,0 +1,14 @@
+{
+	"permissions": {
+		"allow": [
+			"mcp__context7__get-library-docs",
+			"mcp__context7__resolve-library-id",
+			"Bash(bun run lint)",
+			"Bash(bun run lint:*)",
+			"Bash(bun run compile)",
+			"Bash(bun run build)"
+		],
+		"deny": [],
+		"ask": []
+	}
+}

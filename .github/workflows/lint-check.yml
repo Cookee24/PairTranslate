@@ -1,0 +1,40 @@
+name: 🔍 Lint & Type Check
+
+# Run on push to main/master and on pull requests
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint-and-type-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: 🛠️ Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: 🛠️ Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔍 Run TypeScript Type Check
+        run: bun run compile
+
+      - name: 🧹 Run Biome Lint Check
+        run: bun run lint
+
+      # Optional: Run tests if you have any
+      # - name: ✅ Run Tests
+      #   run: bun test

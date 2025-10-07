@@ -1,0 +1,366 @@
+[meta]
+name = "Pair Translate"
+description = "A browser extension for side-by-side translation of web pages"
+
+# Navigation
+
+[nav]
+basic = "Basic Settings"
+translation = "Translation Services"
+llmServices = "LLM Services"
+traditionalServices = "Traditional Translation"
+advanced = "Advanced Settings"
+about = "About"
+
+# Common UI Elements
+
+[common]
+save = "Save"
+cancel = "Cancel"
+add = "Add"
+edit = "Edit"
+delete = "Delete"
+close = "Close"
+loading = "Loading..."
+enabled = "Enabled"
+disabled = "Disabled"
+configure = "Configure"
+manage = "Manage"
+service = "Service"
+services = "Services"
+allChangesSaved = "All changes saved"
+selectModel = "Select Model"
+modelsLoaded = "Loaded $1 models"
+retry = "Retry"
+positionLeft = "Left"
+positionRight = "Right"
+floatingBallIcon = "Floating Ball Icon"
+translationTasks = "Translation Tasks"
+completed = "completed"
+running = "running"
+resize = "Resize"
+resetFilter = "Reset filter"
+
+# Settings Pages
+
+[settings]
+title = "Settings"
+
+[settings.basic]
+title = "Basic Settings"
+enableExtension = "Enable Extension"
+enableExtensionDesc = "Enable or disable the translation extension"
+theme = "Theme"
+themeDesc = "Choose the interface theme"
+themeLight = "Light"
+themeDark = "Dark"
+themeSystem = "System"
+showTip = "Enable Selection Translation"
+showTipDesc = "Show translation popup for selected text"
+autoPin = "Auto-pin Popup"
+autoPinDesc = "Auto-pin translation result popup"
+floatingBallEnabled = "Enable Floating Ball"
+floatingBallEnabledDesc = "Show floating translation ball on web pages"
+floatingBallPosition = "Floating Ball Position"
+floatingBallPositionDesc = "Choose which side of the screen the floating ball appears on"
+positionLeft = "Left side of screen"
+positionRight = "Right side of screen"
+keyboardShortcutEnabled = "Enable Keyboard Shortcut"
+keyboardShortcutEnabledDesc = "Toggle translation with keyboard shortcut"
+keyboardShortcut = "Keyboard Shortcut"
+keyboardShortcutDesc = "Key combination to trigger translation"
+keyboardShortcutHint = "Use Ctrl+Alt+Shift+Letter combinations"
+keyboardShortcutInvalid = "Invalid shortcut format"
+keyboardShortcutTest = "Test your shortcut:"
+keyboardShortcutTestHint = "Click here and press your shortcut combination"
+
+[settings.advanced]
+title = "Advanced Settings"
+cleanCache = "Clean Cache"
+cleanCacheDesc = "Clear all translation cache data. This may temporarily slow down translations as the cache rebuilds."
+clearingCache = "Clearing..."
+clearCacheSuccess = "Cache cleared successfully"
+clearCacheFailed = "Failed to clear cache"
+resetSettings = "Reset Settings"
+resetSettingsDesc = "Reset all settings to their default values. This action cannot be undone."
+resettingSettings = "Resetting..."
+resetSettingsSuccess = "Settings reset successfully"
+resetSettingsFailed = "Failed to reset settings"
+resetSettingsConfirm = "Are you sure you want to reset all settings to defaults? This action cannot be undone."
+
+[settings.translation]
+title = "Translation Settings"
+concurrentRequests = "Concurrent Requests"
+concurrentRequestsDesc = "Number of simultaneous translation requests"
+cacheSize = "Cache Size"
+cacheSizeDesc = "Number of translation results to cache"
+maxBatchSize = "Max Batch Size"
+maxBatchSizeDesc = "Maximum number of texts to translate in a single batch"
+sourceLanguage = "Source Language"
+targetLanguage = "Target Language"
+autoDetect = "Auto Detect"
+noModel = "No Model"
+inTextTranslateModel = "In-text Translation Model"
+floatingTranslateModel = "Floating Translation Model"
+floatingExplainModel = "Floating Explanation Model"
+filterTargetLanguage = "Filter Target Language"
+filterTargetLanguageDesc = "Skip text already in target language to improve performance (currently disabled since `franc` is inaccurate and performance consuming)"
+filterInteractive = "Filter Interactive Elements"
+filterInteractiveDesc = "Skip interactive elements like buttons, headers, navigation, and footers to avoid unwanted translations"
+
+[settings.translation.languages]
+en = "English"
+es = "Spanish"
+fr = "French"
+de = "German"
+it = "Italian"
+pt = "Portuguese"
+ru = "Russian"
+ja = "Japanese"
+ko = "Korean"
+zh = "Chinese"
+
+[settings.llmServices]
+title = "LLM Services"
+addService = "Add Service"
+editService = "Edit Service"
+deleteService = "Delete Service"
+noServicesConfigured = "No LLM Services Configured"
+noServicesDesc = "Add services to start using LLM-powered translation"
+
+[settings.llmServices.serviceDetails]
+model = "Model"
+api = "API"
+url = "URL"
+temperature = "Temperature"
+
+[settings.llmModal]
+addTitle = "Add LLM Service"
+editTitle = "Edit LLM Service"
+serviceTemplate = "Service Template"
+serviceName = "Service Name"
+serviceNamePlaceholder = "My LLM Service"
+baseUrl = "Base URL"
+baseUrlPlaceholder = "https://api.example.com"
+apiSpec = "API Spec"
+apiKey = "API Key"
+apiKeyPlaceholder = "Enter your API key"
+modelName = "Model Name"
+modelNamePlaceholder = "gpt-3.5-turbo, claude-3-sonnet, etc."
+temperature = "Temperature"
+maxTokens = "Max Tokens"
+customService = "Custom"
+
+[settings.llmModal.apiSpecs]
+openai = "OpenAI Compatible"
+anthropic = "Anthropic"
+gemini = "Google Gemini"
+
+[settings.traditionalServices]
+title = "Traditional Translation Services"
+addService = "Add Service"
+editService = "Edit Service"
+deleteService = "Delete Service"
+noServicesConfigured = "No Traditional Translation Services Configured"
+noServicesDesc = "Add services to use traditional translation APIs"
+
+[settings.traditionalServices.serviceDetails]
+api = "API"
+url = "URL"
+apiKey = "API Key"
+maskedKey = "••••••••"
+
+[settings.traditionalModal]
+addTitle = "Add Traditional Service"
+editTitle = "Edit Traditional Service"
+serviceName = "Service Name"
+serviceNamePlaceholder = "My Translation Service"
+apiSpec = "API Spec"
+baseUrl = "Base URL"
+baseUrlPlaceholder = "https://api.example.com"
+baseUrlDesc = "Leave empty to use default service endpoints"
+apiKey = "API Key"
+apiKeyPlaceholder = "Enter your API key"
+apiKeyDesc = "Required by most translation services"
+region = "Region"
+regionPlaceholder = "e.g., eastus, westeurope"
+regionDesc = "Required for Microsoft Translator regional resources"
+
+[settings.traditionalModal.apiSpecs]
+microsoft = "Microsoft Bing Translate"
+google = "Google Translate"
+deepl = "DeepL"
+
+[settings.about]
+title = "About PairTranslate"
+version = "Version"
+description = "Description"
+descriptionText = """
+PairTranslate is a browser extension that provides side-by-side translation for web pages.
+Unlike traditional translation tools, it appends translated text to the original text,
+allowing users to see both versions simultaneously for better understanding and language learning.
+"""
+features = "Features"
+links = "Links"
+sourceCode = "Source Code"
+reportIssues = "Report Issues"
+thirdParty = "Third-party Services"
+thirdPartyDesc = "This extension integrates various translation services:"
+thirdPartyNote = "Note: Users must provide their own API keys for these services."
+footer = "Made with ❤️ for language learners and multilingual web browsing"
+extensionName = "PairTranslate"
+extensionVersion = "0.0.0"
+
+[settings.about.featuresList]
+_1 = "Support for multiple LLM services (OpenAI, Anthropic, Gemini, etc.)"
+_2 = "Traditional translation APIs (Bing, Google)"
+_3 = "Concurrent translation processing"
+_4 = "Intelligent caching system"
+_5 = "Customizable themes and settings"
+_6 = "Privacy-focused (processes locally when possible)"
+
+[settings.about.thirdPartyList]
+_1 = "OpenAI API (GPT models)"
+_2 = "Anthropic Claude API"
+_3 = "Google Gemini API"
+_4 = "Microsoft Bing Translate"
+_5 = "Google Translate API"
+_6 = "Other OpenAI-compatible services"
+
+# Action Items (for content scripts)
+
+[actions]
+translate = "Translate"
+explain = "Explain"
+example = "Example"
+contextMean = "Context Meaning"
+mean = "Meaning"
+loading = "Loading..."
+fetchModels = "Fetch Models"
+
+# Error Messages
+
+[errors]
+modelNotFound = "Model with ID '$1' not found in settings"
+missingApiSpec = "Model '$1' is missing API spec"
+invalidModelId = "Model ID is required"
+invalidTextContext = "Text context is required and must be an object"
+invalidContent = "Text context content is required and must be a string"
+invalidBefore = "Text context before content must be a string"
+invalidAfter = "Text context after content must be a string"
+cacheKeyFailed = "Failed to generate cache key"
+cacheRetrieveFailed = "Failed to retrieve cached result"
+invalidLlmConfig = "Invalid LLM model configuration"
+llmServiceFailed = "LLM service call failed"
+invalidTraditionalConfig = "Invalid traditional translation model configuration"
+traditionalServiceFailed = "Traditional translation service call failed"
+translationFailed = "Translation failed"
+streamingNotSupported = "Traditional translation services do not support streaming"
+streamingTranslationFailed = "Streaming translation failed"
+explainOnlyLlm = "Explain feature only supports LLM models"
+explanationFailed = "Explanation failed"
+streamingExplanationFailed = "Streaming explanation failed"
+noTranslationModel = "No translation model configured"
+noExplanationModel = "No explanation model configured"
+batchResponseMismatch = "Batch response mismatch, expected $1 items but got $2"
+
+# Template Names
+
+[templates.llm]
+openai = "OpenAI"
+azureOpenai = "Azure OpenAI (Example Resource)"
+anthropic = "Anthropic"
+googleGemini = "Google (Gemini / Vertex AI)"
+lmStudio = "LM Studio"
+ollama = "Ollama"
+
+# LLM Service Errors
+
+[errors.llm]
+baseUrlRequired = "Base URL is required to fetch models"
+fetchModelsFailed = "Failed to fetch models"
+
+# OpenAI API Errors
+
+[errors.openai]
+apiError = "OpenAI API Error"
+invalidApiKey = "The provided API key is invalid"
+rateLimitExceeded = "Rate limit exceeded"
+serverError = "OpenAI server error"
+
+# Anthropic API Errors
+
+[errors.anthropic]
+apiError = "Anthropic API Error"
+invalidApiKey = "The provided API key is invalid"
+rateLimitExceeded = "Rate limit exceeded"
+serverError = "Anthropic server error"
+
+# Settings Errors
+
+[errors.settings]
+failedToSet = "Failed to set settings"
+streamFailed = "Failed to set stream"
+
+# RPC System Errors
+
+[errors.rpc]
+transportDisposed = "Transport has been closed"
+streamError = "Error sending stream"
+
+# Language Names
+
+[languages]
+en = "English"
+es = "Spanish"
+fr = "French"
+de = "German"
+it = "Italian"
+pt = "Portuguese"
+ru = "Russian"
+ja = "Japanese"
+ko = "Korean"
+zhCN = "Simplified Chinese"
+zhTW = "Traditional Chinese"
+ar = "Arabic"
+hi = "Hindi"
+th = "Thai"
+vi = "Vietnamese"
+nl = "Dutch"
+sv = "Swedish"
+no = "Norwegian"
+da = "Danish"
+fi = "Finnish"
+pl = "Polish"
+cs = "Czech"
+sk = "Slovak"
+hu = "Hungarian"
+ro = "Romanian"
+bg = "Bulgarian"
+hr = "Croatian"
+sr = "Serbian"
+uk = "Ukrainian"
+
+# Keyboard Shortcuts
+
+[shortcuts]
+cancel = "Cancel (ESC)"
+record = "Record"
+pressCombination = "Press your shortcut combination or ESC to cancel"
+
+# Additional Error Messages
+
+[errors.additional]
+customOperationNotSupported = "Custom operations are not supported yet"
+googleInvalidRequest = "Invalid request parameters"
+googleInvalidApiKey = "Invalid API key provided"
+googleRateLimitExceeded = "Rate limit exceeded"
+googleServerError = "Google server error"
+microsoftFetchFailed = "Failed to fetch API key from Edge"
+microsoftInvalidResponse = "Invalid response format from Microsoft Translator API"
+microsoftNetworkError = "Network error: Failed to connect to Microsoft Translator API"
+googleTranslateInvalidResponse = "Invalid response format from Google Translate API"
+googleTranslateNetworkError = "Network error: Failed to connect to Google Translate API"
+deeplInvalidResponse = "Invalid response format from DeepL API"
+deeplNetworkError = "Network error: Failed to connect to DeepL API"
+taskTerminated = "Task terminated"

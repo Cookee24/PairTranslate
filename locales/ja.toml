@@ -1,0 +1,366 @@
+[meta]
+name = "ペア翻訳"
+description = "ウェブページのサイドバイサイド翻訳用ブラウザ拡張機能"
+
+# Navigation
+
+[nav]
+basic = "基本設定"
+translation = "翻訳サービス"
+llmServices = "LLMサービス"
+traditionalServices = "従来の翻訳"
+advanced = "詳細設定"
+about = "について"
+
+# Common UI Elements
+
+[common]
+save = "保存"
+cancel = "キャンセル"
+add = "追加"
+edit = "編集"
+delete = "削除"
+close = "閉じる"
+loading = "読み込み中..."
+enabled = "有効"
+disabled = "無効"
+configure = "設定"
+manage = "管理"
+service = "サービス"
+services = "サービス"
+allChangesSaved = "すべての変更を保存しました"
+selectModel = "モデルを選択"
+modelsLoaded = "$1個のモデルを読み込みました"
+retry = "再試行"
+positionLeft = "左"
+positionRight = "右"
+floatingBallIcon = "フローティングボールアイコン"
+translationTasks = "翻訳タスク"
+completed = "完了"
+running = "実行中"
+resize = "サイズ変更"
+resetFilter = "フィルターをリセット"
+
+# Settings Pages
+
+[settings]
+title = "設定"
+
+[settings.basic]
+title = "基本設定"
+enableExtension = "拡張機能を有効化"
+enableExtensionDesc = "翻訳拡張機能を有効または無効にします"
+theme = "テーマ"
+themeDesc = "インターフェースのテーマを選択します"
+themeLight = "ライト"
+themeDark = "ダーク"
+themeSystem = "システム"
+showTip = "選択翻訳を有効化"
+showTipDesc = "選択したテキストの翻訳ポップアップを表示します"
+autoPin = "ポップアップを自動ピン留め"
+autoPinDesc = "翻訳結果のポップアップを自動的にピン留めします"
+floatingBallEnabled = "フローティングボールを有効化"
+floatingBallEnabledDesc = "ウェブページにフローティング翻訳ボールを表示します"
+floatingBallPosition = "フローティングボールの位置"
+floatingBallPositionDesc = "フローティングボールが画面のどちら側に表示されるかを選択します"
+positionLeft = "画面の左側"
+positionRight = "画面の右側"
+keyboardShortcutEnabled = "キーボードショートカットを有効化"
+keyboardShortcutEnabledDesc = "キーボードショートカットで翻訳を切り替えます"
+keyboardShortcut = "キーボードショートカット"
+keyboardShortcutDesc = "翻訳をトリガーするキーの組み合わせ"
+keyboardShortcutHint = "Ctrl+Alt+Shift+文字の組み合わせを使用"
+keyboardShortcutInvalid = "無効なショートカット形式です"
+keyboardShortcutTest = "ショートカットをテスト："
+keyboardShortcutTestHint = "ここをクリックしてショートカットを押してください"
+
+[settings.advanced]
+title = "詳細設定"
+cleanCache = "キャッシュをクリア"
+cleanCacheDesc = "すべての翻訳キャッシュデータをクリアします。キャッシュが再構築されるため、一時的に翻訳が遅くなる可能性があります。"
+clearingCache = "クリア中..."
+clearCacheSuccess = "キャッシュが正常にクリアされました"
+clearCacheFailed = "キャッシュのクリアに失敗しました"
+resetSettings = "設定をリセット"
+resetSettingsDesc = "すべての設定をデフォルト値にリセットします。この操作は元に戻せません。"
+resettingSettings = "リセット中..."
+resetSettingsSuccess = "設定が正常にリセットされました"
+resetSettingsFailed = "設定のリセットに失敗しました"
+resetSettingsConfirm = "すべての設定をデフォルト値にリセットしてもよろしいですか？この操作は元に戻せません。"
+
+[settings.translation]
+title = "翻訳設定"
+concurrentRequests = "同時リクエスト数"
+concurrentRequestsDesc = "同時実行する翻訳リクエストの数"
+cacheSize = "キャッシュサイズ"
+cacheSizeDesc = "キャッシュする翻訳結果の数"
+maxBatchSize = "最大バッチサイズ"
+maxBatchSizeDesc = "単一バッチで翻訳するテキストの最大数"
+sourceLanguage = "ソース言語"
+targetLanguage = "ターゲット言語"
+autoDetect = "自動検出"
+noModel = "モデルなし"
+inTextTranslateModel = "テキスト内翻訳モデル"
+floatingTranslateModel = "フローティング翻訳モデル"
+floatingExplainModel = "フローティング説明モデル"
+filterTargetLanguage = "ターゲット言語をフィルター"
+filterTargetLanguageDesc = "パフォーマンス向上のため、既にターゲット言語のテキストはスキップします（`franc`の精度が低く負荷が高いため、現在無効化されています）"
+filterInteractive = "インタラクティブ要素をフィルター"
+filterInteractiveDesc = "ボタン、ヘッダー、ナビゲーション、フッターなどのインタラクティブ要素をスキップして、不要な翻訳を避けます"
+
+[settings.translation.languages]
+en = "英語"
+es = "スペイン語"
+fr = "フランス語"
+de = "ドイツ語"
+it = "イタリア語"
+pt = "ポルトガル語"
+ru = "ロシア語"
+ja = "日本語"
+ko = "韓国語"
+zh = "中国語"
+
+[settings.llmServices]
+title = "LLMサービス"
+addService = "サービスを追加"
+editService = "サービスを編集"
+deleteService = "サービスを削除"
+noServicesConfigured = "LLMサービスが設定されていません"
+noServicesDesc = "LLM駆動の翻訳を使用開始するにはサービスを追加します"
+
+[settings.llmServices.serviceDetails]
+model = "モデル"
+api = "API"
+url = "URL"
+temperature = "温度"
+
+[settings.llmModal]
+addTitle = "LLMサービスを追加"
+editTitle = "LLMサービスを編集"
+serviceTemplate = "サービステンプレート"
+serviceName = "サービス名"
+serviceNamePlaceholder = "私のLLMサービス"
+baseUrl = "ベースURL"
+baseUrlPlaceholder = "https://api.example.com"
+apiSpec = "API仕様"
+apiKey = "APIキー"
+apiKeyPlaceholder = "APIキーを入力"
+modelName = "モデル名"
+modelNamePlaceholder = "gpt-3.5-turbo、claude-3-sonnetなど"
+temperature = "温度"
+maxTokens = "最大トークン数"
+customService = "カスタム"
+
+[settings.llmModal.apiSpecs]
+openai = "OpenAI互換"
+anthropic = "Anthropic"
+gemini = "Google Gemini"
+
+[settings.traditionalServices]
+title = "従来の翻訳サービス"
+addService = "サービスを追加"
+editService = "サービスを編集"
+deleteService = "サービスを削除"
+noServicesConfigured = "従来の翻訳サービスが設定されていません"
+noServicesDesc = "従来の翻訳APIを使用するにはサービスを追加します"
+
+[settings.traditionalServices.serviceDetails]
+api = "API"
+url = "URL"
+apiKey = "APIキー"
+maskedKey = "••••••••"
+
+[settings.traditionalModal]
+addTitle = "従来サービスを追加"
+editTitle = "従来サービスを編集"
+serviceName = "サービス名"
+serviceNamePlaceholder = "私の翻訳サービス"
+apiSpec = "API仕様"
+baseUrl = "ベースURL"
+baseUrlPlaceholder = "https://api.example.com"
+baseUrlDesc = "デフォルトのサービスエンドポイントを使用する場合は空のままにします"
+apiKey = "APIキー"
+apiKeyPlaceholder = "APIキーを入力"
+apiKeyDesc = "ほとんどの翻訳サービスで必須です"
+region = "リージョン"
+regionPlaceholder = "例：eastus, westeurope"
+regionDesc = "Microsoft Translatorのリージョンリソースに必要です"
+
+[settings.traditionalModal.apiSpecs]
+microsoft = "Microsoft Bing翻訳"
+google = "Google翻訳"
+deepl = "DeepL"
+
+[settings.about]
+title = "PairTranslateについて"
+version = "バージョン"
+description = "説明"
+descriptionText = """
+PairTranslateは、ウェブページ向けの並行翻訳を提供するブラウザ拡張機能です。
+従来の翻訳ツールとは異なり、翻訳されたテキストを元のテキストに追加し、
+ユーザーが両方のバージョンを同時に見て理解と言語学習を向上させることができます。
+"""
+features = "機能"
+links = "リンク"
+sourceCode = "ソースコード"
+reportIssues = "問題を報告"
+thirdParty = "サードパーティサービス"
+thirdPartyDesc = "この拡張機能はさまざまな翻訳サービスを統合しています："
+thirdPartyNote = "注：ユーザーはこれらのサービスに独自のAPIキーを提供する必要があります。"
+footer = "言語学習者と多言語ウェブブラウジングのために❤️を込めて作成"
+extensionName = "PairTranslate"
+extensionVersion = "0.0.0"
+
+[settings.about.featuresList]
+_1 = "複数のLLMサービスをサポート（OpenAI、Anthropic、Geminiなど）"
+_2 = "従来の翻訳API（Bing、Google）"
+_3 = "同時翻訳処理"
+_4 = "インテリジェントなキャッシュシステム"
+_5 = "カスタマイズ可能なテーマと設定"
+_6 = "プライバシー重視（可能な限りローカルで処理）"
+
+[settings.about.thirdPartyList]
+_1 = "OpenAI API（GPTモデル）"
+_2 = "Anthropic Claude API"
+_3 = "Google Gemini API"
+_4 = "Microsoft Bing翻訳"
+_5 = "Google翻訳API"
+_6 = "その他のOpenAI互換サービス"
+
+# Action Items (for content scripts)
+
+[actions]
+translate = "翻訳"
+explain = "説明"
+example = "例"
+contextMean = "文脈上の意味"
+mean = "意味"
+loading = "読み込み中..."
+fetchModels = "モデルを取得"
+
+# Error Messages
+
+[errors]
+modelNotFound = "設定にID '$1' のモデルが見つかりません"
+missingApiSpec = "モデル '$1' にAPI仕様がありません"
+invalidModelId = "モデルIDは必須です"
+invalidTextContext = "テキストコンテキストは必須で、オブジェクトである必要があります"
+invalidContent = "テキストコンテキストの内容は必須で、文字列である必要があります"
+invalidBefore = "テキストコンテキストの前の内容は文字列である必要があります"
+invalidAfter = "テキストコンテキストの後の内容は文字列である必要があります"
+cacheKeyFailed = "キャッシュキーの生成に失敗しました"
+cacheRetrieveFailed = "キャッシュ結果の取得に失敗しました"
+invalidLlmConfig = "無効なLLMモデル設定です"
+llmServiceFailed = "LLMサービスの呼び出しに失敗しました"
+invalidTraditionalConfig = "無効な従来翻訳モデル設定です"
+traditionalServiceFailed = "従来翻訳サービスの呼び出しに失敗しました"
+translationFailed = "翻訳に失敗しました"
+streamingNotSupported = "従来翻訳サービスはストリーミングをサポートしていません"
+streamingTranslationFailed = "ストリーミング翻訳に失敗しました"
+explainOnlyLlm = "説明機能はLLMモデルのみをサポートしています"
+explanationFailed = "説明に失敗しました"
+streamingExplanationFailed = "ストリーミング説明に失敗しました"
+noTranslationModel = "翻訳モデルが設定されていません"
+noExplanationModel = "説明モデルが設定されていません"
+batchResponseMismatch = "バッチ応答の不一致、$1項を期待しましたが$2項を取得しました"
+
+# Template Names
+
+[templates.llm]
+openai = "OpenAI"
+azureOpenai = "Azure OpenAI（例リソース）"
+anthropic = "Anthropic"
+googleGemini = "Google（Gemini / Vertex AI）"
+lmStudio = "LM Studio"
+ollama = "Ollama"
+
+# LLM Service Errors
+
+[errors.llm]
+baseUrlRequired = "モデルを取得するにはベースURLが必要です"
+fetchModelsFailed = "モデルの取得に失敗しました"
+
+# OpenAI API Errors
+
+[errors.openai]
+apiError = "OpenAI APIエラー"
+invalidApiKey = "提供されたAPIキーが無効です"
+rateLimitExceeded = "レート制限を超えました"
+serverError = "OpenAIサーバーエラー"
+
+# Anthropic API Errors
+
+[errors.anthropic]
+apiError = "Anthropic APIエラー"
+invalidApiKey = "提供されたAPIキーが無効です"
+rateLimitExceeded = "レート制限を超えました"
+serverError = "Anthropicサーバーエラー"
+
+# Settings Errors
+
+[errors.settings]
+failedToSet = "設定に失敗しました"
+streamFailed = "ストリームの設定に失敗しました"
+
+# RPC System Errors
+
+[errors.rpc]
+transportDisposed = "トランスポートが閉じられました"
+streamError = "ストリーム送信時にエラーが発生しました"
+
+# Language Names
+
+[languages]
+en = "英語"
+es = "スペイン語"
+fr = "フランス語"
+de = "ドイツ語"
+it = "イタリア語"
+pt = "ポルトガル語"
+ru = "ロシア語"
+ja = "日本語"
+ko = "韓国語"
+zhCN = "簡体字中国語"
+zhTW = "繁体字中国語"
+ar = "アラビア語"
+hi = "ヒンディー語"
+th = "タイ語"
+vi = "ベトナム語"
+nl = "オランダ語"
+sv = "スウェーデン語"
+no = "ノルウェー語"
+da = "デンマーク語"
+fi = "フィンランド語"
+pl = "ポーランド語"
+cs = "チェコ語"
+sk = "スロバキア語"
+hu = "ハンガリー語"
+ro = "ルーマニア語"
+bg = "ブルガリア語"
+hr = "クロアチア語"
+sr = "セルビア語"
+uk = "ウクライナ語"
+
+# Keyboard Shortcuts
+
+[shortcuts]
+cancel = "キャンセル (ESC)"
+record = "記録"
+pressCombination = "ショートカットを押すかESCでキャンセル"
+
+# Additional Error Messages
+
+[errors.additional]
+customOperationNotSupported = "カスタム操作はまだサポートされていません"
+googleInvalidRequest = "無効なリクエストパラメータです"
+googleInvalidApiKey = "提供されたAPIキーが無効です"
+googleRateLimitExceeded = "レート制限を超えました"
+googleServerError = "Googleサーバーエラーです"
+microsoftFetchFailed = "EdgeからAPIキーの取得に失敗しました"
+microsoftInvalidResponse = "Microsoft Translator APIからの無効な応答形式です"
+microsoftNetworkError = "ネットワークエラー：Microsoft Translator APIへの接続に失敗しました"
+googleTranslateInvalidResponse = "Google Translate APIからの無効な応答形式です"
+googleTranslateNetworkError = "ネットワークエラー：Google Translate APIへの接続に失敗しました"
+deeplInvalidResponse = "DeepL APIからの無効な応答形式です"
+deeplNetworkError = "ネットワークエラー：DeepL APIへの接続に失敗しました"
+taskTerminated = "タスクが終了しました"
