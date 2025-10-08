@@ -32,7 +32,7 @@ export const mountOverlay = (app: () => JSX.Element) => {
 			throw new Error("Failed to attach shadow root to body");
 		}
 
-		const { documentCss, shadowCss } = splitShadowRootCss(styles);
+		const [documentCss, shadowCss] = splitShadowRootCss(styles);
 		if (documentCss) {
 			const styleEl = document.createElement("style");
 			styleEl.textContent = documentCss;
@@ -58,7 +58,9 @@ export const mountOverlay = (app: () => JSX.Element) => {
 	return promise;
 };
 
-const splitShadowRootCss = (css: string) => {
+const splitShadowRootCss = (
+	css: string,
+): readonly [documentCss: string, shadowCss: string] => {
 	let shadowCss = css;
 	let documentCss = "";
 	const pos = [];
@@ -101,8 +103,5 @@ const splitShadowRootCss = (css: string) => {
 		shadowCss = shadowCss.slice(0, l) + shadowCss.slice(r);
 	}
 
-	return {
-		documentCss: documentCss.trim(),
-		shadowCss: shadowCss.trim(),
-	};
+	return [documentCss.trim(), shadowCss.trim()] as const;
 };
