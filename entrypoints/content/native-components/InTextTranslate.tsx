@@ -51,7 +51,7 @@ interface BatchProps {
 }
 export const BatchInTextTranslation = (props: BatchProps) => {
 	const { settings } = useSettings();
-	const [renderList, setRenderList] = createSignal([[]] as HTMLElement[][], {
+	const [renderList, setRenderList] = createSignal([] as HTMLElement[][], {
 		equals: false,
 	});
 
@@ -84,7 +84,7 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 		lastTimeout && clearTimeout(lastTimeout);
 		lastIdleCallback && cancelIdleCallback(lastIdleCallback);
 		lastAnimationFrame && cancelAnimationFrame(lastAnimationFrame);
-		setRenderList([[]]);
+		setRenderList([]);
 		batchIds.clear();
 	};
 
@@ -98,20 +98,22 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 					if (currentElements.size === 0) clear();
 
 					setRenderList((prev) => {
+						let last = prev.length; // Force a new batch
 						for (const element of currentElements) {
-							// TODO: optimize batch allocation algorithm
-							let batchId = batchIds.get(element);
+							const batchId = batchIds.get(element);
 							if (batchId === undefined) {
-								// biome-ignore lint/style/noNonNullAssertion: list initialized as [[]]
-								const lastBatch = prev[prev.length - 1]!;
-								if (lastBatch.length >= maxBatchSize) {
-									batchId = prev.length;
-									prev.push([element]);
+								const lastBatch = prev[last];
+								if (lastBatch !== undefined) {
+									if (lastBatch.length < maxBatchSize) {
+										prev[last] = [...lastBatch, element];
+									} else {
+										prev.push([element]);
+										last++;
+									}
 								} else {
-									batchId = prev.length - 1;
-									prev[batchId] = [...lastBatch, element];
+									prev.push([element]);
 								}
-								batchIds.set(element, batchId);
+								batchIds.set(element, last);
 							} else {
 								// Element already has a batch, do nothing.
 							}
