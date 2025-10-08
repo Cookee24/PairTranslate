@@ -201,8 +201,7 @@ const TranslationRender = (props: TranslationRenderProps) => {
 	);
 
 	return (
-		<MPortal
-			useShadow
+		<ShadowPortal
 			mount={props.element}
 			ref={(el) => {
 				el.setAttribute(ELEMENT_CONTAINER, "");
@@ -247,7 +246,7 @@ const TranslationRender = (props: TranslationRenderProps) => {
 			{!props.loading && !props.error && (
 				<span style={{ "white-space": "pre-line" }}>{props.text?.trim()}</span>
 			)}
-		</MPortal>
+		</ShadowPortal>
 	);
 };
 
