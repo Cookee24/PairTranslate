@@ -1,0 +1,58 @@
+name: 🏗️ Build & Upload Artifacts
+
+# Run on push to main/master branch only
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: 🛠️ Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: 🛠️ Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 📦 Create Chrome ZIP
+        run: bun run zip
+
+      - name: 📦 Create Firefox ZIP
+        run: bun run zip:firefox
+
+      - name: 📤 Upload Chrome Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-extension-${{ github.sha }}
+          path: .output/*-chrome.zip
+          retention-days: 30
+
+      - name: 📤 Upload Firefox Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-extension-${{ github.sha }}
+          path: .output/*-firefox.zip
+          retention-days: 30
+
+      - name: 📤 Upload Build Sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: sources-${{ github.sha }}
+          path: .output/*-sources.zip
+          retention-days: 30
