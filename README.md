@@ -13,6 +13,14 @@ Supports major translation platforms and LLMs, including Google Translate, Bing,
 + Auto-caching and batching: Reduces redundant requests, speeds up translation and more context-effective.
 + Selection-based translation: Translate/Explain only the text you select.
 
+### Installation
+
+| Browser | Store |
+|---|---|
+| Chrome | [Chrome Web Store (TODO)](#) |
+| Firefox | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/pair-translate/) |
+| Edge | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/mhnjhanomaajlmdlnilhgkhaeldhkkgp) |
+
 ### Development
 
 1. Install [Bun](https://bun.sh/).
