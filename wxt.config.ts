@@ -15,7 +15,7 @@ export default defineConfig({
 	manifest: {
 		name: "__MSG_meta_name__",
 		description: "__MSG_meta_description__",
-		version: "0.1.0",
+		version: process.env.npm_package_version || "0.0.0",
 		permissions: ["activeTab", "storage", "scripting"],
 		host_permissions: ["<all_urls>"],
 		default_locale: "en",
