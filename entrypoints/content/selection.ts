@@ -24,8 +24,8 @@ const listener = (callback: (data: SelectEvent) => void) => {
 	const work = async () => {
 		const { promise: sPromise, resolve: sResolve } =
 			Promise.withResolvers<Event>();
-		const { promise: mPromise, resolve: mResolve } =
-			Promise.withResolvers<MouseEvent>();
+		const { promise: pointerPromise, resolve: pointerResolve } =
+			Promise.withResolvers<MouseEvent | TouchEvent>();
 		try {
 			document.addEventListener("selectstart", sResolve, {
 				once: true,
@@ -33,18 +33,41 @@ const listener = (callback: (data: SelectEvent) => void) => {
 			});
 			const _sData = await sPromise;
 
-			document.addEventListener("mouseup", mResolve, {
+			const mouseupHandler = (e: MouseEvent) => pointerResolve(e);
+			const touchendHandler = (e: TouchEvent) => pointerResolve(e);
+
+			document.addEventListener("mouseup", mouseupHandler, {
 				once: true,
 				passive: true,
 			});
-			const mData = await mPromise;
+			document.addEventListener("touchend", touchendHandler, {
+				once: true,
+				passive: true,
+			});
+
+			const pointerData = await pointerPromise;
+
+			document.removeEventListener("mouseup", mouseupHandler);
+			document.removeEventListener("touchend", touchendHandler);
 
 			const selection = window.getSelection();
 			const text = selection?.toString().trim();
 			if (selection && hasMeaningfulChars(text)) {
+				let x: number;
+				let y: number;
+
+				if (pointerData instanceof MouseEvent) {
+					x = pointerData.clientX;
+					y = pointerData.clientY;
+				} else {
+					const touch = pointerData.changedTouches[0];
+					x = touch.clientX;
+					y = touch.clientY;
+				}
+
 				callback({
 					selection,
-					position: { x: mData.clientX, y: mData.clientY },
+					position: { x, y },
 				});
 				return;
 			}
@@ -52,7 +75,6 @@ const listener = (callback: (data: SelectEvent) => void) => {
 			if (!canceled) id = requestIdleCallback(work);
 		} finally {
 			document.removeEventListener("selectstart", sResolve);
-			document.removeEventListener("mouseup", mResolve);
 		}
 	};
 	id = requestIdleCallback(work);
