@@ -9,6 +9,7 @@ interface SingleProps {
 	element: HTMLElement;
 }
 export const SingleInTextTranslation = (props: SingleProps) => {
+	const { settings } = useSettings();
 	const [operation, setOperation] = createSignal<Operation>();
 	const [text, { loading, error, retry }] = useTranslation(operation, {
 		stream: false,
@@ -35,12 +36,15 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 		}
 	};
 
+	const hideOriginal = () => settings.translate.translationMode === "replace";
+
 	return (
 		<TranslationRender
 			text={text()}
 			loading={loading()}
 			error={error()}
 			element={props.element}
+			hideOriginal={hideOriginal()}
 			onRetry={handleRetry}
 		/>
 	);
@@ -154,10 +158,13 @@ interface BatchRenderProps {
 	elements: HTMLElement[];
 }
 const BatchRender = (props: BatchRenderProps) => {
+	const { settings } = useSettings();
 	const texts = createMemo(() =>
 		props.elements.map((el) => extractMarkdownContent(el)),
 	);
 	const [store, retry] = useBatchTranslation(texts, getPageContext());
+
+	const hideOriginal = () => settings.translate.translationMode === "replace";
 
 	return (
 		<For each={store}>
@@ -167,6 +174,7 @@ const BatchRender = (props: BatchRenderProps) => {
 					loading={item.loading}
 					error={item.error}
 					element={props.elements[index()]}
+					hideOriginal={hideOriginal()}
 					onRetry={() => retry.single(index(), { cleanCache: true })}
 				/>
 			)}
@@ -178,6 +186,7 @@ interface TranslationRenderProps {
 	text?: string;
 	loading?: boolean;
 	error?: string;
+	hideOriginal?: boolean;
 	element: HTMLElement;
 	onRetry?: () => void;
 }
@@ -215,6 +224,8 @@ const TranslationRender = (props: TranslationRenderProps) => {
 				el.style.padding = "0";
 				setRef(el);
 			}}
+			wrapOriginal={props.hideOriginal}
+			hideOriginal={props.hideOriginal && !props.loading && !props.error}
 		>
 			<NativeTooltip
 				visible={!props.loading}

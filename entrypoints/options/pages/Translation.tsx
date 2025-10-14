@@ -2,6 +2,7 @@ import { trackStore } from "@solid-primitives/deep";
 import { unwrap } from "solid-js/store";
 import type z from "zod";
 import { TranslateSettings } from "~/utils/settings";
+import { ButtonGroup } from "../components/settings/ButtonGroup";
 import { FormGrid } from "../components/settings/FormGrid";
 import { NumberInput } from "../components/settings/NumberInput";
 import {
@@ -140,6 +141,40 @@ export default (props: { navId: string }) => {
 					value={localSettings.targetLang}
 					onChange={(e) => setLocalSettings("targetLang", e.target.value)}
 				/>
+
+				<div class="form-control">
+					<label class="label">
+						<span class="label-text">
+							{t("settings.translation.translationMode")}
+						</span>
+					</label>
+					<ButtonGroup
+						options={[
+							{
+								value: "parallel",
+								label: t("settings.translation.modeParallel"),
+							},
+							{
+								value: "replace",
+								label: t("settings.translation.modeReplace"),
+							},
+						]}
+						value={localSettings.translationMode}
+						onChange={(value) =>
+							setLocalSettings(
+								"translationMode",
+								value as "parallel" | "replace",
+							)
+						}
+						title={t("settings.translation.translationModeDesc")}
+					/>
+					<br />
+					<label class="label">
+						<span class="label-text-alt text-xs">
+							{t("settings.translation.translationModeDesc")}
+						</span>
+					</label>
+				</div>
 
 				<SettingsCheckbox
 					label={t("settings.translation.filterTargetLanguage")}

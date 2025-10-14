@@ -44,6 +44,7 @@ export const TranslateSettings = z.object({
 	targetLang: z.string().default("en"), // Default fallback, will be overridden by browser detection
 	filterTargetLanguage: z.boolean().default(true), // Skip text already in target language
 	filterInteractive: z.boolean().default(true), // Skip interactive elements like buttons, headers, navigation
+	translationMode: z.enum(["parallel", "replace"]).default("parallel"), // Translation display mode: parallel (side-by-side) or replace (hide original)
 	inTextTranslateModel: z.uuid().optional(),
 	floatingTranslateModel: z.uuid().optional(),
 	floatingExplainModel: z.uuid().optional(),

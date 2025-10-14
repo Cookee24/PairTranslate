@@ -7,17 +7,21 @@ import { insert } from "solid-js/web";
 export function MPortal(props: {
 	mount: HTMLElement;
 	ref?: (el: HTMLSpanElement) => void;
+	// Whether to wrap the original elements
+	wrapOriginal?: boolean;
+	// Whether to hide the original elements, only works if original is wrapped
+	hideOriginal?: boolean;
 	children: JSX.Element;
 }) {
 	const marker = document.createTextNode("");
-	const mount = () => props.mount;
 	const owner = getOwner();
 	let content: undefined | (() => JSX.Element);
+	let originalWrapper: HTMLElement | undefined;
 
 	createEffect(() => {
 		content ||= runWithOwner(owner, () => createMemo(() => props.children));
 
-		const el = mount();
+		const el = props.mount;
 		if (!el) return;
 		const container = document.createElement("span");
 
@@ -28,6 +32,13 @@ export function MPortal(props: {
 			configurable: true,
 		});
 
+		if (props.wrapOriginal) {
+			originalWrapper = document.createElement("div");
+			originalWrapper.style.display = "contents";
+			originalWrapper.append(...el.childNodes);
+			el.appendChild(originalWrapper);
+		}
+
 		insert(container, content);
 		el.appendChild(container);
 		props.ref?.(container);
@@ -35,8 +46,21 @@ export function MPortal(props: {
 		onCleanup(() => {
 			try {
 				el.removeChild(container);
+				if (originalWrapper) {
+					el.append(...originalWrapper.childNodes);
+					el.removeChild(originalWrapper);
+					originalWrapper = undefined;
+				}
 			} catch {}
 		});
+	});
+
+	createEffect(() => {
+		if (props.hideOriginal && props.wrapOriginal && originalWrapper) {
+			originalWrapper.style.display = "none";
+		} else if (originalWrapper) {
+			originalWrapper.style.display = "contents";
+		}
 	});
 
 	return marker;
