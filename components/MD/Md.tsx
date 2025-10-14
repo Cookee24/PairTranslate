@@ -18,7 +18,7 @@ export default (props: Props) => {
 
 	createEffect(() => {
 		try {
-			setTree(reconcile(parser.parse(props.text)));
+			setTree(reconcile(parser.parse(fixMarkdown(props.text || ""))));
 		} catch (error) {
 			props.onError?.(error);
 		}
