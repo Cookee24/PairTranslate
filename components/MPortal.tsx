@@ -37,6 +37,20 @@ export function MPortal(props: {
 			originalWrapper.style.display = "contents";
 			originalWrapper.append(...el.childNodes);
 			el.appendChild(originalWrapper);
+			onCleanup(() => {
+				if (originalWrapper) {
+					el.append(...originalWrapper.childNodes);
+					el.removeChild(originalWrapper);
+					originalWrapper = undefined;
+				}
+			});
+		}
+
+		if (props.hideOriginal && originalWrapper) {
+			originalWrapper.style.display = "none";
+			onCleanup(() => {
+				if (originalWrapper) originalWrapper.style.display = "contents";
+			});
 		}
 
 		insert(container, content);
@@ -46,21 +60,8 @@ export function MPortal(props: {
 		onCleanup(() => {
 			try {
 				el.removeChild(container);
-				if (originalWrapper) {
-					el.append(...originalWrapper.childNodes);
-					el.removeChild(originalWrapper);
-					originalWrapper = undefined;
-				}
 			} catch {}
 		});
-	});
-
-	createEffect(() => {
-		if (props.hideOriginal && props.wrapOriginal && originalWrapper) {
-			originalWrapper.style.display = "none";
-		} else if (originalWrapper) {
-			originalWrapper.style.display = "contents";
-		}
 	});
 
 	return marker;
