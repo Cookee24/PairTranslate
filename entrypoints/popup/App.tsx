@@ -1,5 +1,4 @@
 import { Settings } from "lucide-solid";
-import "@/utils/rpc/wxt-def";
 
 const Content = () => {
 	const { settings, setSettings } = useSettings();
@@ -60,14 +59,10 @@ const Content = () => {
 	);
 };
 
-const App = () => {
+export default () => {
 	return (
 		<SettingsProvider>
 			<Content />
 		</SettingsProvider>
 	);
 };
-
-import("solid-js/web").then(({ render }) => {
-	render(() => <App />, document.body);
-});
