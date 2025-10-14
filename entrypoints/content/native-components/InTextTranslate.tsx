@@ -1,5 +1,5 @@
 import { CircleX, Languages } from "lucide-solid";
-import { extractTextContent, extractTextContext } from "../context/element";
+import { extractMarkdownContent, extractTextContext } from "../context/element";
 import { getPageContext } from "../context/page";
 import { NativeButton } from "./Button";
 import { NativeLoading } from "./Loading";
@@ -155,7 +155,7 @@ interface BatchRenderProps {
 }
 const BatchRender = (props: BatchRenderProps) => {
 	const texts = createMemo(() =>
-		props.elements.map((el) => extractTextContent(el)),
+		props.elements.map((el) => extractMarkdownContent(el)),
 	);
 	const [store, retry] = useBatchTranslation(texts, getPageContext());
 
@@ -182,32 +182,38 @@ interface TranslationRenderProps {
 	onRetry?: () => void;
 }
 const TranslationRender = (props: TranslationRenderProps) => {
-	let ref: HTMLElement | undefined;
+	const [ref, setRef] = createSignal<HTMLElement>();
 
-	createEffect(
-		on([() => props.loading, () => props.error], ([loading, error]) => {
-			if (!ref) return;
-			const parent = props.element;
-			if (loading || error) {
-				ref.style.display = "inline-block";
-				return;
-			} else {
-				ref.style.display = "block";
-			}
+	createEffect(() => {
+		const el = props.element;
 
-			parent.style.webkitLineClamp = "unset";
-			parent.style.maxHeight = "unset";
-		}),
-	);
+		el.style.webkitLineClamp = "unset";
+		el.style.maxHeight = "unset";
+		onCleanup(() => {
+			el.style.webkitLineClamp = "";
+			el.style.maxHeight = "";
+		});
+	});
+
+	createEffect(() => {
+		const ref_ = ref();
+		if (!ref_) return;
+
+		if (props.loading || props.error) {
+			ref_.style.display = "contents";
+		} else {
+			ref_.style.display = "block";
+		}
+	});
 
 	return (
-		<ShadowPortal
+		<MPortal
 			mount={props.element}
 			ref={(el) => {
 				el.setAttribute(ELEMENT_CONTAINER, "");
 				el.style.margin = "0";
 				el.style.padding = "0";
-				ref = el;
+				setRef(el);
 			}}
 		>
 			<NativeTooltip
@@ -237,16 +243,14 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					{props.loading ? (
 						<NativeLoading />
 					) : !props.loading && !props.error ? (
-						<Languages style={ICON_STYLE} size={12} />
+						<Languages style={ICON_STYLE} size="16px" />
 					) : (
-						<CircleX style={ERROR_ICON_STYLE} size={12} />
+						<CircleX style={ERROR_ICON_STYLE} size="16px" />
 					)}
 				</NativeButton>
 			</NativeTooltip>
-			{!props.loading && !props.error && (
-				<span style={{ "white-space": "pre-line" }}>{props.text?.trim()}</span>
-			)}
-		</ShadowPortal>
+			{!props.loading && !props.error && <Md text={props.text || ""} />}
+		</MPortal>
 	);
 };
 

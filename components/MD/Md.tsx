@@ -1,41 +1,33 @@
-import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
-import { For, type JSX, Show, splitProps } from "solid-js";
+import { For, Show } from "solid-js";
 import { unified } from "unified";
-import CustomMapping, { Fallback } from "./Mdx/Custom";
-import NativeMapping from "./Mdx/Native";
+import NativeMapping from "./Native";
 
-interface Props extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "children"> {
-	mdx?: string;
+interface Props {
+	text?: string;
 	onError?: (error: unknown) => void;
 }
 
-const parser = unified().use(remarkParse).use(remarkMdx);
+const parser = unified().use(remarkParse);
 // In production, setting props can be wrapped in requestIdleCallback
 // to avoid blocking the main thread during hydration.
 export default (props: Props) => {
-	const [local, rest] = splitProps(props, ["mdx"]);
 	const [tree, setTree] = createStore({
 		children: [] as import("mdast").RootContent[],
 	});
 
 	createEffect(() => {
 		try {
-			setTree(reconcile(parser.parse(local.mdx)));
+			setTree(reconcile(parser.parse(props.text)));
 		} catch (error) {
 			props.onError?.(error);
 		}
 	});
 
-	return (
-		<div {...rest}>
-			<For each={tree.children}>{(child) => <RenderNode {...child} />}</For>
-		</div>
-	);
+	return <For each={tree.children}>{(child) => <RenderNode {...child} />}</For>;
 };
 
 const Native = NativeMapping();
-const Custom = CustomMapping();
 
 const RenderNode = (props: import("mdast").RootContent) => {
 	return (
@@ -54,12 +46,13 @@ const RenderNode = (props: import("mdast").RootContent) => {
 					}
 
 					case "paragraph": {
+						// This renderer is intended to used in-text, so <p> can create some unwanted spacing.
 						return (
-							<Native.p>
+							<Native.span>
 								<For each={node.children}>
 									{(child) => <RenderNode {...child} />}
 								</For>
-							</Native.p>
+							</Native.span>
 						);
 					}
 
@@ -219,59 +212,6 @@ const RenderNode = (props: import("mdast").RootContent) => {
 
 					case "yaml": {
 						// Frontmatter - typically not rendered
-						return null;
-					}
-
-					// MDX-specific nodes
-					case "mdxJsxFlowElement":
-					case "mdxJsxTextElement": {
-						switch (node.name) {
-							case TAGS.example:
-							case TAGS.contextMean:
-							case TAGS.mean: {
-								const Component = Custom[node.name as keyof typeof Custom];
-								if (!Component) return null;
-								const props: Record<string, unknown> = {};
-								node.attributes.forEach((attr) => {
-									if (attr.type === "mdxJsxAttribute") {
-										props[attr.name] = attr.value;
-									}
-								});
-								return (
-									<Component {...props}>
-										<For each={node.children}>
-											{(child) => <RenderNode {...child} />}
-										</For>
-									</Component>
-								);
-							}
-							default:
-								console.warn(`Unknown MDX component: ${node.name}`);
-								return (
-									<Fallback {...props}>
-										<For each={node.children}>
-											{(child) => <RenderNode {...child} />}
-										</For>
-									</Fallback>
-								);
-						}
-					}
-
-					case "mdxFlowExpression":
-					case "mdxTextExpression": {
-						// These would require JavaScript evaluation
-						console.warn(`MDX expressions not yet implemented: ${node.type}`);
-						return null;
-					}
-
-					case "mdxjsEsm": {
-						// ESM imports/exports - typically not rendered
-						return null;
-					}
-
-					default: {
-						// Don't directly render unknown nodes, since it may contain script
-						console.log("Unhandled node type:", node);
 						return null;
 					}
 				}

@@ -47,18 +47,24 @@ const styles: Record<string, string> = {
 	table: "w-full border-collapse my-4 font-serif",
 	td: "border border-base-300 px-3 py-2 text-[0.9375rem] leading-relaxed text-base-content/80",
 	tr: "even:bg-base-100",
+
+	span: "",
 };
 
-const createComponent = (tag: keyof JSX.IntrinsicElements) => {
+const createComponent = (
+	tag: keyof JSX.IntrinsicElements,
+	anim?: boolean,
+	styled?: boolean,
+) => {
 	return (props: JSX.IntrinsicElements[typeof tag]) => {
 		const [local, rest] = splitProps(props, ["class", "ref"]);
-		const defaultClass = styles[tag] || "";
-		onMount(() => local.ref && animateEnter(local.ref as HTMLElement));
+		const defaultClass = styled ? styles[tag] : "";
+		anim && onMount(() => local.ref && animateEnter(local.ref as HTMLElement));
 		return (
 			// @ts-ignore - Dynamic does accept intrinsic elements
 			<Dynamic
 				component={tag}
-				class={cn(defaultClass, local.class)}
+				class={cn(defaultClass, local.class) || undefined}
 				ref={local.ref}
 				{...rest}
 			/>
@@ -66,30 +72,31 @@ const createComponent = (tag: keyof JSX.IntrinsicElements) => {
 	};
 };
 
-export default () => {
+export default (anim?: boolean, styled?: boolean) => {
 	return {
-		h1: createComponent("h1"),
-		h2: createComponent("h2"),
-		h3: createComponent("h3"),
-		h4: createComponent("h4"),
-		h5: createComponent("h5"),
-		h6: createComponent("h6"),
-		a: createComponent("a"),
-		blockquote: createComponent("blockquote"),
-		br: createComponent("br"),
-		code: createComponent("code"),
-		del: createComponent("del"),
-		em: createComponent("em"),
-		hr: createComponent("hr"),
-		img: createComponent("img"),
-		li: createComponent("li"),
-		ol: createComponent("ol"),
-		p: createComponent("p"),
-		pre: createComponent("pre"),
-		strong: createComponent("strong"),
-		table: createComponent("table"),
-		td: createComponent("td"),
-		tr: createComponent("tr"),
-		ul: createComponent("ul"),
+		h1: createComponent("h1", anim, styled),
+		h2: createComponent("h2", anim, styled),
+		h3: createComponent("h3", anim, styled),
+		h4: createComponent("h4", anim, styled),
+		h5: createComponent("h5", anim, styled),
+		h6: createComponent("h6", anim, styled),
+		a: createComponent("a", anim, styled),
+		blockquote: createComponent("blockquote", anim, styled),
+		br: createComponent("br", anim, styled),
+		code: createComponent("code", anim, styled),
+		del: createComponent("del", anim, styled),
+		em: createComponent("em", anim, styled),
+		hr: createComponent("hr", anim, styled),
+		img: createComponent("img", anim, styled),
+		li: createComponent("li", anim, styled),
+		ol: createComponent("ol", anim, styled),
+		p: createComponent("p", anim, styled),
+		pre: createComponent("pre", anim, styled),
+		strong: createComponent("strong", anim, styled),
+		table: createComponent("table", anim, styled),
+		td: createComponent("td", anim, styled),
+		tr: createComponent("tr", anim, styled),
+		ul: createComponent("ul", anim, styled),
+		span: createComponent("span", anim, styled),
 	};
 };

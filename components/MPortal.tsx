@@ -4,9 +4,9 @@ import { insert } from "solid-js/web";
 /**
  * Renders components in a shadow DOM attached to the target element
  */
-export function ShadowPortal(props: {
+export function MPortal(props: {
 	mount: HTMLElement;
-	ref?: (el: HTMLDivElement & { readonly shadowRoot: ShadowRoot }) => void;
+	ref?: (el: HTMLSpanElement) => void;
 	children: JSX.Element;
 }) {
 	const marker = document.createTextNode("");
@@ -19,8 +19,7 @@ export function ShadowPortal(props: {
 
 		const el = mount();
 		if (!el) return;
-		const container = document.createElement("div");
-		const shadowRoot = container.attachShadow({ mode: "open" });
+		const container = document.createElement("span");
 
 		Object.defineProperty(container, "_$host", {
 			get() {
@@ -29,11 +28,9 @@ export function ShadowPortal(props: {
 			configurable: true,
 		});
 
-		insert(shadowRoot, content);
+		insert(container, content);
 		el.appendChild(container);
-		props.ref?.(
-			container as HTMLDivElement & { readonly shadowRoot: ShadowRoot },
-		);
+		props.ref?.(container);
 
 		onCleanup(() => {
 			try {

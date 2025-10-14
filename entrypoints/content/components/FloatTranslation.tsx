@@ -53,7 +53,11 @@ export default (props: Props) => {
 				<div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-accent to-transparent pointer-events-none" />
 			</div>
 			<div class="overflow-y-auto flex-1 bg-gradient-to-b from-accent to-transparent to-20%">
-				{props.operation.type === "explain" && <Mdx class="m-2" mdx={text()} />}
+				{props.operation.type === "explain" && (
+					<div class="m-2">
+						<Mdx text={text()} />
+					</div>
+				)}
 				{props.operation.type === "translate" && (
 					<div class="m-2 font-serif whitespace-pre-line">{text()}</div>
 				)}
