@@ -257,9 +257,9 @@ const executeTraditionalTranslation = async (
 			apiKey: config.apiKey || "",
 			apiUrl: config.baseUrl,
 		},
-		{ text: textContext.content, sourceLang: "auto", targetLang },
+		{ text: [textContext.content], sourceLang: "auto", targetLang },
 	);
-	return translatedText;
+	return translatedText[0];
 };
 
 const executeLLMTranslation = async (
@@ -331,22 +331,19 @@ const executeApiCall = async (
 
 const executeBatchTraditionalTranslation = async (
 	config: z.infer<typeof TraditionalTranslationConfig>,
-	texts: string[],
+	text: string[],
 	targetLang: string,
 ): Promise<string[]> => {
-	const results: string[] = [];
-	for (const text of texts) {
-		const { translatedText } = await traditionalTranslate(
-			config.apiSpec,
-			{
-				apiKey: config.apiKey || "",
-				apiUrl: config.baseUrl,
-			},
-			{ text, sourceLang: "auto", targetLang },
-		);
-		results.push(translatedText);
-	}
-	return results;
+	const { translatedText } = await traditionalTranslate(
+		config.apiSpec,
+		{
+			apiKey: config.apiKey || "",
+			apiUrl: config.baseUrl,
+		},
+		{ text: text, sourceLang: "auto", targetLang },
+	);
+
+	return translatedText;
 };
 
 const executeBatchLLMTranslation = async (

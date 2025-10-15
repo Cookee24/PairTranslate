@@ -11,12 +11,9 @@ export const deepLTranslate = async (
 ): Promise<TranslationResult> => {
 	const apiUrl = config.apiUrl || "https://api-free.deepl.com/v2/translate";
 
-	const body = new URLSearchParams();
-	body.append("text", params.text);
-	body.append("target_lang", params.targetLang.toUpperCase());
-
-	if (params.sourceLang && params.sourceLang !== "auto") {
-		body.append("source_lang", params.sourceLang.toUpperCase());
+	let sourceLang: string | undefined = params.sourceLang.toUpperCase();
+	if (sourceLang === "AUTO") {
+		sourceLang = undefined;
 	}
 
 	try {
@@ -26,7 +23,11 @@ export const deepLTranslate = async (
 				Authorization: `DeepL-Auth-Key ${config.apiKey}`,
 				"Content-Type": "application/x-www-form-urlencoded",
 			},
-			body: body.toString(),
+			body: JSON.stringify({
+				text: params.text,
+				source_lang: sourceLang,
+				target_lang: params.targetLang.toUpperCase(),
+			}),
 		});
 
 		if (!response.ok) {
@@ -61,11 +62,10 @@ export const deepLTranslate = async (
 
 		const data = await response.json();
 
-		if (!data.translations?.[0]?.text) {
-			throw new Error("Invalid response format from DeepL API");
-		}
-
-		const translatedText = data.translations[0].text;
+		const translatedText = data.translations.map(
+			// biome-ignore lint/suspicious/noExplicitAny: API response
+			(item: any) => item.text,
+		);
 		return { translatedText };
 	} catch (error) {
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {

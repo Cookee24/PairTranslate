@@ -65,7 +65,7 @@ export const microsoftTranslate = async (
 		const response = await fetch(url, {
 			method: "POST",
 			headers,
-			body: JSON.stringify([{ Text: params.text }]),
+			body: JSON.stringify(params.text.map((text) => ({ Text: text }))),
 		});
 
 		if (!response.ok) {
@@ -98,11 +98,12 @@ export const microsoftTranslate = async (
 
 		const data = await response.json();
 
-		if (!Array.isArray(data) || !data[0]?.translations?.[0]?.text) {
+		if (!Array.isArray(data)) {
 			throw new Error("Invalid response format from Microsoft Translator API");
 		}
 
-		const translatedText = data[0].translations[0].text;
+		// biome-ignore lint/suspicious/noExplicitAny: API response
+		const translatedText = data.map((item: any) => item.translations?.[0]?.text || "");
 		return { translatedText };
 	} catch (error) {
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {

@@ -7,13 +7,13 @@ export interface TranslationConfig {
 }
 
 export interface TranslationParams {
-	text: string;
+	text: string[];
 	sourceLang: string;
 	targetLang: string;
 }
 
 export interface TranslationResult {
-	translatedText: string;
+	translatedText: string[];
 }
 
 export interface TranslationError {

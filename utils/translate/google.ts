@@ -55,11 +55,8 @@ export const googleTranslate = async (
 
 		const data = await response.json();
 
-		if (!data.data?.translations?.[0]?.translatedText) {
-			throw new Error("Invalid response format from Google Translate API");
-		}
-
-		const translatedText = data.data.translations[0].translatedText;
+		// biome-ignore lint/suspicious/noExplicitAny: API response
+		const translatedText = data.data.translations.map((item: any) => item.translatedText);
 		return { translatedText };
 	} catch (error) {
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
