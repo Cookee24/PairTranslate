@@ -62,9 +62,7 @@ export const extractMarkdownContent = (element: HTMLElement): string => {
 					break;
 				}
 				case "img": {
-					const src = childElement.getAttribute("src");
-					const alt = childElement.getAttribute("alt") || "";
-					markdownContent += `![${alt}](${src})`;
+					// Skip
 					break;
 				}
 				case "br":
