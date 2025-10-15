@@ -43,6 +43,8 @@ jobs:
         with:
           name: chrome-extension-${{ github.sha }}
           path: .output/*-chrome.zip
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 30
 
       - name: 📤 Upload Firefox Build Artifact
@@ -50,6 +52,8 @@ jobs:
         with:
           name: firefox-extension-${{ github.sha }}
           path: .output/*-firefox.zip
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 30
 
       - name: 📤 Upload Build Sources
@@ -57,4 +61,6 @@ jobs:
         with:
           name: sources-${{ github.sha }}
           path: .output/*-sources.zip
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 30
