@@ -9,7 +9,6 @@ export default defineConfig({
 		"@wxt-dev/auto-icons",
 	],
 	autoIcons: {
-		baseIconPath: "assets/icon.png",
 		developmentIndicator: false,
 	},
 	manifest: {
