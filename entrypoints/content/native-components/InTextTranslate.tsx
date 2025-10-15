@@ -224,7 +224,6 @@ const TranslationRender = (props: TranslationRenderProps) => {
 				el.style.padding = "0";
 				setRef(el);
 			}}
-			wrapOriginal={props.hideOriginal}
 			hideOriginal={props.hideOriginal && !props.loading && !props.error}
 		>
 			<NativeTooltip

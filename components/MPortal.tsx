@@ -7,16 +7,13 @@ import { insert } from "solid-js/web";
 export function MPortal(props: {
 	mount: HTMLElement;
 	ref?: (el: HTMLSpanElement) => void;
-	// Whether to wrap the original elements
-	wrapOriginal?: boolean;
-	// Whether to hide the original elements, only works if original is wrapped
+	// Whether to hide the original elements
 	hideOriginal?: boolean;
 	children: JSX.Element;
 }) {
 	const marker = document.createTextNode("");
 	const owner = getOwner();
 	let content: undefined | (() => JSX.Element);
-	let originalWrapper: HTMLElement | undefined;
 
 	createEffect(() => {
 		content ||= runWithOwner(owner, () => createMemo(() => props.children));
@@ -32,24 +29,11 @@ export function MPortal(props: {
 			configurable: true,
 		});
 
-		if (props.wrapOriginal) {
-			originalWrapper = document.createElement("div");
-			originalWrapper.style.display = "contents";
-			originalWrapper.append(...el.childNodes);
-			el.appendChild(originalWrapper);
+		if (props.hideOriginal) {
+			const originalElements = Array.from(el.childNodes);
+			el.textContent = "";
 			onCleanup(() => {
-				if (originalWrapper) {
-					el.append(...originalWrapper.childNodes);
-					el.removeChild(originalWrapper);
-					originalWrapper = undefined;
-				}
-			});
-		}
-
-		if (props.hideOriginal && originalWrapper) {
-			originalWrapper.style.display = "none";
-			onCleanup(() => {
-				if (originalWrapper) originalWrapper.style.display = "contents";
+				el.append(...originalElements);
 			});
 		}
 
