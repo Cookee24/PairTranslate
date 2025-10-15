@@ -75,7 +75,7 @@ const buildBatchPrompt = (
 
 	// Add each text as a section
 	texts.forEach((text, index) => {
-		user += `\n>>>>> SECTION ${index + 1}\n${text}`;
+		user += `\n@@P${index + 1}\n${text}`;
 	});
 
 	const system = BATCH_TRANSLATE_PROMPT.replaceAll(
@@ -375,7 +375,7 @@ const executeBatchLLMTranslation = async (
 	const response = await client.chat(request);
 
 	// Parse the response to extract individual translations
-	const sections = response.content.split(/>>>>> SECTION \d+/).slice(1);
+	const sections = response.content.split(/@@P\d+/).slice(1);
 	return sections.map((section) => section.trim());
 };
 

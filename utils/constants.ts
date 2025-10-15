@@ -186,8 +186,8 @@ Just directly translate content in <${TAGS.content}> **WITHOUT ANY** information
 + Input:
 <${TAGS.page}>Welcome to the homepage</${TAGS.page}>
 <${TAGS.context} before>This is a </${TAGS.context}>
-<${TAGS.content}>example</${TAGS.content}>
 <${TAGS.context} after>: console.log("Hello World!")</${TAGS.context}>
+<${TAGS.content}>example</${TAGS.content}>
 
 + Output:
 ONLY translation of "example" in "{{${REPLACEMENT.targetLang}}}"
@@ -196,8 +196,8 @@ ONLY translation of "example" in "{{${REPLACEMENT.targetLang}}}"
 + Input:
 <${TAGS.page}>I love programming</${TAGS.page}>
 <${TAGS.context} before>[[LONG TEXT #1]]</${TAGS.context}>
-<${TAGS.content}>[[SHORT TEXT #1]]</${TAGS.content}>
 <${TAGS.context} after> [[LONG TEXT #2]]</${TAGS.context}>
+<${TAGS.content}>[[SHORT TEXT #1]]</${TAGS.content}>
 
 + Output:
 ONLY translation of [[SHORT TEXT #1]] in "{{${REPLACEMENT.targetLang}}}"
@@ -220,24 +220,24 @@ export const BATCH_TRANSLATE_PROMPT = `
 You are a professional translator. Now you are provided with some texts and their context. The input will follow a specific format:
 
 + <${TAGS.page}>: The whole page context, including title, headings, etc.
-+ \`>>>>> SECTION {number}\`: Start notation of a new section, with an incremental number. All section notations start from the beginning of a new line.
++ \`@@P<number>\`: Start notation of a new section, with an incremental number. All section notations start from the beginning of a new line.
 
 You should translate all texts in each section to "{{${REPLACEMENT.targetLang}}}", and conform to the expression habits of "{{${REPLACEMENT.targetLang}}}".
 All SECTIONs are appeared in the same webpage, and they may be adjacent or non-adjacent.
-Preserve SECTION notations in the output.
+Preserve \`@@P<number>\` notations in the output.
 
 <example>
 + Input:
 <${TAGS.page}>Welcome to the homepage</${TAGS.page}>
->>>>> SECTION 1
+@@P1
 This is an example.
->>>>> SECTION 2
+@@P2
 Another example here.
 
 + Output:
->>>>> SECTION 1
+@@P1
 ONLY translation of "This is an example." in "{{${REPLACEMENT.targetLang}}}".
->>>>> SECTION 2
+@@P2
 ONLY translation of "Another example here." in "{{${REPLACEMENT.targetLang}}}".
 </example>
 `.trim();
