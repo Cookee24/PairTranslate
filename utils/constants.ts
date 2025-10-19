@@ -80,7 +80,7 @@ export const getNativeName = (input: string): string => {
 };
 
 export const ELEMENT_CONTAINER = "data-pt-container";
-export const UNSET_CLAMP_STYLE = "data-pt-unset-clamp";
+export const ELEMENT_TRANSLATED = "data-pt-translated";
 
 export const TEXT_SELECTORS = [
 	"p",
@@ -126,6 +126,7 @@ export const EXCLUDED_SELECTORS = [
 	"textarea",
 	"select",
 	`[${ELEMENT_CONTAINER}]`,
+	`[${ELEMENT_TRANSLATED}]`,
 	"[translate=false]",
 	"[translate=no]",
 	".notranslate",

@@ -194,9 +194,9 @@ const TranslationRender = (props: TranslationRenderProps) => {
 	createEffect(() => {
 		const el = props.element;
 
-		el.setAttribute(UNSET_CLAMP_STYLE, "");
+		el.setAttribute(ELEMENT_TRANSLATED, "");
 		onCleanup(() => {
-			el.removeAttribute(UNSET_CLAMP_STYLE);
+			el.removeAttribute(ELEMENT_TRANSLATED);
 		});
 	});
 

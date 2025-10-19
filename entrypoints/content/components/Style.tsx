@@ -4,7 +4,7 @@ export default () => {
 	[${ELEMENT_CONTAINER}] {
 		display: contents; 
 	} 
-	[${UNSET_CLAMP_STYLE}] { 
+	[${ELEMENT_TRANSLATED}] { 
 		-webkit-line-clamp: unset !important; 
 		max-height: unset !important; 
 	}`;
