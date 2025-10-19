@@ -65,7 +65,6 @@ const TranslateElement = (props: {
 			event.preventDefault();
 			event.stopPropagation();
 			switch (event.key.toLowerCase()) {
-				case "c":
 				case "escape":
 					handleClose();
 					break;
@@ -78,11 +77,9 @@ const TranslateElement = (props: {
 			}
 		};
 
-		el.addEventListener("keydown", handleKeydown);
-		ref?.addEventListener("keydown", handleKeydown);
+		document.addEventListener("keydown", handleKeydown, { capture: true });
 		onCleanup(() => {
-			el.removeEventListener("keydown", handleKeydown);
-			ref?.removeEventListener("keydown", handleKeydown);
+			document.removeEventListener("keydown", handleKeydown, { capture: true });
 		});
 	});
 
@@ -119,7 +116,7 @@ const TranslateElement = (props: {
 					)}
 				</Button>
 				<Button variant="error" size="xs" onClick={handleClose}>
-					<kbd class="kbd kbd-xs">C</kbd>
+					<kbd class="kbd kbd-xs">Esc</kbd>
 					Close
 				</Button>
 				<Button variant="success" size="xs" onClick={handleConfirm}>
