@@ -53,10 +53,12 @@ export default (props: { navId: string }) => {
 				</div>
 
 				<SettingsToggle
-					label={t("settings.basic.showTip")}
-					helperText={t("settings.basic.showTipDesc")}
-					checked={settings.basic.showTip}
-					onChange={(e) => setSettings("basic", "showTip", e.target.checked)}
+					label={t("settings.basic.selectionPopupEnabled")}
+					helperText={t("settings.basic.selectionPopupEnabledDesc")}
+					checked={settings.basic.selectionPopupEnabled}
+					onChange={(e) =>
+						setSettings("basic", "selectionPopupEnabled", e.target.checked)
+					}
 				/>
 
 				<SettingsToggle

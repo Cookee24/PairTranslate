@@ -7,7 +7,7 @@ export default () => {
 	const { settings } = useSettings();
 
 	createEffect(async () => {
-		if (settings.basic.enabled && settings.basic.showTip) {
+		if (settings.basic.enabled && settings.basic.selectionPopupEnabled) {
 			const listener = selectionListener();
 			onCleanup(() => listener.return());
 			for await (const event of listener) {

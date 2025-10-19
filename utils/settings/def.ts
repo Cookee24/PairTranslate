@@ -8,7 +8,7 @@ export const FloatingBallPosition = z.object({
 export const BasicSettings = z.object({
 	enabled: z.boolean().default(true),
 	theme: z.enum(["light", "dark", "system"]).default("system"),
-	showTip: z.boolean().default(true),
+	selectionPopupEnabled: z.boolean().default(true),
 	autoPin: z.boolean().default(false),
 	floatingBallEnabled: z.boolean().default(true),
 	floatingBallPosition: FloatingBallPosition.default(
