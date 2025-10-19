@@ -2,6 +2,7 @@ import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import ControlFloat from "./ControlFloat";
 
 export default () => {
+	const { settings } = useSettings();
 	const [set, setSet] = createSignal(new Set<HTMLElement>(), { equals: false });
 
 	onCleanup(() => {
@@ -9,7 +10,7 @@ export default () => {
 	});
 
 	return (
-		<>
+		<Show when={settings.basic.selectionTranslateEnabled}>
 			<BatchInTextTranslation elements={set()} />
 			<ControlFloat
 				onSelection={(elements) => {
@@ -19,6 +20,6 @@ export default () => {
 					});
 				}}
 			/>
-		</>
+		</Show>
 	);
 };

@@ -16,6 +16,7 @@ export const BasicSettings = z.object({
 	),
 	keyboardShortcutEnabled: z.boolean().default(true),
 	keyboardShortcut: z.string().default("Alt+T"),
+	selectionTranslateEnabled: z.boolean().default(true),
 });
 
 export const ModelConfig = z.object({

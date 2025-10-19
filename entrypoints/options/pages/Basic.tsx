@@ -112,6 +112,15 @@ export default (props: { navId: string }) => {
 						setSettings("basic", "keyboardShortcutEnabled", enabled)
 					}
 				/>
+
+				<SettingsToggle
+					label={t("settings.basic.selectionTranslateEnabled")}
+					helperText={t("settings.basic.selectionTranslateEnabledDesc")}
+					checked={settings.basic.selectionTranslateEnabled}
+					onChange={(e) =>
+						setSettings("basic", "selectionTranslateEnabled", e.target.checked)
+					}
+				/>
 			</FormGrid>
 		</SettingsCard>
 	);
