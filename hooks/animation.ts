@@ -140,8 +140,8 @@ export const createAnimatedAppearance = (
 
 			if (now) {
 				setShouldRender(true);
-				await enter(el);
 				entered = true;
+				await enter(el);
 			} else {
 				await exit(el);
 				setShouldRender(false);
