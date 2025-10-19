@@ -106,17 +106,14 @@ const elementsAtPoint = async (point: { x: number; y: number }) => {
 		listenNew: false,
 	});
 
-	let canceled = false;
 	const result: HTMLElement[] = [];
 	(async () => {
 		for await (const element of listener) {
-			if (canceled) break;
 			result.push(element);
 		}
 	})();
 
 	await new Promise((r) => setTimeout(r, 200));
-	canceled = true;
 	listener.return();
 
 	return result;
