@@ -39,6 +39,8 @@ export async function* textWalker(state: State): ElementGenerator {
 		if (parent && judge(parent)) yield parent;
 	}
 
+	if (!state.listenNew) return;
+
 	const elementSet = new Set<WeakRef<HTMLElement>>();
 	const notifier = createNotifier();
 	const observer = new MutationObserver((mutations) => {
@@ -222,6 +224,7 @@ export function getState(options: Options = {}): State {
 		textSelector: [...(options.textSelectors || []), ...TEXT_SELECTORS].join(
 			", ",
 		),
+		listenNew: options.listenNew || true,
 		languageFilters:
 			convertBCP_47ToISO639_3(options.targetLanguage || "") || [],
 		mutationObserverCallbacks: new Set<MutationCallback>(),

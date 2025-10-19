@@ -103,6 +103,7 @@ const elementsAtPoint = async (point: { x: number; y: number }) => {
 
 	const listener = getDomListener(window.location.hostname, {
 		appendGenerators: [pointFilter],
+		listenNew: false,
 	});
 
 	let canceled = false;

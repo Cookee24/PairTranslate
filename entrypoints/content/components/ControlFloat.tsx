@@ -132,6 +132,7 @@ const elementsInBox = async (box: SelectionBox) => {
 
 	const listener = getDomListener(window.location.hostname, {
 		appendGenerators: [intersectBoxFilter],
+		listenNew: false,
 	});
 
 	let canceled = false;
