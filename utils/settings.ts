@@ -28,9 +28,9 @@ export function generateServicesSettings() {
 	return ServicesSettings.parse({
 		traditionalServices: {
 			[id]: {
-				name: "Microsoft Translator (Default)",
+				name: t("services.microsoftTranslatorDefault"),
 				apiSpec: "microsoft",
-				apiKey: "edge",
+				apiKey: t("services.edgeApiKey"),
 			},
 		},
 	} as z.input<typeof ServicesSettings>);
@@ -117,57 +117,57 @@ export const LLMServiceTemplates = [
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "OpenRouter",
+		name: t("templates.llm.openRouter"),
 		baseUrl: "https://openrouter.ai/api/v1",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "Cohere",
+		name: t("templates.llm.cohere"),
 		baseUrl: "https://api.cohere.com",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "Hugging Face Inference",
+		name: t("templates.llm.huggingFaceInference"),
 		baseUrl: "https://api-inference.huggingface.co",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "AI21 Labs",
+		name: t("templates.llm.ai21Labs"),
 		baseUrl: "https://api.ai21.com/studio/v1",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "Mistral",
+		name: t("templates.llm.mistral"),
 		baseUrl: "https://api.mistral.ai",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "Stability AI",
+		name: t("templates.llm.stabilityAI"),
 		baseUrl: "https://api.stability.ai",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "Replicate",
+		name: t("templates.llm.replicate"),
 		baseUrl: "https://api.replicate.com",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "Aleph Alpha",
+		name: t("templates.llm.alephAlpha"),
 		baseUrl: "https://api.aleph-alpha.com",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "GLM",
+		name: t("templates.llm.glm"),
 		baseUrl: "https://open.bigmodel.cn/api/paas/v4",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "Deepseek",
+		name: t("templates.llm.deepseek"),
 		baseUrl: "https://api.deepseek.com",
 		apiSpec: "openai" as const,
 	},
 	{
-		name: "Other",
+		name: t("templates.llm.other"),
 		baseUrl: "",
 		apiSpec: "openai" as const,
 	},

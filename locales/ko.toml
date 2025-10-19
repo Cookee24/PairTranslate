@@ -32,6 +32,7 @@ allChangesSaved = "모든 변경 사항이 저장되었습니다"
 selectModel = "모델 선택"
 modelsLoaded = "$1개의 모델을 로드했습니다"
 retry = "재시도"
+confirm = "확인"
 positionLeft = "왼쪽"
 positionRight = "오른쪽"
 floatingBallIcon = "플로팅 볼 아이콘"
@@ -281,6 +282,23 @@ anthropic = "Anthropic"
 googleGemini = "Google(Gemini / Vertex AI)"
 lmStudio = "LM Studio"
 ollama = "Ollama"
+openRouter = "OpenRouter"
+cohere = "Cohere"
+huggingFaceInference = "Hugging Face Inference"
+ai21Labs = "AI21 Labs"
+mistral = "Mistral"
+stabilityAI = "Stability AI"
+replicate = "Replicate"
+alephAlpha = "Aleph Alpha"
+glm = "GLM"
+deepseek = "Deepseek"
+other = "기타"
+
+# Service Names
+
+[services]
+microsoftTranslatorDefault = "Microsoft Translator(기본)"
+edgeApiKey = "edge"
 
 # LLM Service Errors
 

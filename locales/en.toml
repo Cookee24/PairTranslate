@@ -32,6 +32,7 @@ allChangesSaved = "All changes saved"
 selectModel = "Select Model"
 modelsLoaded = "Loaded $1 models"
 retry = "Retry"
+confirm = "Confirm"
 positionLeft = "Left"
 positionRight = "Right"
 floatingBallIcon = "Floating Ball Icon"
@@ -282,6 +283,23 @@ anthropic = "Anthropic"
 googleGemini = "Google (Gemini / Vertex AI)"
 lmStudio = "LM Studio"
 ollama = "Ollama"
+openRouter = "OpenRouter"
+cohere = "Cohere"
+huggingFaceInference = "Hugging Face Inference"
+ai21Labs = "AI21 Labs"
+mistral = "Mistral"
+stabilityAI = "Stability AI"
+replicate = "Replicate"
+alephAlpha = "Aleph Alpha"
+glm = "GLM"
+deepseek = "Deepseek"
+other = "Other"
+
+# Service Names
+
+[services]
+microsoftTranslatorDefault = "Microsoft Translator (Default)"
+edgeApiKey = "edge"
 
 # LLM Service Errors
 

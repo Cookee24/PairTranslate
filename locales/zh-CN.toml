@@ -32,6 +32,7 @@ allChangesSaved = "所有更改已保存"
 selectModel = "选择模型"
 modelsLoaded = "已加载 $1 个模型"
 retry = "重试"
+confirm = "确认"
 positionLeft = "左侧"
 positionRight = "右侧"
 floatingBallIcon = "悬浮球图标"
@@ -282,6 +283,23 @@ anthropic = "Anthropic"
 googleGemini = "Google (Gemini / Vertex AI)"
 lmStudio = "LM Studio"
 ollama = "Ollama"
+openRouter = "OpenRouter"
+cohere = "Cohere"
+huggingFaceInference = "Hugging Face Inference"
+ai21Labs = "AI21 Labs"
+mistral = "Mistral"
+stabilityAI = "Stability AI"
+replicate = "Replicate"
+alephAlpha = "Aleph Alpha"
+glm = "GLM"
+deepseek = "Deepseek"
+other = "其他"
+
+# Service Names
+
+[services]
+microsoftTranslatorDefault = "Microsoft Translator (默认)"
+edgeApiKey = "edge"
 
 # LLM Service Errors
 

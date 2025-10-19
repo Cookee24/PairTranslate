@@ -32,6 +32,7 @@ allChangesSaved = "すべての変更を保存しました"
 selectModel = "モデルを選択"
 modelsLoaded = "$1個のモデルを読み込みました"
 retry = "再試行"
+confirm = "確認"
 positionLeft = "左"
 positionRight = "右"
 floatingBallIcon = "フローティングボールアイコン"
@@ -282,6 +283,23 @@ anthropic = "Anthropic"
 googleGemini = "Google（Gemini / Vertex AI）"
 lmStudio = "LM Studio"
 ollama = "Ollama"
+openRouter = "OpenRouter"
+cohere = "Cohere"
+huggingFaceInference = "Hugging Face Inference"
+ai21Labs = "AI21 Labs"
+mistral = "Mistral"
+stabilityAI = "Stability AI"
+replicate = "Replicate"
+alephAlpha = "Aleph Alpha"
+glm = "GLM"
+deepseek = "Deepseek"
+other = "その他"
+
+# Service Names
+
+[services]
+microsoftTranslatorDefault = "Microsoft Translator（デフォルト）"
+edgeApiKey = "edge"
 
 # LLM Service Errors
 

@@ -106,22 +106,22 @@ const TranslateElement = (props: {
 					{loading() ? (
 						<>
 							<Loading size="xs" />
-							Loading
+							{t("common.loading")}
 						</>
 					) : (
 						<>
 							<kbd class="kbd kbd-xs text-base-content">R</kbd>
-							Retry
+							{t("common.retry")}
 						</>
 					)}
 				</Button>
 				<Button variant="error" size="xs" onClick={handleClose}>
 					<kbd class="kbd kbd-xs">Esc</kbd>
-					Close
+					{t("common.close")}
 				</Button>
 				<Button variant="success" size="xs" onClick={handleConfirm}>
 					<kbd class="kbd kbd-xs">↵</kbd>
-					Confirm
+					{t("common.confirm")}
 				</Button>
 			</div>
 		</div>
