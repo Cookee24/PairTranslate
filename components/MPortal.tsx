@@ -20,7 +20,8 @@ export function MPortal(props: {
 
 		const el = props.mount;
 		if (!el) return;
-		const container = document.createElement("span");
+		const container = document.createElement("div");
+		container.setAttribute(ELEMENT_CONTAINER, "");
 
 		Object.defineProperty(container, "_$host", {
 			get() {

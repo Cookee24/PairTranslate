@@ -46,13 +46,13 @@ const RenderNode = (props: import("mdast").RootContent) => {
 					}
 
 					case "paragraph": {
-						// This renderer is intended to used in-text, so <p> can create some unwanted spacing.
+						// This renderer is intended to used in-text, so we set `display: contents` on the container
 						return (
-							<Native.span>
+							<Native.p style={{ display: "contents" }}>
 								<For each={node.children}>
 									{(child) => <RenderNode {...child} />}
 								</For>
-							</Native.span>
+							</Native.p>
 						);
 					}
 

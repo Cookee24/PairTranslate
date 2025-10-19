@@ -1,6 +1,7 @@
 import FloatingBall from "./components/FloatingBall";
 import InTextTranslator from "./components/InTextTranslator";
 import { PopupProvider, PopupRenderer } from "./components/Popup";
+import Style from "./components/Style";
 import Task from "./components/Task";
 import TipRenderer from "./components/TipRenderer";
 
@@ -27,6 +28,7 @@ const Content = () => {
 				class="absolute w-0 h-0 left-0 top-0"
 				attr:data-theme={getThemeClass(settings.basic.theme)}
 			>
+				<Style />
 				<FloatingBall
 					enabled={translateEnabled()}
 					onSwitch={() => setTranslateEnabled((v) => !v)}

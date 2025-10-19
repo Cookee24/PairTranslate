@@ -191,41 +191,21 @@ interface TranslationRenderProps {
 	onRetry?: () => void;
 }
 const TranslationRender = (props: TranslationRenderProps) => {
-	const [ref, setRef] = createSignal<HTMLElement>();
-
 	createEffect(() => {
 		const el = props.element;
 
-		el.style.webkitLineClamp = "unset";
-		el.style.maxHeight = "unset";
+		el.setAttribute(UNSET_CLAMP_STYLE, "");
 		onCleanup(() => {
-			el.style.webkitLineClamp = "";
-			el.style.maxHeight = "";
+			el.removeAttribute(UNSET_CLAMP_STYLE);
 		});
-	});
-
-	createEffect(() => {
-		const ref_ = ref();
-		if (!ref_) return;
-
-		if (props.loading || props.error) {
-			ref_.style.display = "contents";
-		} else {
-			ref_.style.display = "block";
-		}
 	});
 
 	return (
 		<MPortal
 			mount={props.element}
-			ref={(el) => {
-				el.setAttribute(ELEMENT_CONTAINER, "");
-				el.style.margin = "0";
-				el.style.padding = "0";
-				setRef(el);
-			}}
 			hideOriginal={props.hideOriginal && !props.loading && !props.error}
 		>
+			{!props.loading && !props.error && !props.hideOriginal && <br />}
 			<NativeTooltip
 				visible={!props.loading}
 				content={
@@ -253,9 +233,9 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					{props.loading ? (
 						<NativeLoading />
 					) : !props.loading && !props.error ? (
-						<Languages style={ICON_STYLE} size="16px" />
+						<Languages style={ICON_STYLE} size="12px" />
 					) : (
-						<CircleX style={ERROR_ICON_STYLE} size="16px" />
+						<CircleX style={ERROR_ICON_STYLE} size="12px" />
 					)}
 				</NativeButton>
 			</NativeTooltip>
