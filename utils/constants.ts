@@ -79,7 +79,8 @@ export const getNativeName = (input: string): string => {
 	return input;
 };
 
-export const ELEMENT_CONTAINER = "data-pair-translate";
+export const ELEMENT_CONTAINER = "data-pt-container";
+export const UNSET_CLAMP_STYLE = "data-pt-unset-clamp";
 
 export const TEXT_SELECTORS = [
 	"p",
@@ -92,6 +93,8 @@ export const TEXT_SELECTORS = [
 	"blockquote",
 	"aside",
 	"span",
+	"details",
+	"summary",
 	"h1",
 	"h2",
 	"h3",
@@ -224,7 +227,7 @@ You are a professional translator. Now you are provided with some texts and thei
 
 You should translate all texts in each section to "{{${REPLACEMENT.targetLang}}}", and conform to the expression habits of "{{${REPLACEMENT.targetLang}}}".
 All SECTIONs are appeared in the same webpage, and they may be adjacent or non-adjacent.
-Preserve \`@@P<number>\` notations in the output.
+Preserve \`@@P<number>\` and all markdown notations in the output.
 
 <example>
 + Input:

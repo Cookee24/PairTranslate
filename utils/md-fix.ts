@@ -10,25 +10,34 @@ export const fixMarkdown = (text: string): string => {
 	 * @returns The converted string.
 	 */
 	const toHalfWidth = (str: string): string => {
-		return str.replace(/[\uFF01-\uFF5E\u3000]/g, (char) => {
-			// Convert full-width ideographic space to a standard space
-			if (char === "\u3000") {
-				return " ";
+		let result = "";
+		for (const char of str) {
+			const code = char.charCodeAt(0);
+			if (code === 0x3000) {
+				// Ideographic space
+				result += " ";
+			} else if (code >= 0xff01 && code <= 0xff5e) {
+				// Full-width ASCII
+				result += String.fromCharCode(code - 0xfee0);
+			} else if (char === "【") {
+				result += "[";
+			} else if (char === "】") {
+				result += "]";
+			} else {
+				result += char; // Keep original character
 			}
-			// Convert other full-width characters in the range FF01-FF5E
-			// by subtracting the offset 0xFEE0.
-			return String.fromCharCode(char.charCodeAt(0) - 0xfee0);
-		});
+		}
+		return result;
 	};
 
 	let fixedText = text;
 
 	// 1. Contextually fix links and images: `[text](url)` and `![alt](url)`
-	// This regex specifically targets the pattern of `[...]（...）`.
-	// It only converts the full-width parentheses when they follow a
-	// bracketed part, strongly indicating a markdown link or image.
-	// The entire matched syntax is then converted to half-width.
-	const linkRegex = /(!?[[［][^\]］]*[\]］])(（[^）]*）)/g;
+	// This updated regex targets markdown link/image syntax with any combination
+	// of full-width or half-width brackets and parentheses.
+	// It finds any structure like `[text](url)`, `【text】(url)`, `[text]（url）`, etc.
+	// The entire matched syntax is then passed to `toHalfWidth` for normalization.
+	const linkRegex = /(!?[[【][^\]］]*[\]】])([（(][^）)]*[）)])/g;
 	fixedText = fixedText.replace(linkRegex, (match) => toHalfWidth(match));
 
 	// 2. Fix syntax at the beginning of lines (headings, blockquotes, lists)
