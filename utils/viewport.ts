@@ -41,15 +41,12 @@ export function isElementInViewport(element: HTMLElement): boolean {
  * @param element The element to check
  * @returns true if any part of the element is visible in the viewport
  */
-export function isElementIntersectingViewport(
-	element: HTMLElement,
-): boolean {
+export function isElementIntersectingViewport(element: HTMLElement): boolean {
 	const rect = element.getBoundingClientRect();
 	return (
 		rect.bottom > 0 &&
 		rect.right > 0 &&
-		rect.top <
-			(window.innerHeight || document.documentElement.clientHeight) &&
+		rect.top < (window.innerHeight || document.documentElement.clientHeight) &&
 		rect.left < (window.innerWidth || document.documentElement.clientWidth)
 	);
 }
