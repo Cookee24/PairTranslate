@@ -10,7 +10,7 @@ const TranslateElement = (props: {
 	let ref: HTMLDivElement | undefined;
 	const { settings, setSettings } = useSettings();
 	const [targetLang, setTargetLang] = createSignal(
-		settings.translate.inputTranslateLang || settings.translate.targetLang,
+		settings.translate.inputTranslateLang,
 	);
 
 	const getText = () => {
@@ -81,6 +81,10 @@ const TranslateElement = (props: {
 		onCleanup(() => {
 			document.removeEventListener("keydown", handleKeydown, { capture: true });
 		});
+	});
+
+	onCleanup(() => {
+		props.onClose?.();
 	});
 
 	return (
