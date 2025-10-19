@@ -7,7 +7,7 @@ import type {
 } from "./types";
 
 // Indicate if a element is excluded
-async function* textWalker(state: State): ElementGenerator {
+export async function* textWalker(state: State): ElementGenerator {
 	// Cache
 	const excludedElements = new WeakSet<HTMLElement>();
 
@@ -90,7 +90,7 @@ async function* textWalker(state: State): ElementGenerator {
 
 // Filter out child elements of already yielded elements
 // e.g. for <p>text <b>bold</b> text</p>, only return <p>
-async function* childFilter(
+export async function* childFilter(
 	state: State,
 	prev: ElementGenerator,
 ): ElementGenerator {
@@ -120,7 +120,7 @@ async function* childFilter(
 	}
 }
 
-async function* emittedFilter(
+export async function* emittedFilter(
 	_state: State,
 	prev: ElementGenerator,
 ): ElementGenerator {
@@ -134,7 +134,7 @@ async function* emittedFilter(
 	}
 }
 
-async function* textContentFilter(
+export async function* textContentFilter(
 	state: State,
 	prev: ElementGenerator,
 ): ElementGenerator {
@@ -182,7 +182,7 @@ async function* textContentFilter(
 }
 
 // Filter elements that are not already in the target language
-async function* targetLanguageFilter(
+export async function* targetLanguageFilter(
 	state: State,
 	prev: ElementGenerator,
 ): ElementGenerator {
@@ -199,7 +199,7 @@ async function* targetLanguageFilter(
 	}
 }
 
-function pipe(
+export function pipe(
 	state: State,
 	fn: InitialGeneratorFn,
 	...fns: ChainedGeneratorFn[]
@@ -211,8 +211,8 @@ function pipe(
 	return stream;
 }
 
-export function domListener(options: Options = {}): ElementGenerator {
-	const state: State = {
+export function getState(options: Options = {}): State {
+	return {
 		root: options.root || document.body,
 		excludedSelector: [
 			...(options.excludedSelectors || []),
@@ -227,7 +227,10 @@ export function domListener(options: Options = {}): ElementGenerator {
 		mutationObserverCallbacks: new Set<MutationCallback>(),
 		extraTextFilters: options.extraTextFilters || [],
 	};
+}
 
+export function domListener(options: Options = {}): ElementGenerator {
+	const state = getState(options);
 	const defaultGenerators: ChainedGeneratorFn[] = [
 		childFilter,
 		emittedFilter,

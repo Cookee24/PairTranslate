@@ -1,26 +1,12 @@
-import FloatingBall from "./components/FloatingBall";
 import InTextTranslator from "./components/InTextTranslator";
 import { PopupProvider, PopupRenderer } from "./components/Popup";
+import SelectionInTextTranslator from "./components/SelectionInTextTranslator";
 import Style from "./components/Style";
 import Task from "./components/Task";
 import TipRenderer from "./components/TipRenderer";
 
 const Content = () => {
 	const { settings } = useSettings();
-	const [translateEnabled, setTranslateEnabled] = createSignal(false);
-
-	// Handle keyboard shortcut
-	useKeyboardShortcut(
-		() => settings.basic.keyboardShortcut,
-		() => setTranslateEnabled((v) => !v),
-		{
-			enabled: () =>
-				settings.basic.keyboardShortcutEnabled && settings.basic.enabled,
-			preventDefault: true,
-			stopPropagation: true,
-			allowInInput: false,
-		},
-	);
 
 	return (
 		<Show when={settings.basic.enabled}>
@@ -29,11 +15,8 @@ const Content = () => {
 				attr:data-theme={getThemeClass(settings.basic.theme)}
 			>
 				<Style />
-				<FloatingBall
-					enabled={translateEnabled()}
-					onSwitch={() => setTranslateEnabled((v) => !v)}
-				/>
-				<InTextTranslator enabled={translateEnabled()} />
+				<InTextTranslator />
+				<SelectionInTextTranslator />
 				<PopupRenderer />
 				<TipRenderer />
 				<Task />

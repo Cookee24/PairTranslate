@@ -119,7 +119,7 @@ export const createAnimatedAppearance = (
 	const show_ = Array.isArray(show) ? show : [show];
 	const [shouldRender, setShouldRender] = createSignal(false);
 
-	let last: boolean | undefined;
+	let entered = false;
 	createEffect(
 		on([element, ...show_], async ([el, ...isVisible]) => {
 			const now = isVisible.every((v) => v);
@@ -129,15 +129,16 @@ export const createAnimatedAppearance = (
 				return;
 			}
 
-			if (last === now) return;
-			last = now;
+			if (entered === now) return;
 
 			if (now) {
 				setShouldRender(true);
 				await enter(el);
+				entered = true;
 			} else {
 				await exit(el);
 				setShouldRender(false);
+				entered = false;
 			}
 		}),
 	);

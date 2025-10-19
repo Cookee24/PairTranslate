@@ -147,12 +147,49 @@ export function useKeyboardShortcut(
 	createEffect(() => {
 		if (enabled()) {
 			document.addEventListener("keydown", handleKeyDown, { capture: true });
+			onCleanup(() => {
+				document.removeEventListener("keydown", handleKeyDown, {
+					capture: true,
+				});
+			});
 		}
 	});
+}
 
-	onCleanup(() => {
-		document.removeEventListener("keydown", handleKeyDown, { capture: true });
+export function useControlKeyStatus(enabled = () => true): Accessor<boolean> {
+	const [controlPressed, setControlPressed] = createSignal(false);
+
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if (event.key === "Control") {
+			setControlPressed(true);
+		}
+	};
+
+	const handleKeyUp = (event: KeyboardEvent) => {
+		if (event.key === "Control") {
+			setControlPressed(false);
+		}
+	};
+
+	const handleBlur = () => {
+		setControlPressed(false);
+	};
+
+	createEffect(() => {
+		if (!enabled()) return;
+
+		document.addEventListener("keydown", handleKeyDown);
+		document.addEventListener("keyup", handleKeyUp);
+		window.addEventListener("blur", handleBlur);
+
+		onCleanup(() => {
+			document.removeEventListener("keydown", handleKeyDown);
+			document.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("blur", handleBlur);
+		});
 	});
+
+	return controlPressed;
 }
 
 /**

@@ -13,29 +13,33 @@ import wiki from "./parser/website/wiki";
 import x from "./parser/website/x";
 import youtube from "./parser/website/youtube";
 
+let domainMatcher: ReturnType<typeof makeDomainMatcher> | null = null;
+const patterns: [string, DomListener][] = [];
 export const getDomListener = (domain: string, options: Options = {}) => {
-	const parsers: WebsiteParser[] = [
-		github(),
-		reddit(),
-		youtube(),
-		mdn(),
-		wiki(),
-		google(),
-		x(),
-		stackxxx(),
-		npm(),
-		docsRs(),
-		hackernews(),
-	];
-	const patterns: [string, DomListener][] = [];
+	if (domainMatcher === null) {
+		const parsers: WebsiteParser[] = [
+			github(),
+			reddit(),
+			youtube(),
+			mdn(),
+			wiki(),
+			google(),
+			x(),
+			stackxxx(),
+			npm(),
+			docsRs(),
+			hackernews(),
+		];
 
-	for (const parser of parsers) {
-		for (const pattern of parser.urlPatterns) {
-			patterns.push([pattern, parser.domListener]);
+		for (const parser of parsers) {
+			for (const pattern of parser.urlPatterns) {
+				patterns.push([pattern, parser.domListener]);
+			}
 		}
+
+		domainMatcher = makeDomainMatcher(patterns.map((p) => p[0]));
 	}
 
-	const domainMatcher = makeDomainMatcher(patterns.map((p) => p[0]));
 	const match = domainMatcher(domain);
 	if (match !== null) {
 		const domListener = patterns[match][1];

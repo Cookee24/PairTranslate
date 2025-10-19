@@ -1,11 +1,13 @@
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import { destroyObservers, onIntersection } from "../observer";
 import { getDomListener } from "../parser";
+import FloatingBall from "./FloatingBall";
 
 interface Props {
 	enabled?: boolean;
 }
-export default (props: Props) => {
+
+const InTextTranslator = (props: Props) => {
 	const { settings } = useSettings();
 	const [set, setSet] = createSignal(new Set<HTMLElement>(), { equals: false });
 
@@ -41,4 +43,28 @@ export default (props: Props) => {
 	);
 
 	return <BatchInTextTranslation elements={set()} />;
+};
+
+export default () => {
+	const { settings } = useSettings();
+	const [translateEnabled, setTranslateEnabled] = createSignal(false);
+
+	// Handle keyboard shortcut
+	useKeyboardShortcut(
+		() => settings.basic.keyboardShortcut,
+		() => setTranslateEnabled((v) => !v),
+		{
+			enabled: () => settings.basic.keyboardShortcutEnabled,
+		},
+	);
+
+	return (
+		<>
+			<FloatingBall
+				enabled={translateEnabled()}
+				onSwitch={() => setTranslateEnabled((v) => !v)}
+			/>
+			<InTextTranslator enabled={translateEnabled()} />
+		</>
+	);
 };
