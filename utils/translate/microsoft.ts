@@ -102,8 +102,10 @@ export const microsoftTranslate = async (
 			throw new Error("Invalid response format from Microsoft Translator API");
 		}
 
-		// biome-ignore lint/suspicious/noExplicitAny: API response
-		const translatedText = data.map((item: any) => item.translations?.[0]?.text || "");
+		const translatedText = data.map(
+			// biome-ignore lint/suspicious/noExplicitAny: API response
+			(item: any) => item.translations?.[0]?.text || "",
+		);
 		return { translatedText };
 	} catch (error) {
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
