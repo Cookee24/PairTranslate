@@ -11,15 +11,18 @@ export const setRpc = async () => {
 
 	const clientImpl: Server<AllServices> = {
 		ping: async () => "pong",
+
 		isEnabled: settingsService.isEnabled,
 		streamSettings: settingsService.streamSettings,
 		setSettings: settingsService.setSettings,
 		resetSettings: settingsService.resetSettings,
+
 		translate: translateService.translate,
 		batchTranslate: translateService.batchTranslate,
 		streamTranslate: translateService.streamTranslate,
 		explain: translateService.explain,
 		streamExplain: translateService.streamExplain,
+		streamInputTranslate: translateService.streamInputTranslate,
 		clearCache: translateService.clearCache,
 	};
 

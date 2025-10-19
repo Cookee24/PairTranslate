@@ -123,6 +123,15 @@ export default (props: { navId: string }) => {
 						setSettings("basic", "selectionTranslateEnabled", e.target.checked)
 					}
 				/>
+
+				<SettingsToggle
+					label={t("settings.basic.inputTranslateEnabled")}
+					helperText={t("settings.basic.inputTranslateEnabledDesc")}
+					checked={settings.basic.inputTranslateEnabled}
+					onChange={(e) =>
+						setSettings("basic", "inputTranslateEnabled", e.target.checked)
+					}
+				/>
 			</FormGrid>
 		</SettingsCard>
 	);

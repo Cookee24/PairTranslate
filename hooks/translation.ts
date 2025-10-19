@@ -295,3 +295,81 @@ export function useBatchTranslation(
 
 	return [store, { single: retrySingle, all: retryAll }] as const;
 }
+
+export function useInputTranslation(
+	text: () => string,
+	targetLang?: () => string,
+	pageContext?: () => PageContext | undefined,
+) {
+	const { settings, loading: settingsLoading } = useSettings();
+
+	const [error, setError] = createSignal<string>();
+	const [loading, setLoading] = createSignal(false);
+	const [result, setResult] = createSignal("");
+	const [retry, setRetry] = createSignal<boolean>(false, { equals: false });
+
+	createEffect(
+		on(
+			[
+				retry,
+				settingsLoading,
+				text,
+				() => targetLang?.(),
+				() => pageContext?.(),
+			],
+			async ([, isSettingsLoading, inputText, lang, context]) => {
+				if (isSettingsLoading) return;
+				if (!inputText || inputText.trim() === "") {
+					setResult("");
+					setError(undefined);
+					return;
+				}
+
+				const modelId = settings.translate.inputTranslateModel;
+
+				if (!modelId) {
+					setError(t("settings.translation.noModel"));
+					return;
+				}
+
+				let cancelled = false;
+				onCleanup(() => {
+					cancelled = true;
+				});
+
+				try {
+					setLoading(true);
+					setError(undefined);
+					setResult("");
+
+					const listener = window.rpc.streamInputTranslate(
+						modelId,
+						inputText,
+						context,
+						lang,
+					);
+
+					for await (const chunk of listener) {
+						if (cancelled) return;
+						setResult((r) => r + chunk);
+					}
+				} catch (error) {
+					if (error instanceof Error) {
+						setError(error.message);
+					} else if (isTranslateError(error)) {
+						let msg = "";
+						if (error.code) msg += `[${error.code}] `;
+						msg += error.message;
+						setError(msg);
+					} else {
+						setError(JSON.stringify(error, null, 2));
+					}
+				} finally {
+					setLoading(false);
+				}
+			},
+		),
+	);
+
+	return [result, { error, loading, retry: () => setRetry(true) }] as const;
+}

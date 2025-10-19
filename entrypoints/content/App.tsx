@@ -1,9 +1,8 @@
-import InTextTranslator from "./components/InTextTranslator";
 import { PopupProvider, PopupRenderer } from "./components/Popup";
-import SelectionInTextTranslator from "./components/SelectionInTextTranslator";
 import Style from "./components/Style";
 import Task from "./components/Task";
 import TipRenderer from "./components/TipRenderer";
+import TranslatorHost from "./components/TranslatorHost";
 
 const Content = () => {
 	const { settings } = useSettings();
@@ -15,8 +14,7 @@ const Content = () => {
 				attr:data-theme={getThemeClass(settings.basic.theme)}
 			>
 				<Style />
-				<InTextTranslator />
-				<SelectionInTextTranslator />
+				<TranslatorHost />
 				<PopupRenderer />
 				<TipRenderer />
 				<Task />

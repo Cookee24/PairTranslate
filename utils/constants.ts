@@ -245,3 +245,30 @@ ONLY translation of "This is an example." in "{{${REPLACEMENT.targetLang}}}".
 ONLY translation of "Another example here." in "{{${REPLACEMENT.targetLang}}}".
 </example>
 `.trim();
+
+export const INPUT_TRANSLATE_PROMPT = `
+You are a professional translator. Now you are provided with some text in user's input. All content are provided within specify XML tags:
+
++ <${TAGS.page}>: The whole page context, including title, headings, etc.
++ <${TAGS.content}>: The text to be translated.
+
+Translate the text within <${TAGS.content}> to "{{${REPLACEMENT.targetLang}}}". You should conforming to the expression habits of "{{${REPLACEMENT.targetLang}}}".
+Just directly translate content in <${TAGS.content}> **WITHOUT ANY** information from <${TAGS.page}></${TAGS.page}>.
+
+<example>
++ Input:
+<${TAGS.page}>Welcome to the homepage</${TAGS.page}>
+<${TAGS.content}>example</${TAGS.content}>
+
++ Output:
+ONLY translation of "example" in "{{${REPLACEMENT.targetLang}}}"
+</example>
+<example>
++ Input:
+<${TAGS.page}>I love programming</${TAGS.page}>
+<${TAGS.content}>[[LONG TEXT #1]]</${TAGS.content}>
+
++ Output:
+ONLY translation of [[LONG TEXT #1]] in "{{${REPLACEMENT.targetLang}}}"
+</example>
+`.trim();

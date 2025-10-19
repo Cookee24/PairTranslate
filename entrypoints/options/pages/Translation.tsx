@@ -227,6 +227,17 @@ export default (props: { navId: string }) => {
 						setLocalSettings("floatingExplainModel", value);
 					}}
 				/>
+
+				<OptionSelect
+					label={t("settings.translation.inputTranslateModel")}
+					options={allOptions()}
+					value={localSettings.inputTranslateModel || ""}
+					error={getFieldError(["inputTranslateModel"])?.message}
+					onChange={(e) => {
+						const value = e.target.value === "" ? undefined : e.target.value;
+						setLocalSettings("inputTranslateModel", value);
+					}}
+				/>
 			</FormGrid>
 		</SettingsCard>
 	);

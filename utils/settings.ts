@@ -19,6 +19,8 @@ export function generateTranslateSettings() {
 		targetLang,
 		inTextTranslateModel: id,
 		floatingTranslateModel: id,
+		inputTranslateModel: id,
+		inputTranslateLang: targetLang,
 	} as z.input<typeof TranslateSettings>);
 }
 

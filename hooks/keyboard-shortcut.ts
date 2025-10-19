@@ -1,5 +1,6 @@
 import type { Accessor } from "solid-js";
 import { createEffect, onCleanup } from "solid-js";
+import { isInput } from "@/utils/is-input";
 
 interface KeyboardShortcutOptions {
 	enabled?: Accessor<boolean>;
@@ -104,7 +105,7 @@ function matchesShortcut(
  */
 export function useKeyboardShortcut(
 	shortcutString: Accessor<string>,
-	callback: () => void,
+	callback: (event: KeyboardEvent, inInput: boolean) => void,
 	options: KeyboardShortcutOptions = {},
 ): void {
 	const {
@@ -119,17 +120,9 @@ export function useKeyboardShortcut(
 		if (!enabled()) return;
 
 		// Don't trigger in input fields unless explicitly allowed
-		if (!allowInInput) {
-			const target = event.target as HTMLElement;
-			if (
-				target.tagName === "INPUT" ||
-				target.tagName === "TEXTAREA" ||
-				target.isContentEditable ||
-				target.getAttribute("role") === "textbox"
-			) {
-				return;
-			}
-		}
+		const target = event.target as HTMLElement;
+		const inInput = isInput(target);
+		if (inInput && !allowInInput) return;
 
 		// Parse and check the shortcut
 		const shortcut = parseShortcut(shortcutString());
@@ -140,7 +133,7 @@ export function useKeyboardShortcut(
 			if (stopPropagation) {
 				event.stopPropagation();
 			}
-			callback();
+			callback(event, inInput);
 		}
 	};
 

@@ -17,6 +17,7 @@ export const BasicSettings = z.object({
 	keyboardShortcutEnabled: z.boolean().default(true),
 	keyboardShortcut: z.string().default("Alt+T"),
 	selectionTranslateEnabled: z.boolean().default(true),
+	inputTranslateEnabled: z.boolean().default(true),
 });
 
 export const ModelConfig = z.object({
@@ -49,6 +50,8 @@ export const TranslateSettings = z.object({
 	inTextTranslateModel: z.uuid().optional(),
 	floatingTranslateModel: z.uuid().optional(),
 	floatingExplainModel: z.uuid().optional(),
+	inputTranslateModel: z.uuid().optional(),
+	inputTranslateLang: z.string().default("en"), // Target language for input translation
 });
 
 export const ServicesSettings = z.object({

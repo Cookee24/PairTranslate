@@ -50,6 +50,12 @@ export interface TranslateService extends RpcService {
 		pageContext?: PageContext,
 		options?: TranslateOptions,
 	): Promise<string[]>;
+	streamInputTranslate(
+		modelId: string,
+		text: string,
+		pageContext?: PageContext,
+		targetLang?: string,
+	): AsyncGenerator<string, void, unknown>;
 	clearCache(): Promise<void>;
 }
 

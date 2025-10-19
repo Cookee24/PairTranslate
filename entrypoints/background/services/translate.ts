@@ -716,6 +716,69 @@ export const createTranslateService = (): TranslateService => {
 			return results;
 		},
 
+		streamInputTranslate: async function* (
+			modelId: string,
+			text: string,
+			pageContext?: PageContext,
+			targetLang?: string,
+		): AsyncGenerator<string> {
+			const config = getModelConfig(modelId);
+			const effectiveTargetLang =
+				targetLang ||
+				settingsStore.get().translate.inputTranslateLang ||
+				settingsStore.get().translate.targetLang;
+
+			if (config.type === "traditional") {
+				// Traditional services don't support streaming for input translation
+				const { translatedText } = await traditionalTranslate(
+					config.apiSpec,
+					{
+						apiKey: config.apiKey || "",
+						apiUrl: config.baseUrl,
+					},
+					{ text: [text], sourceLang: "auto", targetLang: effectiveTargetLang },
+				);
+				yield translatedText[0];
+				return;
+			}
+
+			// LLM-based streaming translation for input
+			const client = createLLMClient(config.apiSpec, {
+				apiKey: config.apiKey || "",
+				baseUrl: config.baseUrl,
+			});
+
+			const system = INPUT_TRANSLATE_PROMPT.replaceAll(
+				`{{${REPLACEMENT.targetLang}}}`,
+				getNativeName(effectiveTargetLang),
+			);
+
+			let user = `<${TAGS.page}>`;
+			user += buildPageContextString(pageContext);
+			user += `</${TAGS.page}>`;
+			user += `\n<${TAGS.content}>${text}</${TAGS.content}>`;
+
+			const request: UnifiedChatRequest = {
+				model: config.model,
+				messages: [
+					{ role: "system", content: system },
+					{ role: "user", content: user },
+				],
+				temperature: config.temperature,
+				maxTokens: config.maxOutputTokens,
+				stream: true,
+			};
+
+			try {
+				const stream = client.chatStream(request);
+				for await (const chunk of stream) {
+					yield chunk.content;
+				}
+			} catch (error) {
+				handleApiError(error);
+			}
+		},
+
 		clearCache: async () => {
 			try {
 				await cacheStorage.clear();
