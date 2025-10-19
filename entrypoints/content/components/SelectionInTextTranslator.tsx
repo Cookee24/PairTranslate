@@ -16,6 +16,9 @@ export default () => {
 				onSelection={(elements) => {
 					setSet((prev) => {
 						elements.forEach(prev.add, prev);
+						elements.forEach((el) => {
+							animateBlink(el);
+						});
 						return prev;
 					});
 				}}

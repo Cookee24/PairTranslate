@@ -27,7 +27,7 @@ export default (props: Props) => {
 				block: "center",
 				inline: "center",
 			});
-			animateBlink(contentRef);
+			animateBlink(contentRef, 2);
 		}, 100);
 	});
 

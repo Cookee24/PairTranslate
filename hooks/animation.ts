@@ -39,16 +39,23 @@ export const animateScaleUp = (element: Element) =>
 export const animateScaleDown = (element: Element) =>
 	animate(element, { scale: 1 }, { type: "spring", bounce: 0, duration: 0.3 });
 
-export const animateBlink = (element: Element) =>
-	animate(element, {
-		backgroundColor: [
-			"rgba(255,255,0,1)",
-			"rgba(255,255,0,0)",
-			"rgba(255,255,0,1)",
-			"rgba(255,255,0,0)",
-			"rgba(255,255,0,1)",
-		],
+export const animateBlink = (element: Element, times = 1) => {
+	const original =
+		element instanceof HTMLElement ? element.style.backgroundColor : "";
+	const colors = [];
+
+	for (let i = 0; i < times; i++) {
+		colors.push("rgba(255,255,0,1)", "rgba(255,255,0,0)");
+	}
+
+	return animate(element, {
+		backgroundColor: colors,
+	}).then(() => {
+		if (element instanceof HTMLElement) {
+			element.style.backgroundColor = original;
+		}
 	});
+};
 
 export const animatePress = (element: Element) =>
 	animate(
