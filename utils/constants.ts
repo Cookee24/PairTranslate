@@ -228,7 +228,7 @@ You are a professional translator. Now you are provided with some texts and thei
 
 You should translate all texts in each section to "{{${REPLACEMENT.targetLang}}}", and conform to the expression habits of "{{${REPLACEMENT.targetLang}}}".
 All SECTIONs are appeared in the same webpage, and they may be adjacent or non-adjacent.
-Preserve \`@@P<number>\` and all markdown notations in the output.
+Preserve \`@@P<number>\` and all markdown notations in the output. Just directly translate the text in each section **WITHOUT ANY** information from <${TAGS.page}></${TAGS.page}>.
 
 <example>
 + Input:
