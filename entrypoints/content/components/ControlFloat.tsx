@@ -74,15 +74,7 @@ export default (props: Props) => {
 			window.addEventListener("mousemove", handleMouseMove);
 			window.addEventListener("blur", handleBlur);
 			onCleanup(() => {
-				setIsDragging(false);
-				setBoxPos(undefined);
-				window.removeEventListener("mousedown", handleMouseDown);
-				window.removeEventListener("mouseup", handleMouseUp);
-				window.removeEventListener("mousemove", handleMouseMove);
-				window.removeEventListener("blur", handleBlur);
-			});
-		} else {
-			untrack(() => {
+				// If mouse is never clicked (just control key pressed), do a point selection
 				if (!isDragging()) {
 					elementsInBox({
 						x: pos().x,
@@ -91,6 +83,12 @@ export default (props: Props) => {
 						height: 1,
 					}).then(props.onSelection);
 				}
+				setIsDragging(false);
+				setBoxPos(undefined);
+				window.removeEventListener("mousedown", handleMouseDown);
+				window.removeEventListener("mouseup", handleMouseUp);
+				window.removeEventListener("mousemove", handleMouseMove);
+				window.removeEventListener("blur", handleBlur);
 			});
 		}
 	});
