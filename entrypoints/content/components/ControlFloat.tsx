@@ -81,6 +81,17 @@ export default (props: Props) => {
 				window.removeEventListener("mousemove", handleMouseMove);
 				window.removeEventListener("blur", handleBlur);
 			});
+		} else {
+			untrack(() => {
+				if (!isDragging()) {
+					elementsInBox({
+						x: pos().x,
+						y: pos().y,
+						width: 1,
+						height: 1,
+					}).then(props.onSelection);
+				}
+			});
 		}
 	});
 
