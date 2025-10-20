@@ -40,8 +40,6 @@ export const animateScaleDown = (element: Element) =>
 	animate(element, { scale: 1 }, { type: "spring", bounce: 0, duration: 0.3 });
 
 export const animateBlink = (element: Element, times = 1) => {
-	const original =
-		element instanceof HTMLElement ? element.style.backgroundColor : "";
 	const colors = [];
 
 	for (let i = 0; i < times; i++) {
@@ -52,7 +50,7 @@ export const animateBlink = (element: Element, times = 1) => {
 		backgroundColor: colors,
 	}).then(() => {
 		if (element instanceof HTMLElement) {
-			element.style.backgroundColor = original;
+			element.style.backgroundColor = "";
 		}
 	});
 };

@@ -2,8 +2,7 @@ import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import ControlFloat from "./ControlFloat";
 import TripleTouch from "./TripleTouch";
 
-export default () => {
-	const { settings } = useSettings();
+export default (props: { enabled?: boolean }) => {
 	const [set, setSet] = createSignal(new Set<HTMLElement>(), { equals: false });
 
 	onCleanup(() => {
@@ -21,7 +20,7 @@ export default () => {
 	};
 
 	return (
-		<Show when={settings.basic.selectionTranslateEnabled}>
+		<Show when={props.enabled}>
 			<BatchInTextTranslation elements={set()} />
 			<ControlFloat onSelection={onSelection} />
 			<TripleTouch onSelection={onSelection} />

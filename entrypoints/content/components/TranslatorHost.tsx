@@ -40,7 +40,9 @@ export default () => {
 					onClose={() => setInputTranslateElement(undefined)}
 				/>
 			</Show>
-			<SelectionInTextTranslator />
+			<SelectionInTextTranslator
+				enabled={settings.basic.selectionTranslateEnabled}
+			/>
 		</>
 	);
 };
