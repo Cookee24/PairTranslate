@@ -26,7 +26,7 @@ export default (props: Props) => {
 	const [boxPos, setBoxPos] = createSignal<SelectionBox>();
 
 	const [isDragging, setIsDragging] = createSignal(false);
-	const [startPos, setStartPos] = createSignal<{ x: number; y: number }>();
+	let startPos: { x: number; y: number } | undefined;
 	const shouldRenderBox = createAnimatedAppearance(
 		boxRef,
 		isDragging,
@@ -38,22 +38,29 @@ export default (props: Props) => {
 		if (controlPressed()) {
 			const handleMouseDown = (e: MouseEvent) => {
 				setIsDragging(true);
-				setStartPos({ x: e.clientX, y: e.clientY });
-				setBoxPos({ x: e.clientX, y: e.clientY, width: 0, height: 0 });
+				startPos = {
+					x: e.clientX + window.scrollX,
+					y: e.clientY + window.scrollY,
+				};
+				setBoxPos({
+					x: e.clientX + window.scrollX,
+					y: e.clientY + window.scrollY,
+					width: 0,
+					height: 0,
+				});
 			};
 			const handleMouseUp = async (_e: MouseEvent) => {
 				const boxPos_ = boxPos();
 				setIsDragging(false);
-				setStartPos(undefined);
+				startPos = undefined;
 				setBoxPos(undefined);
 				boxPos_ && elementsInBox(boxPos_).then(props.onSelection);
 			};
 			const handleMouseMove = (e: MouseEvent) => {
-				const startPos_ = startPos();
-				if (isDragging() && startPos_) {
-					const start = startPos_;
-					const currentX = e.clientX;
-					const currentY = e.clientY;
+				if (isDragging() && startPos) {
+					const start = startPos;
+					const currentX = e.clientX + window.scrollX;
+					const currentY = e.clientY + window.scrollY;
 
 					const x = Math.min(start.x, currentX);
 					const y = Math.min(start.y, currentY);
@@ -66,7 +73,7 @@ export default (props: Props) => {
 			const handleBlur = () => {
 				setIsDragging(false);
 				setBoxPos(undefined);
-				setStartPos(undefined);
+				startPos = undefined;
 			};
 
 			window.addEventListener("mousedown", handleMouseDown);
@@ -77,8 +84,8 @@ export default (props: Props) => {
 				// If mouse is never clicked (just control key pressed), do a point selection
 				if (!isDragging()) {
 					elementsInBox({
-						x: pos().x,
-						y: pos().y,
+						x: pos().x + window.scrollX,
+						y: pos().y + window.scrollY,
 						width: 1,
 						height: 1,
 					}).then(props.onSelection);
@@ -91,6 +98,18 @@ export default (props: Props) => {
 				window.removeEventListener("blur", handleBlur);
 			});
 		}
+	});
+
+	createEffect(() => {
+		const boxRef_ = boxRef();
+		if (!boxRef_) return;
+		const boxPos_ = boxPos();
+		if (!boxPos_) return;
+
+		boxRef_.style.left = `${boxPos_.x - window.scrollX}px`;
+		boxRef_.style.top = `${boxPos_.y - window.scrollY}px`;
+		boxRef_.style.width = `${boxPos_.width}px`;
+		boxRef_.style.height = `${boxPos_.height}px`;
 	});
 
 	return (
@@ -106,12 +125,6 @@ export default (props: Props) => {
 			/>
 			<Show when={shouldRenderBox()}>
 				<div
-					style={{
-						left: `${boxPos()?.x}px`,
-						top: `${boxPos()?.y}px`,
-						width: `${boxPos()?.width}px`,
-						height: `${boxPos()?.height}px`,
-					}}
 					class="pointer-events-none fixed border-2 border-base-300 bg-secondary/50 rounded-md"
 					ref={setBoxRef}
 				/>
@@ -127,12 +140,15 @@ const elementsInBox = async (box: SelectionBox) => {
 	) {
 		for await (const element of prev) {
 			const rect = element.getBoundingClientRect();
+			const elementX = rect.x + window.scrollX;
+			const elementY = rect.y + window.scrollY;
+
 			// Check if rectangles intersect
 			if (
-				rect.x < box.x + box.width &&
-				rect.x + rect.width > box.x &&
-				rect.y < box.y + box.height &&
-				rect.y + rect.height > box.y
+				elementX < box.x + box.width &&
+				elementX + rect.width > box.x &&
+				elementY < box.y + box.height &&
+				elementY + rect.height > box.y
 			) {
 				yield element;
 			}
