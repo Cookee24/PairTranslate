@@ -1,3 +1,4 @@
+import remarkMath from "remark-math";
 import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import { For, Show } from "solid-js";
@@ -10,7 +11,11 @@ interface Props {
 	onError?: (error: unknown) => void;
 }
 
-const parser = unified().use(remarkParse).use(remarkMdx);
+const parser = unified()
+	.use(remarkParse)
+	.use(remarkMath)
+	.use(remarkMdx)
+	.freeze();
 // In production, setting props can be wrapped in requestIdleCallback
 // to avoid blocking the main thread during hydration.
 export default (props: Props) => {
@@ -201,6 +206,11 @@ const RenderNode = (props: import("mdast").RootContent) => {
 							</Native.del>
 						);
 					}
+
+					case "math":
+						return <Native.math content={node.value} center />;
+					case "inlineMath":
+						return <Native.math content={node.value} />;
 
 					case "linkReference":
 					case "imageReference":

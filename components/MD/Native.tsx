@@ -1,3 +1,4 @@
+import katex from "katex";
 import { type JSX, splitProps } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { cn } from "~/utils/cn";
@@ -72,6 +73,28 @@ const createComponent = (
 	};
 };
 
+const math = () => (props: { content?: string; center?: boolean }) => {
+	const [ref, setRef] = createSignal<HTMLElement>();
+	createEffect(() => {
+		const ref_ = ref();
+		if (!ref_) return;
+
+		if (props.content) {
+			katex.render(props.content, ref_, {
+				throwOnError: false,
+			});
+		}
+
+		if (props.center) {
+			ref_.style.display = "block";
+			ref_.style.textAlign = "center";
+		} else {
+			ref_.removeAttribute("style");
+		}
+	});
+	return <span ref={setRef}></span>;
+};
+
 export default (anim?: boolean, styled?: boolean) => {
 	return {
 		h1: createComponent("h1", anim, styled),
@@ -98,5 +121,6 @@ export default (anim?: boolean, styled?: boolean) => {
 		tr: createComponent("tr", anim, styled),
 		ul: createComponent("ul", anim, styled),
 		span: createComponent("span", anim, styled),
+		math: math(),
 	};
 };

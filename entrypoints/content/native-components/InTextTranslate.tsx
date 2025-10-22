@@ -1,5 +1,5 @@
 import { CircleX, Languages } from "lucide-solid";
-import { extractMarkdownContent, extractTextContext } from "../context/element";
+import { extractTextContext } from "../context/element";
 import { getPageContext } from "../context/page";
 import { NativeButton } from "./Button";
 import { NativeLoading } from "./Loading";
