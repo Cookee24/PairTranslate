@@ -130,10 +130,10 @@ export const extractMarkdownContent = (element: HTMLElement): string => {
 					markdownContent += `==${extractMarkdownContent(childElement)}==`;
 					break;
 				case "sup":
-					markdownContent += `<sup>${extractMarkdownContent(childElement)}</sup>`;
+					markdownContent += `[^${extractMarkdownContent(childElement)}]`;
 					break;
 				case "sub":
-					markdownContent += `<sub>${extractMarkdownContent(childElement)}</sub>`;
+					markdownContent += `[_${extractMarkdownContent(childElement)}]`;
 					break;
 				case "span":
 				case "div":
