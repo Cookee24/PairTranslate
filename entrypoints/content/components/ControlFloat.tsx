@@ -36,6 +36,7 @@ export default (props: Props) => {
 
 	createEffect(() => {
 		if (controlPressed()) {
+			let otherKeysPressed = false;
 			const handleMouseDown = (e: MouseEvent) => {
 				setIsDragging(true);
 				startPos = {
@@ -75,14 +76,20 @@ export default (props: Props) => {
 				setBoxPos(undefined);
 				startPos = undefined;
 			};
+			const handleOtherKeys = (e: KeyboardEvent) => {
+				if (e.key !== "Control") {
+					otherKeysPressed = true;
+				}
+			};
 
 			window.addEventListener("mousedown", handleMouseDown);
 			window.addEventListener("mouseup", handleMouseUp);
 			window.addEventListener("mousemove", handleMouseMove);
 			window.addEventListener("blur", handleBlur);
+			window.addEventListener("keydown", handleOtherKeys, { passive: true });
 			onCleanup(() => {
 				// If mouse is never clicked (just control key pressed), do a point selection
-				if (!isDragging()) {
+				if (!isDragging() && !otherKeysPressed) {
 					elementsInBox({
 						x: pos().x + window.scrollX,
 						y: pos().y + window.scrollY,
@@ -96,6 +103,7 @@ export default (props: Props) => {
 				window.removeEventListener("mouseup", handleMouseUp);
 				window.removeEventListener("mousemove", handleMouseMove);
 				window.removeEventListener("blur", handleBlur);
+				window.removeEventListener("keydown", handleOtherKeys);
 			});
 		}
 	});
