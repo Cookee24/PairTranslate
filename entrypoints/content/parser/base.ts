@@ -29,6 +29,14 @@ export async function* textWalker(state: State): ElementGenerator {
 			excludedElements.add(el);
 			return false;
 		}
+
+		for (const fn of state.judgeFns) {
+			if (!fn(el)) {
+				excludedElements.add(el);
+				return false;
+			}
+		}
+
 		return true;
 	};
 
@@ -224,6 +232,7 @@ export function getState(options: Options = {}): State {
 		textSelector: [...(options.textSelectors || []), ...TEXT_SELECTORS].join(
 			", ",
 		),
+		judgeFns: options.judgeFns || [],
 		listenNew: options.listenNew || true,
 		languageFilters:
 			convertBCP_47ToISO639_3(options.targetLanguage || "") || [],

@@ -1,5 +1,4 @@
 import { getDomListener } from "../parser";
-import type { ChainedGeneratorFn } from "../parser/types";
 
 interface Props {
 	onSelection?: (elements: HTMLElement[]) => void;
@@ -86,23 +85,18 @@ export default (props: Props) => {
 };
 
 const elementsAtPoint = async (point: { x: number; y: number }) => {
-	const pointFilter: ChainedGeneratorFn = async function* (_state, prev) {
-		for await (const element of prev) {
-			const rect = element.getBoundingClientRect();
-			// Check if point is within element bounds
-			if (
-				point.x >= rect.x &&
-				point.x <= rect.x + rect.width &&
-				point.y >= rect.y &&
-				point.y <= rect.y + rect.height
-			) {
-				yield element;
-			}
-		}
-	};
-
 	const listener = getDomListener(window.location.hostname, {
-		appendGenerators: [pointFilter],
+		judgeFns: [
+			(element) => {
+				const rect = element.getBoundingClientRect();
+				return (
+					point.x >= rect.x &&
+					point.x <= rect.x + rect.width &&
+					point.y >= rect.y &&
+					point.y <= rect.y + rect.height
+				);
+			},
+		],
 		listenNew: false,
 	});
 

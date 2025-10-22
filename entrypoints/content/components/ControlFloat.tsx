@@ -1,6 +1,5 @@
 import { animate } from "motion";
 import { getDomListener } from "../parser";
-import type { ChainedGeneratorFn } from "../parser/types";
 
 interface SelectionBox {
 	x: number;
@@ -142,29 +141,22 @@ export default (props: Props) => {
 };
 
 const elementsInBox = async (box: SelectionBox) => {
-	const intersectBoxFilter: ChainedGeneratorFn = async function* (
-		_state,
-		prev,
-	) {
-		for await (const element of prev) {
-			const rect = element.getBoundingClientRect();
-			const elementX = rect.x + window.scrollX;
-			const elementY = rect.y + window.scrollY;
-
-			// Check if rectangles intersect
-			if (
-				elementX < box.x + box.width &&
-				elementX + rect.width > box.x &&
-				elementY < box.y + box.height &&
-				elementY + rect.height > box.y
-			) {
-				yield element;
-			}
-		}
-	};
-
 	const listener = getDomListener(window.location.hostname, {
-		appendGenerators: [intersectBoxFilter],
+		judgeFns: [
+			(element) => {
+				const rect = element.getBoundingClientRect();
+				const elementX = rect.x + window.scrollX;
+				const elementY = rect.y + window.scrollY;
+
+				// Check if rectangles intersect
+				return (
+					elementX < box.x + box.width &&
+					elementX + rect.width > box.x &&
+					elementY < box.y + box.height &&
+					elementY + rect.height > box.y
+				);
+			},
+		],
 		listenNew: false,
 	});
 
