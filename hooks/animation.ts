@@ -125,6 +125,8 @@ export const createAnimatedAppearance = (
 	const [shouldRender, setShouldRender] = createSignal(false);
 
 	let entered = false;
+	let lastRef: WeakRef<Element> | undefined;
+
 	createEffect(
 		on([element, ...show_], async ([el, ...isVisible]) => {
 			const now = isVisible.every((v) => v);
@@ -132,6 +134,11 @@ export const createAnimatedAppearance = (
 			if (!el) {
 				setShouldRender(now);
 				return;
+			}
+
+			if (lastRef?.deref() !== el) {
+				entered = false;
+				lastRef = new WeakRef(el);
 			}
 
 			if (entered === now) return;
