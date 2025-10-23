@@ -138,6 +138,7 @@ interface BatchOptions extends TranslateOptions {
 }
 
 interface TranslationState {
+	origin: string;
 	result?: string;
 	loading: boolean;
 	error?: string;
@@ -160,16 +161,18 @@ export function useBatchTranslation(
 
 	createEffect(
 		on(
-			[retry, settingsLoading, texts],
-			async ([currentRetry, isSettingsLoading, textArray]) => {
+			[texts, retry, settingsLoading],
+			async ([textArray, currentRetry, isSettingsLoading]) => {
 				if (isSettingsLoading) return;
+
 				if (!textArray || textArray.length === 0) {
-					setStore([]);
+					if (store.length > 0) setStore([]);
 					return;
 				}
 
 				const cleanCache =
 					currentRetry.cleanCache ?? options.cleanCache ?? false;
+				const isFullRetry = Object.keys(currentRetry).length > 0;
 
 				const modelId = floating
 					? settings.translate.floatingTranslateModel
@@ -177,7 +180,45 @@ export function useBatchTranslation(
 
 				if (!modelId) {
 					const errorMsg = t("settings.translation.noModel");
-					setStore(textArray.map(() => ({ loading: false, error: errorMsg })));
+					setStore(
+						{ from: 0, to: textArray.length - 1 },
+						{ loading: false, error: errorMsg },
+					);
+					return;
+				}
+
+				const translationRequests: [string, number][] = [];
+
+				const newStoreState = textArray.map((text, index) => {
+					const existing = store[index];
+					// Keep existing state if text is unchanged, not in error, and not a full retry
+					if (
+						!isFullRetry &&
+						existing?.origin === text &&
+						!existing.error &&
+						!existing.loading
+					) {
+						return existing;
+					}
+					translationRequests.push([text, index]);
+					return {
+						origin: text,
+						loading: true,
+						result: existing?.result, // Preserve old result to prevent flickering
+						error: undefined,
+					};
+				});
+
+				// Reconcile the store: SolidJS will only update what has changed.
+				if (
+					translationRequests.length > 0 ||
+					store.length !== textArray.length
+				) {
+					setStore(reconcile(newStoreState));
+				}
+
+				if (translationRequests.length === 0) {
+					if (isFullRetry) setRetry({}); // Reset retry signal if it was used
 					return;
 				}
 
@@ -193,20 +234,28 @@ export function useBatchTranslation(
 				});
 
 				try {
-					setStore(textArray.map(() => ({ loading: true })));
-
 					await task.wait();
-
 					if (cancelled) return;
 
+					const textsToTranslate = translationRequests.map((req) => req[0]);
 					const response = await window.rpc.batchTranslate(
 						modelId,
-						textArray,
+						textsToTranslate,
 						pageContext,
 						{ cleanCache },
 					);
 
-					setStore(response.map((result) => ({ result, loading: false })));
+					if (cancelled) return;
+
+					batch(() => {
+						for (let i = 0; i < response.length; i++) {
+							const originalIndex = translationRequests[i][1];
+							setStore(originalIndex, {
+								loading: false,
+								result: response[i],
+							});
+						}
+					});
 				} catch (error) {
 					let errorMsg = "";
 					if (error instanceof Error) {
@@ -218,9 +267,14 @@ export function useBatchTranslation(
 						errorMsg = JSON.stringify(error, null, 2);
 					}
 
-					setStore(textArray.map(() => ({ loading: false, error: errorMsg })));
+					batch(() => {
+						translationRequests.forEach(([_, index]) => {
+							setStore(index, { loading: false, error: errorMsg });
+						});
+					});
 				} finally {
 					task.done();
+					if (isFullRetry) setRetry({});
 				}
 			},
 		),
@@ -235,12 +289,15 @@ export function useBatchTranslation(
 		translateOptions: TranslateOptions = {},
 	) => {
 		const textArray = texts();
+		const textToTranslate = textArray[index];
+
+		if (!textToTranslate) return;
 
 		const singleOperation: Operation = {
 			type: "translate",
 			pageContext,
 			textContext: {
-				content: textArray[index],
+				content: textToTranslate,
 				before: "",
 				after: "",
 			},
@@ -261,7 +318,13 @@ export function useBatchTranslation(
 		}
 
 		try {
-			setStore(index, { loading: true, error: undefined });
+			// Update store, preserving previous result while loading
+			setStore(index, {
+				origin: textToTranslate,
+				loading: true,
+				error: undefined,
+				result: store[index]?.result,
+			});
 
 			await task.wait();
 
