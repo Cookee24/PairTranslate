@@ -1,4 +1,3 @@
-import { isTranslateError } from "@/entrypoints/background/utils/errors";
 import { useTaskList } from "./task-list";
 
 interface Options extends TranslateOptions {
