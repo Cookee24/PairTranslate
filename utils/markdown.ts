@@ -1,3 +1,4 @@
+import { MathMLToLaTeX } from "@pie-framework/mathml-to-latex";
 /**
  * Replace full-width characters with half-width characters in markdown syntax.
  */
@@ -169,12 +170,16 @@ export const extractMarkdownContent = (element: HTMLElement): string => {
 				case "sub":
 					markdownContent += `[_${extractMarkdownContent(childElement)}]`;
 					break;
+
+				case "script":
+				case "style":
+					break;
 				// case "math":
 				// case "span":
 				// case "div":
 				default:
 					if (isMathElement(childElement, tagName)) {
-						markdownContent += extractMathContent(childElement, tagName);
+						markdownContent += extractMathContent(childElement);
 					} else {
 						// Recursively process other HTML elements to extract their content
 						markdownContent += extractMarkdownContent(childElement);
@@ -225,7 +230,10 @@ const isMathElement = (element: HTMLElement, tagName: string): boolean => {
 /**
  * Extracts math content and converts it to LaTeX format.
  */
-const extractMathContent = (element: HTMLElement, _tagName: string): string => {
+const extractMathContent = (element: HTMLElement): string => {
+	const getDollarWrapped = (isDisplay: boolean, content: string): string =>
+		isDisplay ? `$$${content}$$` : `$${content}$`;
+
 	// Try to get LaTeX from annotation or data attributes
 	const latexFromAnnotation = element.querySelector(
 		'annotation[encoding="application/x-tex"]',
@@ -235,17 +243,16 @@ const extractMathContent = (element: HTMLElement, _tagName: string): string => {
 			element.getAttribute("display") === "block" ||
 			element.classList.contains("katex-display") ||
 			element.classList.contains("MathJax_Display");
-		return isDisplay
-			? `$$${latexFromAnnotation}$$`
-			: `$${latexFromAnnotation}$`;
+		return getDollarWrapped(isDisplay, latexFromAnnotation);
 	}
 
 	// Check for data-latex attribute (common in KaTeX)
 	const dataLatex = element.getAttribute("data-latex");
 	if (dataLatex) {
-		return element.classList.contains("katex-display")
-			? `$$${dataLatex}$$`
-			: `$${dataLatex}$`;
+		return getDollarWrapped(
+			element.classList.contains("katex-display"),
+			dataLatex,
+		);
 	}
 
 	// MathLive math-field element
@@ -264,9 +271,38 @@ const extractMathContent = (element: HTMLElement, _tagName: string): string => {
 	if (scriptTag) {
 		const isDisplay =
 			scriptTag.getAttribute("type") === "math/tex; mode=display";
-		return isDisplay
-			? `$$${scriptTag.textContent}$$`
-			: `$${scriptTag.textContent}$`;
+		return getDollarWrapped(isDisplay, scriptTag.textContent || "");
+	}
+
+	// Convert MathML to LaTeX
+	const mathMlElement = element.querySelector("[data-mathml]");
+	const mathMl = mathMlElement?.getAttribute("data-mathml");
+	if (mathMl) {
+		try {
+			const latex = MathMLToLaTeX.convert(mathMl);
+			const isDisplay =
+				element.getAttribute("display") === "block" ||
+				element.classList.contains("katex-display") ||
+				element.classList.contains("MathJax_Display");
+			return getDollarWrapped(isDisplay, latex);
+		} catch (error) {
+			console.error("Failed to convert MathML to LaTeX:", error);
+		}
+	}
+
+	// Try to convert MathML element itself
+	if (
+		element.tagName === "MATH" ||
+		element.namespaceURI === "http://www.w3.org/1998/Math/MathML"
+	) {
+		try {
+			const mathmlString = element.outerHTML;
+			const latex = MathMLToLaTeX.convert(mathmlString);
+			const isDisplay = element.getAttribute("display") === "block";
+			return getDollarWrapped(isDisplay, latex);
+		} catch (error) {
+			console.error("Failed to convert MathML element to LaTeX:", error);
+		}
 	}
 
 	// Fallback: extract plain text for MathML or other math elements
@@ -281,5 +317,5 @@ const extractMathContent = (element: HTMLElement, _tagName: string): string => {
 		return textContent;
 	}
 
-	return isDisplay ? `$$${textContent}$$` : `$${textContent}$`;
+	return getDollarWrapped(isDisplay, textContent);
 };

@@ -82,17 +82,16 @@ const math = () => (props: { content?: string; center?: boolean }) => {
 		if (props.content) {
 			katex.render(props.content, ref_, {
 				throwOnError: false,
+				strict: false,
+				displayMode: !!props.center,
+			});
+			onCleanup(() => {
+				ref_.textContent = "";
 			});
 		}
-
-		if (props.center) {
-			ref_.style.display = "block";
-			ref_.style.textAlign = "center";
-		} else {
-			ref_.removeAttribute("style");
-		}
 	});
-	return <span ref={setRef}></span>;
+
+	return <span ref={setRef} style={{ display: "contents" }}></span>;
 };
 
 export default (anim?: boolean, styled?: boolean) => {
