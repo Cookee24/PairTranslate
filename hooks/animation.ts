@@ -189,15 +189,18 @@ export const onOuterClick = (
 		on([element, enabled], ([el, isEnabled]) => {
 			if (!el || !isEnabled) return;
 
-			const handler = (event: MouseEvent) => {
+			const handler = (event: MouseEvent | TouchEvent) => {
 				if (!event.composedPath().includes(el)) {
 					onOuterClick();
 				}
 			};
 
 			document.addEventListener("mousedown", handler, { passive: true });
-
-			onCleanup(() => document.removeEventListener("mousedown", handler));
+			document.addEventListener("touchstart", handler, { passive: true });
+			onCleanup(() => {
+				document.removeEventListener("mousedown", handler);
+				document.removeEventListener("touchstart", handler);
+			});
 		}),
 	);
 };

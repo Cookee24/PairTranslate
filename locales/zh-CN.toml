@@ -247,6 +247,9 @@ contextMean = "语境含义"
 mean = "含义"
 loading = "加载中..."
 fetchModels = "获取模型"
+copyAsMarkdown = "复制为 Markdown"
+retry = "重试"
+delete = "删除"
 
 # Error Messages
 

@@ -41,5 +41,15 @@ export default (props: Props) => {
 		),
 	);
 
-	return <BatchInTextTranslation elements={set()} />;
+	return (
+		<BatchInTextTranslation
+			elements={set()}
+			onDelete={(element) =>
+				setSet((prev) => {
+					prev.delete(element);
+					return prev;
+				})
+			}
+		/>
+	);
 };

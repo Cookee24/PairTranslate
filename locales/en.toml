@@ -247,6 +247,9 @@ contextMean = "Context Meaning"
 mean = "Meaning"
 loading = "Loading..."
 fetchModels = "Fetch Models"
+copyAsMarkdown = "Copy as Markdown"
+retry = "Retry"
+delete = "Delete"
 
 # Error Messages
 

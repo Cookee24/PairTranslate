@@ -247,6 +247,9 @@ contextMean = "文脈上の意味"
 mean = "意味"
 loading = "読み込み中..."
 fetchModels = "モデルを取得"
+copyAsMarkdown = "Markdownとしてコピー"
+retry = "再試行"
+delete = "削除"
 
 # Error Messages
 

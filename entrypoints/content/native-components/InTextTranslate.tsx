@@ -1,9 +1,8 @@
 import { CircleX, Languages } from "lucide-solid";
+import InTextTooltip from "../components/InTextTooltip";
 import { extractTextContext } from "../context/element";
 import { getPageContext } from "../context/page";
-import { NativeButton } from "./Button";
 import { NativeLoading } from "./Loading";
-import { NativeTooltip } from "./Tooltip";
 
 interface SingleProps {
 	element: HTMLElement;
@@ -52,6 +51,7 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 
 interface BatchProps {
 	elements: Set<HTMLElement>;
+	onDelete?: (element: HTMLElement) => void;
 }
 export const BatchInTextTranslation = (props: BatchProps) => {
 	const { settings } = useSettings();
@@ -149,13 +149,16 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 
 	return (
 		<For each={renderList()}>
-			{(elements) => <BatchRender elements={elements} />}
+			{(elements) => (
+				<BatchRender elements={elements} onDelete={props.onDelete} />
+			)}
 		</For>
 	);
 };
 
 interface BatchRenderProps {
 	elements: HTMLElement[];
+	onDelete?: (element: HTMLElement) => void;
 }
 const BatchRender = (props: BatchRenderProps) => {
 	const { settings } = useSettings();
@@ -176,6 +179,7 @@ const BatchRender = (props: BatchRenderProps) => {
 					element={props.elements[index()]}
 					hideOriginal={hideOriginal()}
 					onRetry={() => retry.single(index(), { cleanCache: true })}
+					onDelete={() => props.onDelete?.(props.elements[index()])}
 				/>
 			)}
 		</For>
@@ -189,6 +193,7 @@ interface TranslationRenderProps {
 	hideOriginal?: boolean;
 	element: HTMLElement;
 	onRetry?: () => void;
+	onDelete?: () => void;
 }
 const TranslationRender = (props: TranslationRenderProps) => {
 	createEffect(() => {
@@ -200,36 +205,45 @@ const TranslationRender = (props: TranslationRenderProps) => {
 		});
 	});
 
+	const [tooltipPos, setTooltipPos] = createSignal<{ x: number; y: number }>();
+	const createTooltip = (e: MouseEvent | TouchEvent) => {
+		if (props.loading) return;
+		if (tooltipPos()) return;
+		const rect = (e.target as HTMLElement).getBoundingClientRect();
+		setTooltipPos({
+			x: rect.left + rect.width / 2,
+			y: rect.top + rect.height / 2,
+		});
+	};
+	const closeTooltip = () => setTooltipPos(undefined);
+
 	return (
-		<MPortal
-			mount={props.element}
-			hideOriginal={props.hideOriginal && !props.loading && !props.error}
-		>
-			{!props.loading && !props.error && !props.hideOriginal && <br />}
-			<NativeTooltip
-				visible={!props.loading}
-				content={
-					props.error ? (
-						<span
-							style={{
-								"font-family": "monospace",
-								color: "rgb(255, 127, 127)",
-							}}
-						>
-							{props.error}
-						</span>
-					) : (
-						t("common.retry")
-					)
-				}
+		<>
+			<InTextTooltip
+				pos={tooltipPos()}
+				error={props.error}
+				onClose={setTooltipPos(undefined)}
+				onCopyMarkdown={() => {
+					if (props.text) {
+						copyToClipboard(props.text);
+					}
+					closeTooltip();
+				}}
+				onRetry={() => {
+					props.onRetry?.();
+					closeTooltip();
+				}}
+				onDelete={() => {
+					props.onDelete?.();
+					closeTooltip();
+				}}
+			/>
+			<MPortal
+				mount={props.element}
+				hideOriginal={props.hideOriginal && !props.loading && !props.error}
 			>
-				<NativeButton
-					onclick={(e) => {
-						e.stopPropagation();
-						e.preventDefault();
-						props.onRetry?.();
-					}}
-				>
+				{!props.loading && !props.error && !props.hideOriginal && <br />}
+				<span on:mouseenter={createTooltip} on:click={createTooltip}>
 					{props.loading ? (
 						<NativeLoading />
 					) : !props.loading && !props.error ? (
@@ -237,10 +251,10 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					) : (
 						<CircleX style={ERROR_ICON_STYLE} size="12px" />
 					)}
-				</NativeButton>
-			</NativeTooltip>
-			{!props.loading && !props.error && <Md text={props.text || ""} />}
-		</MPortal>
+				</span>
+				{!props.loading && !props.error && <Md text={props.text || ""} />}
+			</MPortal>
+		</>
 	);
 };
 

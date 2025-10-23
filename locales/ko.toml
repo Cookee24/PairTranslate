@@ -246,6 +246,9 @@ contextMean = "문맥 의미"
 mean = "의미"
 loading = "로딩 중..."
 fetchModels = "모델 가져오기"
+copyAsMarkdown = "마크다운으로 복사"
+retry = "재시도"
+delete = "삭제"
 
 # Error Messages
 

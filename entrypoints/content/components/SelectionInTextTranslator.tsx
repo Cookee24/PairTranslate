@@ -12,8 +12,8 @@ export default (props: { enabled?: boolean }) => {
 	const onSelection = (elements: HTMLElement[]) => {
 		setSet((prev) => {
 			elements.forEach(prev.add, prev);
-			elements.forEach((el) => {
-				animateBlink(el);
+			elements.forEach((element) => {
+				animateBlink(element);
 			});
 			return prev;
 		});
@@ -21,7 +21,15 @@ export default (props: { enabled?: boolean }) => {
 
 	return (
 		<Show when={props.enabled}>
-			<BatchInTextTranslation elements={set()} />
+			<BatchInTextTranslation
+				elements={set()}
+				onDelete={(element) =>
+					setSet((prev) => {
+						prev.delete(element);
+						return prev;
+					})
+				}
+			/>
 			<ControlFloat onSelection={onSelection} />
 			<TripleTouch onSelection={onSelection} />
 		</Show>
