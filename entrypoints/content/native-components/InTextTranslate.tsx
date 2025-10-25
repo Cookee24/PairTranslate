@@ -207,22 +207,34 @@ const TranslationRender = (props: TranslationRenderProps) => {
 
 	const [tooltipPos, setTooltipPos] = createSignal<{ x: number; y: number }>();
 	const createTooltip = (e: MouseEvent | TouchEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+
 		if (props.loading) return;
 		if (tooltipPos()) return;
-		const rect = (e.target as HTMLElement).getBoundingClientRect();
+		let x: number, y: number;
+		if (e instanceof MouseEvent) {
+			x = e.clientX;
+			y = e.clientY;
+		} else {
+			x = e.touches[0].clientX;
+			y = e.touches[0].clientY;
+		}
 		setTooltipPos({
-			x: rect.left + rect.width / 2,
-			y: rect.top + rect.height / 2,
+			x,
+			y,
 		});
 	};
-	const closeTooltip = () => setTooltipPos(undefined);
+	const closeTooltip = () => {
+		setTooltipPos(undefined);
+	};
 
 	return (
 		<>
 			<InTextTooltip
 				pos={tooltipPos()}
 				error={props.error}
-				onClose={setTooltipPos(undefined)}
+				onClose={closeTooltip}
 				onCopyMarkdown={() => {
 					if (props.text) {
 						copyToClipboard(props.text);
@@ -243,7 +255,11 @@ const TranslationRender = (props: TranslationRenderProps) => {
 				hideOriginal={props.hideOriginal && !props.loading && !props.error}
 			>
 				{!props.loading && !props.error && !props.hideOriginal && <br />}
-				<span on:mouseenter={createTooltip} on:click={createTooltip}>
+				<span
+					on:mouseenter={createTooltip}
+					on:touchstart={createTooltip}
+					style={{ display: "inline-block" }}
+				>
 					{props.loading ? (
 						<NativeLoading />
 					) : !props.loading && !props.error ? (

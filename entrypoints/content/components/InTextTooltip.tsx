@@ -14,85 +14,60 @@ export default (props: Props) => {
 	const [ref, setRef] = createSignal<HTMLDivElement>();
 	const shouldRender = createAnimatedAppearance(ref, show);
 
-	// Calculate position based on center position, and clamp to viewport
-	const pos = createMemo(
-		() => {
-			const element = ref();
-
-			const cx = props.pos?.x ?? 0;
-			const cy = props.pos?.y ?? 0;
-
-			if (!element) return { x: cx, y: cy };
-
-			const rect = element.getBoundingClientRect();
-			const padding = 8; // padding from viewport edge
-
-			// Center the tooltip on the center position
-			let x = cx - rect.width / 2;
-			let y = cy - rect.height - 10; // 10px above the center
-
-			// Clamp to viewport
-			const maxX = window.innerWidth - rect.width - padding;
-			const maxY = window.innerHeight - rect.height - padding;
-
-			x = Math.max(padding, Math.min(x, maxX));
-			y = Math.max(padding, Math.min(y, maxY));
-
-			// If tooltip would be above viewport, show it below the center position instead
-			if (cy - rect.height - 10 < padding) {
-				y = cy + 10;
-			}
-
-			return { x, y };
-		},
-		{},
-		{ equals: (prev, next) => prev.x === next.x && prev.y === next.y },
-	);
-
-	const [shouldListenClose, setShouldListenClose] = createSignal(false);
-	let timeoutHandle: NodeJS.Timeout | undefined;
+	const [pos, setPos] = createSignal<{ x: number; y: number }>();
 	createEffect(() => {
-		if (shouldRender()) {
-			// Delay enabling outer click listening to avoid immediate close
-			timeoutHandle && clearTimeout(timeoutHandle);
-			timeoutHandle = setTimeout(() => {
-				setShouldListenClose(true);
-			}, 300);
+		const pos = props.pos;
+		if (!pos) return;
 
-			onCleanup(() => {
-				timeoutHandle && clearTimeout(timeoutHandle);
-				setShouldListenClose(false);
-			});
+		let w = 16,
+			h = 16;
+		const element = ref();
+		if (element) {
+			const rect = element.getBoundingClientRect();
+			w = rect.width;
+			h = rect.height;
 		}
+
+		const { x, y } = pos;
+
+		const { innerWidth, innerHeight } = window;
+
+		let posX = x - w / 2;
+		let posY = y - h / 2;
+
+		posX = Math.max(0, Math.min(posX, innerWidth - w));
+		posY = Math.max(0, Math.min(posY, innerHeight - h));
+
+		setPos({ x: posX, y: posY });
 	});
 
-	onOuterClick(ref, () => props.onClose?.(), shouldListenClose);
+	onOuterClick(ref, () => props.onClose?.(), show);
 	createEffect(() => {
 		const ref_ = ref();
 		if (!ref_) return;
-		if (!shouldListenClose()) return;
 
 		const onClose = () => props.onClose?.();
-		const onMouseEnter = () => {
-			ref_.addEventListener("mouseleave", onClose, { once: true });
-		};
 
 		window.addEventListener("scroll", onClose, true);
-		ref_.addEventListener("mouseenter", onMouseEnter, true);
+		ref_.addEventListener("mouseleave", onClose, {
+			passive: true,
+			once: true,
+		});
 		onCleanup(() => {
-			window.removeEventListener("scroll", onClose, true);
-			ref_.removeEventListener("mouseenter", onMouseEnter, true);
-			ref_.removeEventListener("mouseleave", onClose, true);
+			window.removeEventListener("scroll", onClose);
+			ref_.removeEventListener("mouseleave", onClose);
 		});
 	});
 
 	createEffect(() => {
 		const ref_ = ref();
 		if (!ref_) return;
-		if (!props.pos) return;
 
-		ref_.style.left = `${pos().x}px`;
-		ref_.style.top = `${pos().y}px`;
+		const pos_ = pos();
+		if (!pos_) return;
+
+		ref_.style.left = `${pos_.x}px`;
+		ref_.style.top = `${pos_.y}px`;
 	});
 
 	return (
@@ -105,19 +80,6 @@ export default (props: Props) => {
 			>
 				<Menu.Item
 					class="tooltip tooltip-right"
-					data-tip={props.error ?? t("actions.retry")}
-				>
-					<Button
-						variant={props.error ? "error" : "ghost"}
-						size="xs"
-						disabled={props.loading}
-						onClick={props.onRetry}
-					>
-						<RotateCcw size={16} />
-					</Button>
-				</Menu.Item>
-				<Menu.Item
-					class="tooltip tooltip-right"
 					data-tip={t("actions.copyAsMarkdown")}
 				>
 					<Button
@@ -127,6 +89,19 @@ export default (props: Props) => {
 						onClick={props.onCopyMarkdown}
 					>
 						<ClipboardCopy size={16} />
+					</Button>
+				</Menu.Item>
+				<Menu.Item
+					class="tooltip tooltip-right"
+					data-tip={props.error ?? t("actions.retry")}
+				>
+					<Button
+						variant={props.error ? "error" : "ghost"}
+						size="xs"
+						disabled={props.loading}
+						onClick={props.onRetry}
+					>
+						<RotateCcw size={16} />
 					</Button>
 				</Menu.Item>
 				<Menu.Item class="tooltip tooltip-right" data-tip={t("actions.delete")}>
