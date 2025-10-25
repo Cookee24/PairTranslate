@@ -121,41 +121,31 @@ export const createAnimatedAppearance = (
 	enter = animateEnter,
 	exit = animateExit,
 ) => {
-	const show_ = Array.isArray(show) ? show : [show];
-	const [shouldRender, setShouldRender] = createSignal(false);
+	const isArray = Array.isArray(show);
+	const showAll = () => {
+		let all = true;
+		// Must run all
+		if (isArray) for (const s of show) all = s() && all;
+		else all = show();
+		return all;
+	};
 
-	let entered = false;
-	let lastRef: WeakRef<Element> | undefined;
-
+	const [render, setRender] = createSignal(false);
 	createEffect(
-		on([element, ...show_], async ([el, ...isVisible]) => {
-			const now = isVisible.every((v) => v);
+		on([element, showAll], ([el, show]) => {
+			show && setRender(true);
 
-			if (!el) {
-				setShouldRender(now);
-				return;
-			}
+			if (!el) return;
 
-			if (lastRef?.deref() !== el) {
-				entered = false;
-				lastRef = new WeakRef(el);
-			}
-
-			if (entered === now) return;
-
-			if (now) {
-				setShouldRender(true);
-				entered = true;
-				await enter(el);
+			if (show) {
+				enter(el);
 			} else {
-				await exit(el);
-				setShouldRender(false);
-				entered = false;
+				exit(el).then(() => setRender(showAll));
 			}
 		}),
 	);
 
-	return shouldRender;
+	return render;
 };
 
 export const animatedHover = (

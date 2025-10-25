@@ -72,34 +72,35 @@ export default (props: Props) => {
 	});
 
 	return (
-		<Menu.Root
-			ref={setRef}
-			orientation="vertical"
-			size="sm"
-			rounded
-			class="lg:menu-horizontal bg-base-200 text-base-content gap-2 shadow-md shadow-base-200"
-			hidden={!shouldRender()}
-		>
-			<Menu.Item>
-				<Button
-					variant="ghost"
-					size="xs"
-					onClick={() => handleClick("translate")}
-				>
-					<Languages size={16} />
-					{t("actions.translate")}
-				</Button>
-			</Menu.Item>
-			<Menu.Item>
-				<Button
-					variant="ghost"
-					size="xs"
-					onClick={() => handleClick("explain")}
-				>
-					<Lightbulb size={16} />
-					{t("actions.explain")}
-				</Button>
-			</Menu.Item>
-		</Menu.Root>
+		<Show when={shouldRender()}>
+			<Menu.Root
+				ref={setRef}
+				orientation="vertical"
+				size="sm"
+				rounded
+				class="lg:menu-horizontal bg-base-200 text-base-content gap-2 shadow-md shadow-base-200"
+			>
+				<Menu.Item>
+					<Button
+						variant="ghost"
+						size="xs"
+						onClick={() => handleClick("translate")}
+					>
+						<Languages size={16} />
+						{t("actions.translate")}
+					</Button>
+				</Menu.Item>
+				<Menu.Item>
+					<Button
+						variant="ghost"
+						size="xs"
+						onClick={() => handleClick("explain")}
+					>
+						<Lightbulb size={16} />
+						{t("actions.explain")}
+					</Button>
+				</Menu.Item>
+			</Menu.Root>
+		</Show>
 	);
 };
