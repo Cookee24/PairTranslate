@@ -149,17 +149,18 @@ export function useKeyboardShortcut(
 	});
 }
 
-export function useControlKeyStatus(enabled = () => true): Accessor<boolean> {
+export function useModifierKeyStatus(enabled = () => true): Accessor<boolean> {
 	const [controlPressed, setControlPressed] = createSignal(false);
+	const modifierKey = isApple() ? "Alt" : "Control";
 
 	const handleKeyDown = (event: KeyboardEvent) => {
-		if (event.key === "Control") {
+		if (event.key === modifierKey) {
 			setControlPressed(true);
 		}
 	};
 
 	const handleKeyUp = (event: KeyboardEvent) => {
-		if (event.key === "Control") {
+		if (event.key === modifierKey) {
 			setControlPressed(false);
 		}
 	};

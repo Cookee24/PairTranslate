@@ -13,7 +13,8 @@ interface Props {
 }
 
 export default (props: Props) => {
-	const controlPressed = useControlKeyStatus();
+	const controlPressed = useModifierKeyStatus();
+	const modifierKey = isApple() ? "Alt" : "Control";
 
 	// Indicator
 	const [ref, setRef] = createSignal<HTMLDivElement>();
@@ -76,7 +77,7 @@ export default (props: Props) => {
 				startPos = undefined;
 			};
 			const handleOtherKeys = (e: KeyboardEvent) => {
-				if (e.key !== "Control") {
+				if (e.key !== modifierKey) {
 					otherKeysPressed = true;
 				}
 			};
@@ -87,7 +88,7 @@ export default (props: Props) => {
 			window.addEventListener("blur", handleBlur);
 			window.addEventListener("keydown", handleOtherKeys, { passive: true });
 			onCleanup(() => {
-				// If mouse is never clicked (just control key pressed), do a point selection
+				// If mouse is never clicked (just modifier key pressed), do a point selection
 				if (!isDragging() && !otherKeysPressed) {
 					elementsInBox({
 						x: pos().x + window.scrollX,

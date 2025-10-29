@@ -18,7 +18,7 @@ export default () => {
 			if (inInput && settings.basic.inputTranslateEnabled) {
 				setInputTranslateElement(event.target as HTMLElement);
 			} else {
-				setInTextTranslateEnabled(true);
+				setInTextTranslateEnabled((prev) => !prev);
 			}
 		},
 		{
