@@ -29,6 +29,25 @@ const Root = (props: RootProps) => {
 	);
 };
 
+const callbackMap = new WeakMap<
+	HTMLElement,
+	(isIntersecting: boolean) => void
+>();
+
+const observer = new IntersectionObserver(
+	(entries) => {
+		entries.forEach((entry) => {
+			const callback = callbackMap.get(entry.target as HTMLElement);
+			callback?.(entry.isIntersecting);
+		});
+	},
+	{
+		root: null,
+		rootMargin: "0px",
+		threshold: 0.6,
+	},
+);
+
 const Item = (props: ItemProps) => {
 	let ref: HTMLButtonElement | undefined;
 	const [active, setActive] = createSignal(false);
@@ -38,26 +57,20 @@ const Item = (props: ItemProps) => {
 	};
 
 	onMount(() => {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						setActive(true);
-					} else {
-						setActive(false);
-					}
-				});
-			},
-			{
-				root: null,
-				rootMargin: "0px",
-				threshold: 0.6,
-			},
-		);
+		const element = document.querySelector(
+			`[data-nav='${props.navId}']`,
+		) as HTMLElement | null;
 
-		const element = document.querySelector(`[data-nav='${props.navId}']`);
-		element && observer.observe(element);
-		onCleanup(() => element && observer.disconnect());
+		if (element) {
+			callbackMap.set(element, (isIntersecting: boolean) => {
+				setActive(isIntersecting);
+			});
+			observer.observe(element);
+			onCleanup(() => {
+				observer.unobserve(element);
+				callbackMap.delete(element);
+			});
+		}
 	});
 
 	createEffect(() => {
