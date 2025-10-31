@@ -1,9 +1,8 @@
-name: 🚀 Publish Extension to Stores
+name: 🏗️ Build & Release
 
 on:
   push:
     branches: [main, master]
-    paths: ["package.json"]
 
 jobs:
   version:
@@ -61,20 +60,19 @@ jobs:
           git tag -a "v$VERSION" -m "Release v$VERSION"
           git push origin "v$VERSION"
 
-  publish:
+  build:
     needs: version
-    if: needs.version.outputs.version_changed == '1'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
-      contents: write
+      contents: read
+      actions: write
 
     steps:
       - name: ⬇️ Checkout Repository
         uses: actions/checkout@v5
         with:
           lfs: true
-          ref: v${{ needs.version.outputs.version }}
 
       - name: 🛠️ Setup Node.js
         uses: actions/setup-node@v5
@@ -89,13 +87,34 @@ jobs:
       - name: 📦 Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: 🏗️ Build Extension
-        run: bun run build
-
-      - name: 💾 Create Store Zips
+      - name: 🏗️ Build & Create ZIPs
         run: |
           bun run zip
           bun run zip:firefox
+
+      - name: 📤 Upload Extension Artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: extensions-${{ github.sha }}
+          path: .output/*.zip
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+
+  publish:
+    needs: [version, build]
+    if: needs.version.outputs.version_changed == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Download Build Artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: extensions-${{ github.sha }}
+          path: .output
 
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v2
