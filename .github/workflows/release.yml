@@ -2,11 +2,68 @@ name: 🚀 Publish Extension to Stores
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main, master]
+    paths: ["package.json"]
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      version_changed: ${{ steps.check_version.outputs.version_changed }}
+      is_rc: ${{ steps.get_version.outputs.is_rc }}
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: 📋 Check for version change
+        id: check_version
+        run: |
+          CURRENT_VERSION=$(jq -r .version package.json)
+          PREVIOUS_VERSION=$(git show HEAD~1:package.json | jq -r .version)
+
+          if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+            VERSION_CHANGED=1
+            echo "✅ Version changed: $PREVIOUS_VERSION -> $CURRENT_VERSION"
+          else
+            VERSION_CHANGED=0
+            echo "⏭️ Version unchanged: $CURRENT_VERSION"
+          fi
+
+          echo "version_changed=$VERSION_CHANGED" >> "$GITHUB_OUTPUT"
+
+      - name: 🔍 Get version
+        if: steps.check_version.outputs.version_changed == '1'
+        id: get_version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          # Check if version is RC
+          if [[ "$VERSION" =~ -rc ]]; then
+            echo "is_rc=1" >> "$GITHUB_OUTPUT"
+            echo "🔖 RC version detected: $VERSION"
+          else
+            echo "is_rc=0" >> "$GITHUB_OUTPUT"
+            echo "📦 Stable version detected: $VERSION"
+          fi
+
+      - name: 🏷️ Create and push tag
+        if: steps.check_version.outputs.version_changed == '1'
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
+
   publish:
+    needs: version
+    if: needs.version.outputs.version_changed == '1'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -17,6 +74,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           lfs: true
+          ref: v${{ needs.version.outputs.version }}
 
       - name: 🛠️ Setup Node.js
         uses: actions/setup-node@v5
@@ -42,9 +100,14 @@ jobs:
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: Release v${{ needs.version.outputs.version }}
           files: .output/*.zip
+          draft: false
+          prerelease: ${{ needs.version.outputs.is_rc == '1' }}
 
       - name: ⬆️ Submit to All Stores (Chrome, Firefox, Edge)
+        if: needs.version.outputs.is_rc != '1'
         run: bunx wxt submit \
           --chrome-zip .output/*-chrome.zip \
           --firefox-zip .output/*-firefox.zip \
