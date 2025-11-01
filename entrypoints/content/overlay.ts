@@ -16,38 +16,41 @@ export const mountOverlay = (app: () => JSX.Element) => {
 		return el;
 	});
 
-	const loader = () => {
-		const host = document.createElement("div");
-		host.attachShadow({ mode: "open" });
-		host.style.width = "0";
-		host.style.height = "0";
-		host.style.margin = "0";
-		host.style.padding = "0";
-		host.style.position = "fixed";
-		host.style.zIndex = "2147483647";
-		host.style.backgroundColor = "transparent";
+	const loader = () =>
+		requestAnimationFrame(() => {
+			const host = document.createElement("div");
+			host.attachShadow({ mode: "open" });
+			host.style.width = "0";
+			host.style.height = "0";
+			host.style.margin = "0";
+			host.style.padding = "0";
+			host.style.position = "fixed";
+			host.style.zIndex = "2147483647";
+			host.style.backgroundColor = "transparent";
 
-		const root = host.shadowRoot;
-		if (!root) {
-			throw new Error("Failed to attach shadow root to body");
-		}
+			const root = host.shadowRoot;
+			if (!root) {
+				throw new Error("Failed to attach shadow root to body");
+			}
 
-		const [documentCss, shadowCss] = splitShadowRootCss(styles);
-		if (documentCss) {
-			const styleEl = document.createElement("style");
-			styleEl.textContent = documentCss;
-			document.head.appendChild(styleEl);
-		}
-		if (shadowCss) {
-			const styleEl = document.createElement("style");
-			styleEl.textContent = shadowCss;
-			root.appendChild(styleEl);
-		}
+			const [documentCss, shadowCss] = splitShadowRootCss(styles);
+			if (documentCss) {
+				const styleEl = document.createElement("style");
+				styleEl.setAttribute(STYLE_CONTAINER, "");
+				styleEl.textContent = documentCss;
+				document.head.appendChild(styleEl);
+			}
+			if (shadowCss) {
+				const styleEl = document.createElement("style");
+				styleEl.setAttribute(STYLE_CONTAINER, "");
+				styleEl.textContent = shadowCss;
+				root.appendChild(styleEl);
+			}
 
-		document.body.appendChild(host);
+			document.body.appendChild(host);
 
-		resolve(root);
-	};
+			resolve(root);
+		});
 
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", loader, { once: true });
@@ -58,9 +61,7 @@ export const mountOverlay = (app: () => JSX.Element) => {
 	return promise;
 };
 
-const splitShadowRootCss = (
-	css: string,
-): readonly [documentCss: string, shadowCss: string] => {
+const splitShadowRootCss = (css: string): readonly [string, string] => {
 	let shadowCss = css;
 	let documentCss = "";
 	const pos = [];
