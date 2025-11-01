@@ -1,4 +1,5 @@
 import { createSettingsService } from "./services/settings";
+import { createStyleService } from "./services/style";
 import { createTranslateService } from "./services/translate";
 import { settingsStore } from "./utils/settings";
 
@@ -8,6 +9,7 @@ export const setRpc = async () => {
 
 	const settingsService = createSettingsService();
 	const translateService = createTranslateService();
+	const styleService = createStyleService();
 
 	const clientImpl: Server<AllServices> = {
 		ping: async () => "pong",
@@ -24,6 +26,8 @@ export const setRpc = async () => {
 		streamExplain: translateService.streamExplain,
 		streamInputTranslate: translateService.streamInputTranslate,
 		clearCache: translateService.clearCache,
+
+		getContentStyles: styleService.getContentStyles,
 	};
 
 	setupWxtServer(clientImpl, WXT_TRANSPORTATION_NAME);

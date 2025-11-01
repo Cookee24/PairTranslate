@@ -63,10 +63,15 @@ export interface TranslateOptions {
 	cleanCache?: boolean;
 }
 
+export interface StyleService extends RpcService {
+	getContentStyles(): Promise<[documentCss: string, shadowCss: string]>;
+}
+
 export interface AllServices
 	extends CoreService,
 		SettingsService,
-		TranslateService {}
+		TranslateService,
+		StyleService {}
 
 export * from "./rpc/core";
 export * from "./rpc/factory";
