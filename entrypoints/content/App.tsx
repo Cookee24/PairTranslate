@@ -1,5 +1,4 @@
 import { PopupProvider, PopupRenderer } from "./components/Popup";
-import Style from "./components/Style";
 import Task from "./components/Task";
 import TipRenderer from "./components/TipRenderer";
 import TranslatorHost from "./components/TranslatorHost";
@@ -15,7 +14,8 @@ const Content = () => {
 				class="absolute w-0 h-0 left-0 top-0"
 				attr:data-theme={getThemeClass(theme())}
 			>
-				<Style />
+				<ContentStyle />
+				<KatexStyle />
 				<TranslatorHost />
 				<PopupRenderer />
 				<TipRenderer />

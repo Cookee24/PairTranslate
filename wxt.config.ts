@@ -18,6 +18,12 @@ export default defineConfig({
 		permissions: ["activeTab", "storage", "scripting"],
 		host_permissions: ["<all_urls>"],
 		default_locale: "en",
+		web_accessible_resources: [
+			{
+				resources: ["katex/*"],
+				matches: ["<all_urls>"],
+			},
+		],
 	},
 	vite: () => ({
 		plugins: [
