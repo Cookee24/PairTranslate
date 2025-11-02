@@ -15,7 +15,7 @@ export default defineConfig({
 		name: "__MSG_meta_name__",
 		description: "__MSG_meta_description__",
 		version: process.env.npm_package_version || "0.0.0",
-		permissions: ["activeTab", "storage", "scripting"],
+		permissions: ["storage"],
 		host_permissions: ["<all_urls>"],
 		default_locale: "en",
 		web_accessible_resources: [
