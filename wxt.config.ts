@@ -25,7 +25,7 @@ export default defineConfig({
 			},
 		],
 	},
-	vite: () => ({
+	vite: (configEnv) => ({
 		plugins: [
 			tailwindcss(),
 			{
@@ -39,6 +39,29 @@ export default defineConfig({
 						});
 					}
 					return null;
+				},
+			},
+			configEnv.mode === "production" && {
+				// https://issues.chromium.org/issues/395595611
+				name: "fix-encoding",
+				generateBundle(_, bundle) {
+					for (const file in bundle) {
+						const list = ["content", "background"];
+						if (
+							bundle[file].type === "chunk" &&
+							list.some((item) => file.includes(item))
+						) {
+							const codeUTF8 = bundle[file].code
+								.split("")
+								.map((c) =>
+									c.charCodeAt(0) <= 0x7f
+										? c
+										: `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`,
+								)
+								.join("");
+							bundle[file].code = codeUTF8;
+						}
+					}
 				},
 			},
 		],
