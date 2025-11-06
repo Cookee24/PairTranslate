@@ -10,7 +10,15 @@ import Translation from "./pages/Translation";
 
 const Content = () => {
 	const [top, setTop] = createSignal(8);
-	const { settings } = useSettings();
+	const [render, setRender] = createSignal(false);
+	const { settings, loading } = useSettings();
+
+	createEffect(() => {
+		// Only set when the first time loading is done
+		if (!render() && !loading()) {
+			setRender(true);
+		}
+	});
 
 	createEffect(() => {
 		const body = document.body;
@@ -69,12 +77,17 @@ const Content = () => {
 					"margin-top": `${top()}px`,
 				}}
 			>
-				<Basic navId="basic" />
-				<Translation navId="translate" />
-				<LLM navId="llm" />
-				<Traditional navId="traditional" />
-				<Advanced navId="advanced" />
-				<About navId="about" />
+				<Show
+					when={render()}
+					fallback={<Loading class="self-center py-4" size="xl" />}
+				>
+					<Basic navId="basic" />
+					<Translation navId="translate" />
+					<LLM navId="llm" />
+					<Traditional navId="traditional" />
+					<Advanced navId="advanced" />
+					<About navId="about" />
+				</Show>
 			</div>
 		</>
 	);

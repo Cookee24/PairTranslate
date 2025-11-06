@@ -1,5 +1,5 @@
 import type z from "zod";
-import { LLMServiceTemplates, ModelConfig } from "~/utils/settings";
+import { ModelConfig } from "~/utils/settings/def";
 
 interface LLMModalProps {
 	modelInfo?: z.infer<typeof ModelConfig>;

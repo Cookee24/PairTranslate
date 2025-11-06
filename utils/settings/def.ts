@@ -4,6 +4,7 @@ export const FloatingBallPosition = z.object({
 	side: z.enum(["left", "right"]).default("right"),
 	top: z.number().min(0).max(100).default(20), // Percentage of viewport height
 });
+export type FloatingBallPosition = z.infer<typeof FloatingBallPosition>;
 
 export const BasicSettings = z.object({
 	enabled: z.boolean().default(true),
@@ -19,6 +20,7 @@ export const BasicSettings = z.object({
 	selectionTranslateEnabled: z.boolean().default(true),
 	inputTranslateEnabled: z.boolean().default(true),
 });
+export type BasicSettings = z.infer<typeof BasicSettings>;
 
 export const ModelConfig = z.object({
 	name: z.string().min(1),
@@ -29,6 +31,7 @@ export const ModelConfig = z.object({
 	temperature: z.number().optional(),
 	maxOutputTokens: z.number().optional(),
 });
+export type ModelConfig = z.infer<typeof ModelConfig>;
 
 export const TraditionalTranslationConfig = z.object({
 	name: z.string().min(1),
@@ -37,6 +40,9 @@ export const TraditionalTranslationConfig = z.object({
 	apiKey: z.string().optional(),
 	region: z.string().optional(),
 });
+export type TraditionalTranslationConfig = z.infer<
+	typeof TraditionalTranslationConfig
+>;
 
 export const TranslateSettings = z.object({
 	concurrentRequests: z.number().min(1).default(8),
@@ -53,6 +59,7 @@ export const TranslateSettings = z.object({
 	inputTranslateModel: z.uuid().optional(),
 	inputTranslateLang: z.string().default("en"), // Target language for input translation
 });
+export type TranslateSettings = z.infer<typeof TranslateSettings>;
 
 export const ServicesSettings = z.object({
 	llmServices: z.record(z.uuid(), ModelConfig).default({}),
@@ -60,9 +67,11 @@ export const ServicesSettings = z.object({
 		.record(z.uuid(), TraditionalTranslationConfig)
 		.default({}),
 });
+export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
 export const SettingsSchema = z.object({
 	basic: BasicSettings,
 	translate: TranslateSettings,
 	services: ServicesSettings,
 });
+export type SettingsSchema = z.infer<typeof SettingsSchema>;

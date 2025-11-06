@@ -5,10 +5,6 @@ const Content = () => {
 	const enabled = () => settings.basic.enabled;
 	const translationMode = () => settings.translate.translationMode;
 
-	const switchEnabled = () => {
-		setSettings("basic", "enabled", !enabled());
-	};
-
 	return (
 		<>
 			<div
@@ -20,7 +16,7 @@ const Content = () => {
 				<Toggle
 					variant="primary"
 					checked={enabled()}
-					onChange={switchEnabled}
+					onChange={(e) => setSettings("basic", "enabled", e.target.checked)}
 				/>
 				<span class="text-xl text-primary-content">
 					{enabled() ? t("common.enabled") : t("common.disabled")}

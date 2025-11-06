@@ -250,7 +250,7 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					closeTooltip();
 				}}
 			/>
-			<MPortal
+			<InTextPortal
 				mount={props.element}
 				hideOriginal={props.hideOriginal && !props.loading && !props.error}
 			>
@@ -269,7 +269,7 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					)}
 				</span>
 				{!props.loading && !props.error && <Md text={props.text || ""} />}
-			</MPortal>
+			</InTextPortal>
 		</>
 	);
 };

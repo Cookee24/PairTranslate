@@ -29,9 +29,7 @@ export const ButtonGroup: Component<ButtonGroupProps> = (props) => {
 	]);
 
 	const handleClick = (optionValue: string) => {
-		if (local.onChange) {
-			local.onChange(optionValue);
-		}
+		local.onChange?.(optionValue);
 	};
 
 	return (

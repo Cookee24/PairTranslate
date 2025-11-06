@@ -1,5 +1,5 @@
 import type z from "zod";
-import { TraditionalTranslationConfig } from "~/utils/settings";
+import { TraditionalTranslationConfig } from "~/utils/settings/def";
 
 interface TraditionalModalProps {
 	modelInfo?: z.infer<typeof TraditionalTranslationConfig>;

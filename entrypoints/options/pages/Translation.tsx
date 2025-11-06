@@ -1,7 +1,7 @@
 import { trackStore } from "@solid-primitives/deep";
 import { unwrap } from "solid-js/store";
 import type z from "zod";
-import { TranslateSettings } from "~/utils/settings";
+import * as s from "~/utils/settings/def";
 import { ButtonGroup } from "../components/settings/ButtonGroup";
 import { FormGrid } from "../components/settings/FormGrid";
 import { NumberInput } from "../components/settings/NumberInput";
@@ -22,16 +22,21 @@ export default (props: { navId: string }) => {
 	const [validationErrors, setValidationErrors] =
 		createSignal<z.ZodError | null>(null);
 
-	createEffect(() => {
-		const current = unwrap(trackStore(localSettings));
-		const result = TranslateSettings.safeParse(current);
-		if (!result.success) {
-			setValidationErrors(result.error);
-		} else {
-			setValidationErrors(null);
-			setSettings("translate", reconcile(result.data));
-		}
-	});
+	createEffect(
+		on(
+			() => unwrap(trackStore(localSettings)),
+			(current) => {
+				const result = s.TranslateSettings.safeParse(current);
+				if (!result.success) {
+					setValidationErrors(result.error);
+				} else {
+					setValidationErrors(null);
+					setSettings("translate", reconcile(result.data));
+				}
+			},
+			{ defer: true },
+		),
+	);
 
 	createEffect(() => {
 		trackStore(settings.services);

@@ -9,19 +9,14 @@ const Content = () => {
 	const theme = createTheme(settings.basic.theme);
 
 	return (
-		<Show when={settings.basic.enabled}>
-			<div
-				class="absolute w-0 h-0 left-0 top-0"
-				attr:data-theme={getThemeClass(theme())}
-			>
-				<ContentStyle />
-				<KatexStyle />
-				<TranslatorHost />
-				<PopupRenderer />
-				<TipRenderer />
-				<Task />
-			</div>
-		</Show>
+		<div class="contents" attr:data-theme={getThemeClass(theme())}>
+			<ContentStyle />
+			<KatexStyle />
+			<TranslatorHost />
+			<PopupRenderer />
+			<TipRenderer />
+			<Task />
+		</div>
 	);
 };
 

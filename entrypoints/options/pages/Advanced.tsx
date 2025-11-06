@@ -3,7 +3,7 @@ import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
 
 export default (props: { navId: string }) => {
-	useSettings();
+	const { setSettings } = useSettings();
 	const [isClearingCache, setIsClearingCache] = createSignal(false);
 	const [isResettingSettings, setIsResettingSettings] = createSignal(false);
 	const [feedback, setFeedback] = createSignal<{
@@ -40,8 +40,8 @@ export default (props: { navId: string }) => {
 		setFeedback(null);
 
 		try {
-			await window.rpc.resetSettings();
-			setFeedback({
+			setSettings(generateDefaultSettings());
+			await setFeedback({
 				type: "success",
 				message: t("settings.advanced.resetSettingsSuccess"),
 			});

@@ -1,0 +1,166 @@
+import type * as s from "./def";
+
+const id = "a404995f-8bf9-4e3c-86aa-bbc4698bc050"; // Fixed ID for Microsoft Translator
+
+/**
+ * Generate default basic settings
+ */
+export function generateBasicSettings(): s.BasicSettings {
+	return {
+		enabled: true,
+		theme: "system",
+		selectionPopupEnabled: true,
+		autoPin: false,
+		floatingBallEnabled: true,
+		floatingBallPosition: {
+			side: "right",
+			top: 20,
+		},
+		keyboardShortcutEnabled: true,
+		keyboardShortcut: "Alt+T",
+		selectionTranslateEnabled: true,
+		inputTranslateEnabled: true,
+	};
+}
+
+/**
+ * Generate default translation settings with browser language detection
+ */
+export function generateTranslateSettings(): s.TranslateSettings {
+	const targetLang = getTargetLanguage();
+
+	return {
+		concurrentRequests: 8,
+		cacheSize: 4096,
+		maxBatchSize: 4,
+		sourceLang: "auto",
+		targetLang: targetLang,
+		filterTargetLanguage: true,
+		filterInteractive: true,
+		translationMode: "parallel",
+		inTextTranslateModel: id,
+		floatingTranslateModel: id,
+		floatingExplainModel: undefined,
+		inputTranslateModel: id,
+		inputTranslateLang: "en",
+	};
+}
+
+export function generateServicesSettings(): s.ServicesSettings {
+	return {
+		llmServices: {},
+		traditionalServices: {
+			[id]: {
+				name: t("services.microsoftTranslatorDefault"),
+				apiSpec: "microsoft",
+				apiKey: "edge",
+			},
+		},
+	};
+}
+
+/**
+ * Generate complete default settings
+ */
+export function generateDefaultSettings(): s.SettingsSchema {
+	return {
+		basic: generateBasicSettings(),
+		translate: generateTranslateSettings(),
+		services: generateServicesSettings(),
+	};
+}
+
+/**
+ * Get browser-specific target language
+ */
+export function getBrowserTargetLanguage(): string {
+	return getTargetLanguage();
+}
+
+export const LLMServiceTemplates = [
+	{
+		name: t("templates.llm.openai"),
+		baseUrl: "https://api.openai.com/v1",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.azureOpenai"),
+		baseUrl: "https://{your-resource-name}.openai.azure.com",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.anthropic"),
+		baseUrl: "https://api.anthropic.com",
+		apiSpec: "anthropic" as const,
+	},
+	{
+		name: t("templates.llm.googleGemini"),
+		baseUrl: "https://generativelanguage.googleapis.com",
+		apiSpec: "gemini" as const,
+	},
+	{
+		name: t("templates.llm.lmStudio"),
+		baseUrl: "http://localhost:1234/v1",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.ollama"),
+		baseUrl: "http://localhost:11434",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.openRouter"),
+		baseUrl: "https://openrouter.ai/api/v1",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.cohere"),
+		baseUrl: "https://api.cohere.com",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.huggingFaceInference"),
+		baseUrl: "https://api-inference.huggingface.co",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.ai21Labs"),
+		baseUrl: "https://api.ai21.com/studio/v1",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.mistral"),
+		baseUrl: "https://api.mistral.ai",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.stabilityAI"),
+		baseUrl: "https://api.stability.ai",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.replicate"),
+		baseUrl: "https://api.replicate.com",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.alephAlpha"),
+		baseUrl: "https://api.aleph-alpha.com",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.glm"),
+		baseUrl: "https://open.bigmodel.cn/api/paas/v4",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.deepseek"),
+		baseUrl: "https://api.deepseek.com",
+		apiSpec: "openai" as const,
+	},
+	{
+		name: t("templates.llm.other"),
+		baseUrl: "",
+		apiSpec: "openai" as const,
+	},
+] as s.ModelConfig[];

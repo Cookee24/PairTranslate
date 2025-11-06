@@ -1,61 +1,37 @@
 import type { JSX } from "solid-js";
 import { render } from "solid-js/web";
 
-let _root: ShadowRoot | undefined;
+let _dispose: (() => void) | null = null;
 
 export const mountOverlay = (app: () => JSX.Element) => {
-	if (_root) {
-		return Promise.resolve(_root);
-	}
+	const container = document.createElement("div");
+	container.style.display = "contents";
+	const root = container.attachShadow({ mode: "open" });
 
-	let { promise, resolve } = Promise.withResolvers<ShadowRoot>();
-	promise = promise.then((el) => {
-		render(app, el);
-		_root = el instanceof ShadowRoot ? el : undefined;
-		return el;
-	});
+	window.rpc.getContentStyles().then(([documentCss, shadowCss]) =>
+		requestAnimationFrame(() => {
+			const styleEl = document.createElement("style");
+			styleEl.textContent = documentCss;
+			styleEl.setAttribute(STYLE_CONTAINER, "");
+			document.head.appendChild(styleEl);
 
-	const loader = () =>
-		requestAnimationFrame(async () => {
-			const host = document.createElement("div");
-			host.attachShadow({ mode: "open" });
-			host.style.width = "0";
-			host.style.height = "0";
-			host.style.margin = "0";
-			host.style.padding = "0";
-			host.style.position = "fixed";
-			host.style.zIndex = "2147483647";
-			host.style.backgroundColor = "transparent";
+			const shadowStyleEl = document.createElement("style");
+			shadowStyleEl.textContent = shadowCss;
+			shadowStyleEl.setAttribute(STYLE_CONTAINER, "");
+			root.appendChild(shadowStyleEl);
 
-			const root = host.shadowRoot;
-			if (!root) {
-				throw new Error("Failed to attach shadow root to body");
-			}
+			document.body.appendChild(container);
 
-			const [documentCss, shadowCss] = await window.rpc.getContentStyles();
-			if (documentCss) {
-				const styleEl = document.createElement("style");
-				styleEl.setAttribute(STYLE_CONTAINER, "");
-				styleEl.textContent = documentCss;
-				document.head.appendChild(styleEl);
-			}
-			if (shadowCss) {
-				const styleEl = document.createElement("style");
-				styleEl.setAttribute(STYLE_CONTAINER, "");
-				styleEl.textContent = shadowCss;
-				root.appendChild(styleEl);
-			}
+			_dispose?.();
+			const solidDispose = render(app, root);
+			_dispose = () => {
+				solidDispose();
+				document.body.removeChild(container);
+				document.head.removeChild(styleEl);
+				_dispose = null;
+			};
+		}),
+	);
 
-			document.body.appendChild(host);
-
-			resolve(root);
-		});
-
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", loader, { once: true });
-	} else {
-		loader();
-	}
-
-	return promise;
+	return () => _dispose?.();
 };

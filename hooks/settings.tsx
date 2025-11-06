@@ -5,18 +5,11 @@ import {
 	type SetStoreFunction,
 	unwrap,
 } from "solid-js/store";
-import type { z } from "zod";
-import type { SettingsSchema } from "~/utils/settings";
+import type * as s from "~/utils/settings/def";
 
-// Generate a default state to prevent UI errors before the stream connects
-const initialSettings = () => {
-	const initial = generateDefaultSettings();
-	initial.basic.enabled = false; // Start with the extension disabled
-	return initial;
-};
 interface SettingsContextType {
-	settings: z.infer<typeof SettingsSchema>;
-	setSettings: SetStoreFunction<z.infer<typeof SettingsSchema>>;
+	settings: s.SettingsSchema;
+	setSettings: SetStoreFunction<s.SettingsSchema>;
 	loading: Accessor<boolean>;
 	error: Accessor<string | null>;
 }
@@ -24,8 +17,8 @@ interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType>();
 
 export function SettingsProvider(props: { children: JSX.Element }) {
-	const [settings, setSettings] = createStore<z.infer<typeof SettingsSchema>>(
-		initialSettings(),
+	const [settings, setSettings] = createStore<s.SettingsSchema>(
+		generateDefaultSettings(),
 	);
 	const [loading, setLoading] = createSignal(true);
 	const [error, setError] = createSignal<string | null>(null);
@@ -33,64 +26,38 @@ export function SettingsProvider(props: { children: JSX.Element }) {
 		equals: false,
 	});
 
-	// A single controller for the unified stream
-	let streamController: AbortController | null = null;
-
 	createEffect(
-		on(setSettingsSignal, async () => {
-			try {
-				if (loading()) return;
-				setError(null);
+		on(
+			setSettingsSignal,
+			async (_) => {
 				setLoading(true);
-				await window.rpc.setSettings(unwrap(settings));
-			} catch (err) {
-				console.error("Failed to set settings:", err);
-				const errorMessage =
-					err instanceof Error ? err.message : t("errors.settings.failedToSet");
-				setError(errorMessage);
-				throw err;
-			}
-		}),
+				setError(null);
+
+				saveSettings(unwrap(settings));
+			},
+			{ defer: true },
+		),
 	);
 
-	onMount(async () => {
-		streamController = new AbortController();
-		try {
-			setLoading(true);
-			setError(null);
+	onMount(() => {
+		setLoading(true);
+		setError(null);
 
-			const stream = window.rpc.streamSettings();
+		const unlisten = listenSettings((newSettings) => {
+			setSettings(reconcile(newSettings));
 
-			for await (const newSettings of stream) {
-				if (streamController.signal.aborted) break;
-				// Use reconcile to efficiently update the store
-				setSettings(reconcile(newSettings));
-				setLoading(false);
-			}
-		} catch (err) {
-			if (!streamController.signal.aborted) {
-				console.error("Settings stream error:", err);
-				const errorMessage =
-					err instanceof Error
-						? err.message
-						: t("errors.settings.streamFailed");
-				setError(errorMessage);
-				setLoading(false);
-			}
-		}
-	});
-
-	onCleanup(() => {
-		streamController?.abort();
+			setTimeout(() => setLoading(false));
+		});
+		onCleanup(unlisten);
 	});
 
 	const contextValue: SettingsContextType = {
 		settings,
-		// biome-ignore lint/suspicious/noExplicitAny: Lazy
+		// biome-ignore lint/suspicious/noExplicitAny: anyscript
 		setSettings: (...args: any[]) => {
+			// @ts-expect-error: args type
+			setSettings(...args);
 			fireSetSettingsSignal(null);
-			// @ts-ignore
-			return setSettings(...args);
 		},
 		loading,
 		error,

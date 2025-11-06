@@ -1,6 +1,5 @@
-import type z from "zod";
+import type * as s from "~/utils/settings";
 import { translate as traditionalTranslate } from "~/utils/translate";
-import { settingsStore } from "../utils/settings";
 
 const buildPageContextString = (pageContext?: PageContext): string => {
 	if (!pageContext) return "";
@@ -102,8 +101,8 @@ const emptyContext = (content: string): TextContext => ({
 	after: "",
 });
 
-const getModelConfig = (modelId: string) => {
-	const settings = settingsStore.get();
+const getModelConfig = async (modelId: string) => {
+	const settings = await getSettings();
 
 	const llm = settings.services.llmServices[modelId];
 	if (llm) {
@@ -231,7 +230,7 @@ const createCacheManager = (
 });
 
 const executeTraditionalTranslation = async (
-	config: z.infer<typeof TraditionalTranslationConfig>,
+	config: s.TraditionalTranslationConfig,
 	operation: "translate" | "explain",
 	textContext: TextContext,
 	targetLang: string,
@@ -255,7 +254,7 @@ const executeTraditionalTranslation = async (
 };
 
 const executeLLMTranslation = async (
-	config: z.infer<typeof ModelConfig>,
+	config: s.ModelConfig,
 	operation: "translate" | "explain",
 	textContext: TextContext,
 	pageContext: PageContext | undefined,
@@ -295,8 +294,9 @@ const executeApiCall = async (
 	textContext: TextContext,
 	pageContext?: PageContext,
 ): Promise<string> => {
-	const config = getModelConfig(modelId);
-	const targetLang = settingsStore.get().translate.targetLang;
+	const config = await getModelConfig(modelId);
+	const settings = await getSettings();
+	const targetLang = settings.translate.targetLang;
 
 	try {
 		if (config.type === "traditional") {
@@ -322,7 +322,7 @@ const executeApiCall = async (
 };
 
 const executeBatchTraditionalTranslation = async (
-	config: z.infer<typeof TraditionalTranslationConfig>,
+	config: s.TraditionalTranslationConfig,
 	text: string[],
 	targetLang: string,
 ): Promise<string[]> => {
@@ -339,7 +339,7 @@ const executeBatchTraditionalTranslation = async (
 };
 
 const executeBatchLLMTranslation = async (
-	config: z.infer<typeof ModelConfig>,
+	config: s.ModelConfig,
 	texts: string[],
 	pageContext: PageContext | undefined,
 	targetLang: string,
@@ -373,8 +373,9 @@ const executeBatchApiCall = async (
 	texts: string[],
 	pageContext?: PageContext,
 ): Promise<string[]> => {
-	const config = getModelConfig(modelId);
-	const targetLang = settingsStore.get().translate.targetLang;
+	const config = await getModelConfig(modelId);
+	const settings = await getSettings();
+	const targetLang = settings.translate.targetLang;
 
 	try {
 		let result: string[];
@@ -432,7 +433,7 @@ async function* streamTraditionalTranslation(
 }
 
 async function* streamLLMTranslation(
-	config: z.infer<typeof ModelConfig>,
+	config: s.ModelConfig,
 	operation: "translate" | "explain",
 	textContext: TextContext,
 	pageContext: PageContext | undefined,
@@ -475,8 +476,9 @@ async function* streamApiCall(
 	textContext: TextContext,
 	pageContext?: PageContext,
 ): AsyncGenerator<string> {
-	const config = getModelConfig(modelId);
-	const targetLang = settingsStore.get().translate.targetLang;
+	const config = await getModelConfig(modelId);
+	const settings = await getSettings();
+	const targetLang = settings.translate.targetLang;
 
 	try {
 		if (config.type === "traditional") {
@@ -569,12 +571,11 @@ const cacheBatchResults = async (
 };
 
 // --- Main Service Factory ---
-export const createTranslateService = (): TranslateService => {
-	const cacheSize = settingsStore.get().translate.cacheSize;
+export const createTranslateService = async (): Promise<TranslateService> => {
 	const cacheStorage = createLRUStorage<string>(
 		"translate-cache",
 		STORAGE_KEYS.cache,
-		cacheSize,
+		(await getSettings()).translate.cacheSize,
 	);
 	const cacheManager = createCacheManager(cacheStorage);
 
@@ -714,11 +715,12 @@ export const createTranslateService = (): TranslateService => {
 			pageContext?: PageContext,
 			targetLang?: string,
 		): AsyncGenerator<string> {
-			const config = getModelConfig(modelId);
+			const config = await getModelConfig(modelId);
+			const settings = await getSettings();
 			const effectiveTargetLang =
 				targetLang ||
-				settingsStore.get().translate.inputTranslateLang ||
-				settingsStore.get().translate.targetLang;
+				settings.translate.inputTranslateLang ||
+				settings.translate.targetLang;
 
 			if (config.type === "traditional") {
 				// Traditional services don't support streaming for input translation

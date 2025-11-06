@@ -1,22 +1,8 @@
-import type z from "zod";
 import type { RpcService } from "./rpc/factory";
-import type { SettingsSchema } from "./settings";
 import type { PageContext, TextContext } from "./types";
 
 export interface CoreService extends RpcService {
 	ping(): Promise<string>;
-}
-
-export interface SettingsService extends RpcService {
-	// Only return `settings.basic.enabled` for quick access.
-	isEnabled(): Promise<boolean>;
-	streamSettings(): AsyncGenerator<
-		z.infer<typeof SettingsSchema>,
-		void,
-		unknown
-	>;
-	setSettings(settings: z.infer<typeof SettingsSchema>): Promise<void>;
-	resetSettings(): Promise<void>;
 }
 
 export interface TranslateService extends RpcService {
@@ -69,7 +55,6 @@ export interface StyleService extends RpcService {
 
 export interface AllServices
 	extends CoreService,
-		SettingsService,
 		TranslateService,
 		StyleService {}
 
