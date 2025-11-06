@@ -8,8 +8,10 @@ export default defineContentScript({
 	main: () =>
 		requestIdleCallback(
 			async () => {
+				let last = false;
 				let dispose = () => {};
 				listenEnabled((enabled) => {
+					if (last === enabled) return;
 					if (enabled) {
 						waitRpc().then(() => {
 							dispose = mountOverlay(App);
@@ -17,6 +19,7 @@ export default defineContentScript({
 					} else {
 						dispose();
 					}
+					last = enabled;
 				});
 			},
 			{ timeout: 2000 },
