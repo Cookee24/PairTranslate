@@ -8,12 +8,12 @@ export default defineContentScript({
 	main: () =>
 		requestIdleCallback(
 			async () => {
-				await rpcReady();
-
 				let dispose = () => {};
 				listenEnabled((enabled) => {
 					if (enabled) {
-						dispose = mountOverlay(App);
+						waitRpc().then(() => {
+							dispose = mountOverlay(App);
+						});
 					} else {
 						dispose();
 					}
