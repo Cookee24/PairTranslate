@@ -35,7 +35,6 @@ export function generateTranslateSettings(): s.TranslateSettings {
 		maxBatchSize: 4,
 		sourceLang: "auto",
 		targetLang: targetLang,
-		filterTargetLanguage: true,
 		filterInteractive: true,
 		translationMode: "parallel",
 		inTextTranslateModel: id,

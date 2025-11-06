@@ -113,8 +113,7 @@ inTextTranslateModel = "文本内翻译模型"
 floatingTranslateModel = "浮窗翻译模型"
 floatingExplainModel = "浮窗解释模型"
 inputTranslateModel = "输入框翻译模型"
-filterTargetLanguage = "过滤目标语言"
-filterTargetLanguageDesc = "跳过已是目标语言的文本以提升性能（因 `franc` 准确度较低且资源消耗较高，当前已禁用）"
+
 filterInteractive = "过滤交互元素"
 filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素，以避免不必要的翻译"
 

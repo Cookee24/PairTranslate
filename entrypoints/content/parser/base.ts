@@ -191,24 +191,6 @@ export async function* textContentFilter(
 	}
 }
 
-// Filter elements that are not already in the target language
-export async function* targetLanguageFilter(
-	state: State,
-	prev: ElementGenerator,
-): ElementGenerator {
-	for await (const element of prev) {
-		const text = element.textContent || "";
-
-		// Skip if text is already in target language
-		const currentLang = detectLanguageISO639_3(text);
-		if (state.languageFilters.includes(currentLang)) {
-			continue;
-		}
-
-		yield element;
-	}
-}
-
 export function pipe(
 	state: State,
 	fn: InitialGeneratorFn,
@@ -234,8 +216,6 @@ export function getState(options: Options = {}): State {
 		),
 		judgeFns: options.judgeFns || [],
 		listenNew: options.listenNew || true,
-		languageFilters:
-			convertBCP_47ToISO639_3(options.targetLanguage || "") || [],
 		mutationObserverCallbacks: new Set<MutationCallback>(),
 		extraTextFilters: options.extraTextFilters || [],
 	};
@@ -248,9 +228,6 @@ export function domListener(options: Options = {}): ElementGenerator {
 		emittedFilter,
 		textContentFilter,
 	];
-	if (state.languageFilters.length > 0) {
-		defaultGenerators.push(targetLanguageFilter);
-	}
 	const appendGenerators = options.appendGenerators || [];
 
 	return pipe(state, textWalker, ...defaultGenerators, ...appendGenerators);

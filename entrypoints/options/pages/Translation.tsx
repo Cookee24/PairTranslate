@@ -182,16 +182,6 @@ export default (props: { navId: string }) => {
 				</div>
 
 				<SettingsCheckbox
-					label={t("settings.translation.filterTargetLanguage")}
-					helperText={t("settings.translation.filterTargetLanguageDesc")}
-					checked={localSettings.filterTargetLanguage}
-					onChange={(e) =>
-						setLocalSettings("filterTargetLanguage", e.target.checked)
-					}
-					disabled
-				/>
-
-				<SettingsCheckbox
 					label={t("settings.translation.filterInteractive")}
 					helperText={t("settings.translation.filterInteractiveDesc")}
 					checked={localSettings.filterInteractive}

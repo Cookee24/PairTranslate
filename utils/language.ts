@@ -1,4 +1,3 @@
-import { franc } from "franc-min";
 import { SUPPORTED_LANGUAGES } from "~/utils/constants";
 
 /**
@@ -58,17 +57,4 @@ export function getSupportedLanguageCodes(): string[] {
 export function getLanguageName(code: string): string | null {
 	const language = SUPPORTED_LANGUAGES.find((lang) => lang.code === code);
 	return language?.name || null;
-}
-
-/**
- * Convert BCP 47 language codes to ISO 639-3 codes
- * @param bcp47 BCP 47 language code (e.g., "en", "es", "zh-CN")
- * @returns Corresponding ISO 639-3 codes or null if not found
- */
-export function convertBCP_47ToISO639_3(bcp47: string): string[] | null {
-	return BCP_47_TO_ISO_639_3[bcp47] || null;
-}
-
-export function detectLanguageISO639_3(text: string): string {
-	return franc(text);
 }

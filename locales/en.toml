@@ -113,8 +113,7 @@ inTextTranslateModel = "In-text Translation Model"
 floatingTranslateModel = "Floating Translation Model"
 floatingExplainModel = "Floating Explanation Model"
 inputTranslateModel = "Input Translation Model"
-filterTargetLanguage = "Filter Target Language"
-filterTargetLanguageDesc = "Skip text already in target language to improve performance (currently disabled since `franc` is inaccurate and performance consuming)"
+
 filterInteractive = "Filter Interactive Elements"
 filterInteractiveDesc = "Skip interactive elements like buttons, headers, navigation, and footers to avoid unwanted translations"
 

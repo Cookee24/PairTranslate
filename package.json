@@ -27,7 +27,6 @@
 		"@solid-primitives/refs": "^1.1.2",
 		"@wxt-dev/i18n": "^0.2.4",
 		"clsx": "^2.1.1",
-		"franc-min": "^6.2.0",
 		"katex": "^0.16.25",
 		"lucide-solid": "^0.543.0",
 		"motion": "^12.23.14",
