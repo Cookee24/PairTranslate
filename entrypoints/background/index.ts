@@ -1,11 +1,10 @@
 import { initializeSettings } from "~/utils/settings/helper";
 import { setRpc } from "./rpc";
 
-export default defineBackground(async () => {
+export default defineBackground(() => {
 	console.log("Pair Translate background script loaded", {
 		id: browser.runtime.id,
 	});
 
-	await initializeSettings();
-	setRpc();
+	initializeSettings().then(setRpc);
 });
