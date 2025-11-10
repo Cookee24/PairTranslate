@@ -4,9 +4,8 @@ import TipRenderer from "./components/TipRenderer";
 import TranslatorHost from "./components/TranslatorHost";
 
 const Content = () => {
-	const { settings } = useSettings();
 	// Media query is not supported in shadow DOM, so manually apply theme class
-	const theme = createTheme(settings.basic.theme);
+	const theme = createTheme();
 
 	return (
 		<div class="contents" attr:data-theme={getThemeClass(theme())}>
