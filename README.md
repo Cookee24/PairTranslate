@@ -9,17 +9,39 @@ Supports major translation platforms and LLMs, including Google Translate, Bing,
 
 ### Features
 
-+ In-line translation: Translated text is appended next to the original text for easy comparison.
-+ Auto-caching and batching: Reduces redundant requests, speeds up translation and more context-effective.
-+ Selection-based translation: Translate/Explain only the text you select.
+- **Private & Secure**: All translations are processed locally in your browser. No data is collected or stored.
+
+- **Dual Translation Modes**: Choose between side-by-side parallel translation (view both original and translated text simultaneously) or traditional replace mode (hide original text)
+
+- **Multiple Selection Modes**: Support for word-level, paragraph-level, and full-page translation modes, providing flexible and intuitive user experience
+
+- **Markdown-First Approach**: Optimized for large language models with concise context. Supports mathematical formula parsing and allows copying translations in markdown format
+
+- **Intelligent Caching & Batch Processing**: Automatic caching of translations combined with batch processing to minimize context usage and achieve lower latency
+
+- **Input Field Translation**: One-click translation of text already entered in input boxes and text areas
+
+### Screenshots
+
+| Side-by-Side Mode                         | Replace Mode                         |
+| ----------------------------------------- | ------------------------------------ |
+| ![Side-by-Side Mode](./screenshots/1.png) | ![Replace Mode](./screenshots/2.png) |
+
+| Markdown Copy                         | Selection Translation                         |
+| ------------------------------------- | --------------------------------------------- |
+| ![Markdown Copy](./screenshots/3.png) | ![Selection Translation](./screenshots/4.png) |
+
+| Input Field Translation                         | Settings Page                         |
+| ----------------------------------------------- | ------------------------------------- |
+| ![Input Field Translation](./screenshots/5.png) | ![Settings Page](./screenshots/6.png) |
 
 ### Installation
 
-| Browser | Store |
-|---|---|
-| Chrome | [Chrome Web Store (TODO)](#) |
-| Firefox | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/pair-translate/) |
-| Edge | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/mhnjhanomaajlmdlnilhgkhaeldhkkgp) |
+| Browser | Store                                                                                                        |
+| ------- | ------------------------------------------------------------------------------------------------------------ |
+| Chrome  | [Chrome Web Store](https://chromewebstore.google.com/detail/pair-translate/jpjodbfcidhificogpbddmappeioodea)                                                                                 |
+| Firefox | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/pair-translate/)                                  |
+| Edge    | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/mhnjhanomaajlmdlnilhgkhaeldhkkgp) |
 
 ### Development
 
