@@ -23,13 +23,13 @@ export default (props: Props) => {
 	const enter = (element: Element) =>
 			animate(
 				element,
-				{ translateX: 0 },
+				{ translateX: 0, opacity: 1 },
 				{ type: "spring", bounce: 0, duration: 0.3 },
 			),
 		exit = (element: Element) =>
 			animate(
 				element,
-				{ translateX: isLeft() ? "-50%" : "50%" },
+				{ translateX: isLeft() ? "-50%" : "50%", opacity: 0.5 },
 				{ type: "spring", bounce: 0, duration: 0.3 },
 			);
 
