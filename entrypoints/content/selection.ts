@@ -5,7 +5,7 @@ export async function* selectionListener() {
 	try {
 		while (true) {
 			const { promise, resolve } = Promise.withResolvers<SelectEvent>();
-			cancel = listener(resolve).cancel;
+			cancel = listener(resolve);
 			yield await promise;
 		}
 	} finally {
@@ -15,10 +15,10 @@ export async function* selectionListener() {
 
 const listener = (callback: (data: SelectEvent) => void) => {
 	let canceled = false;
-	let id: number | undefined;
+	let id: NodeJS.Timeout | undefined;
 	const cancel = () => {
 		canceled = true;
-		if (id !== undefined) cancelIdleCallback(id);
+		if (id !== undefined) clearTimeout(id);
 	};
 
 	const work = async () => {
@@ -72,12 +72,12 @@ const listener = (callback: (data: SelectEvent) => void) => {
 				return;
 			}
 
-			if (!canceled) id = requestIdleCallback(work);
+			if (!canceled) id = setTimeout(work, 0);
 		} finally {
 			document.removeEventListener("selectstart", sResolve);
 		}
 	};
-	id = requestIdleCallback(work);
+	id = setTimeout(work, 0);
 
-	return { cancel };
+	return cancel;
 };
