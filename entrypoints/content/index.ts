@@ -22,6 +22,6 @@ export default defineContentScript({
 					last = enabled;
 				});
 			},
-			{ timeout: 2000 },
+			{ timeout: 500 },
 		),
 });
