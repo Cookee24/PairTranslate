@@ -1,6 +1,5 @@
 import { Check, Loader } from "lucide-solid";
 import { animate } from "motion";
-import icon from "~/assets/icon.webp";
 
 interface Props {
 	enabled?: boolean;
@@ -175,7 +174,10 @@ export default (props: Props) => {
 							/>
 						)}
 					</Show>
-					<img src={icon} alt={t("common.floatingBallIcon")} />
+					<img
+						src={browser.runtime.getURL("/icons/128.png")}
+						alt={t("common.floatingBallIcon")}
+					/>
 				</Button>
 			</div>
 		</Show>

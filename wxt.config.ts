@@ -20,7 +20,7 @@ export default defineConfig({
 		default_locale: "en",
 		web_accessible_resources: [
 			{
-				resources: ["katex/*"],
+				resources: ["katex/*", "icons/*"],
 				matches: ["<all_urls>"],
 			},
 		],
