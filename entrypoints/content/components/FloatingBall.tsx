@@ -130,7 +130,7 @@ export default (props: Props) => {
 		<Show when={settings.basic.floatingBallEnabled}>
 			<div
 				ref={setRef}
-				class="fixed p-2"
+				class="fixed p-2 opacity-50"
 				classList={{
 					"left-0": isLeft(),
 					"right-0": !isLeft(),
