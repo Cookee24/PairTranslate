@@ -18,35 +18,32 @@ const SettingsContext = createContext<SettingsContextType>();
 
 export function SettingsProvider(props: { children: JSX.Element }) {
 	const [settings, setSettings] = createStore<s.SettingsSchema>(
-		generateDefaultSettings(),
+		// @ts-ignore This is usually fine, since children are only rendered after loaded
+		{},
 	);
 	const [loading, setLoading] = createSignal(true);
 	const [error, setError] = createSignal<string | null>(null);
-	const [setSettingsSignal, fireSetSettingsSignal] = createSignal(null, {
-		equals: false,
-	});
+	const [render, setRender] = createSignal(false);
 
-	createEffect(
-		on(
-			setSettingsSignal,
-			async (_) => {
-				setLoading(true);
-				setError(null);
-
-				saveSettings(unwrap(settings));
-			},
-			{ defer: true },
-		),
-	);
-
-	onMount(() => {
+	const performSaveSettings = async (newSettings: s.SettingsSchema) => {
 		setLoading(true);
 		setError(null);
 
+		try {
+			await saveSettings(newSettings);
+		} catch (error) {
+			setError((error as Error).message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	onMount(() => {
 		const unlisten = listenSettings((newSettings) => {
 			setSettings(reconcile(newSettings));
 
-			setTimeout(() => setLoading(false));
+			setLoading(false);
+			setRender(true);
 		});
 		onCleanup(unlisten);
 	});
@@ -57,7 +54,7 @@ export function SettingsProvider(props: { children: JSX.Element }) {
 		setSettings: (...args: any[]) => {
 			// @ts-expect-error: args type
 			setSettings(...args);
-			fireSetSettingsSignal(null);
+			performSaveSettings(unwrap(settings));
 		},
 		loading,
 		error,
@@ -65,7 +62,7 @@ export function SettingsProvider(props: { children: JSX.Element }) {
 
 	return (
 		<SettingsContext.Provider value={contextValue}>
-			{props.children}
+			<Show when={render()}>{props.children}</Show>
 		</SettingsContext.Provider>
 	);
 }
