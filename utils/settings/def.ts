@@ -19,6 +19,7 @@ export const BasicSettings = z.object({
 	keyboardShortcut: z.string().default("Alt+T"),
 	selectionTranslateEnabled: z.boolean().default(true),
 	inputTranslateEnabled: z.boolean().default(true),
+	progressIndicationEnabled: z.boolean().default(true),
 });
 export type BasicSettings = z.infer<typeof BasicSettings>;
 

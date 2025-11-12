@@ -132,6 +132,15 @@ export default (props: { navId: string }) => {
 						setSettings("basic", "inputTranslateEnabled", e.target.checked)
 					}
 				/>
+
+				<SettingsToggle
+					label={t("settings.basic.progressIndicationEnabled")}
+					helperText={t("settings.basic.progressIndicationEnabledDesc")}
+					checked={settings.basic.progressIndicationEnabled}
+					onChange={(e) =>
+						setSettings("basic", "progressIndicationEnabled", e.target.checked)
+					}
+				/>
 			</FormGrid>
 		</SettingsCard>
 	);

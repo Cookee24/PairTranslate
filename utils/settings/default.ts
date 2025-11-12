@@ -20,6 +20,7 @@ export function generateBasicSettings(): s.BasicSettings {
 		keyboardShortcut: "Alt+T",
 		selectionTranslateEnabled: true,
 		inputTranslateEnabled: true,
+		progressIndicationEnabled: true,
 	};
 }
 

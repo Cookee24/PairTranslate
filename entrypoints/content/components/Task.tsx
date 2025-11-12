@@ -25,10 +25,12 @@ const TaskPopupContent = () => {
 export default () => {
 	const { runningTasks } = useTaskList();
 	const { createPopup, getPopupStore } = usePopup();
+	const { settings } = useSettings();
 	const [popup, setPopup] = createSignal<PopupActions>();
 
 	createEffect(() => {
-		const popup_ = popup();
+		if (!settings.basic.progressIndicationEnabled) return;
+		const popup_ = untrack(popup);
 		if (runningTasks() > 0 && !popup_) {
 			const id = createPopup(() => <TaskPopupContent />, {
 				position: clampPosition(
