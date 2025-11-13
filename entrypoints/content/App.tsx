@@ -8,7 +8,7 @@ const Content = () => {
 	const theme = createTheme();
 
 	return (
-		<div class="contents" attr:data-theme={getThemeClass(theme())}>
+		<div class="overlay-container" attr:data-theme={getThemeClass(theme())}>
 			<ContentStyle />
 			<KatexStyle />
 			<TranslatorHost />
