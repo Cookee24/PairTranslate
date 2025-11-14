@@ -118,6 +118,8 @@ inputTranslateModel = "Input Translation Model"
 
 filterInteractive = "Filter Interactive Elements"
 filterInteractiveDesc = "Skip interactive elements like buttons, headers, navigation, and footers to avoid unwanted translations"
+translateFullPage = "Translation Scope"
+translateFullPageDesc = "When checked, translate entire page content; when unchecked, only translate visible content"
 
 [settings.translation.languages]
 en = "English"

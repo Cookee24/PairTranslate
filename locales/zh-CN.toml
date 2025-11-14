@@ -118,6 +118,8 @@ inputTranslateModel = "输入框翻译模型"
 
 filterInteractive = "过滤交互元素"
 filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素，以避免不必要的翻译"
+translateFullPage = "翻译整页"
+translateFullPageDesc = "勾选后翻译整页内容，不勾选则仅翻译可见内容"
 
 [settings.translation.languages]
 en = "英语"

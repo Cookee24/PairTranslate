@@ -38,6 +38,7 @@ export function generateTranslateSettings(): s.TranslateSettings {
 		targetLang: targetLang,
 		filterInteractive: true,
 		translationMode: "parallel",
+		translateFullPage: false,
 		inTextTranslateModel: id,
 		floatingTranslateModel: id,
 		floatingExplainModel: undefined,

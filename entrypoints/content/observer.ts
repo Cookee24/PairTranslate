@@ -37,7 +37,7 @@ const init = () => {
 	}
 };
 
-export const onIntersection = (
+export const listenIntersectionOrRemove = (
 	element: HTMLElement,
 	callback: (intersectOrRemove: boolean) => void,
 ) => {
@@ -45,6 +45,12 @@ export const onIntersection = (
 	if (callbacks.has(element)) return;
 	callbacks.set(element, callback);
 	intersectionObserver.observe(element);
+};
+
+export const listenRemove = (element: HTMLElement, callback: () => void) => {
+	init();
+	if (callbacks.has(element)) return;
+	callbacks.set(element, callback);
 };
 
 const triggerListener = (element: HTMLElement, intersectOrRemove: boolean) => {

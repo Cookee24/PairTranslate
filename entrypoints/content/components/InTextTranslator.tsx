@@ -1,5 +1,9 @@
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
-import { destroyObservers, onIntersection } from "../observer";
+import {
+	destroyObservers,
+	listenIntersectionOrRemove,
+	listenRemove,
+} from "../observer";
 import { getDomListener } from "../parser";
 
 interface Props {
@@ -28,14 +32,26 @@ export default (props: Props) => {
 
 				for await (const element of listener) {
 					if (cancelled) break;
-					onIntersection(element, (shouldRender) => {
-						shouldRender
-							? setSet((s) => s.add(element))
-							: setSet((s) => {
-									s.delete(element);
-									return s;
-								});
-					});
+
+					const fullPage = settings.translate.translateFullPage;
+					if (fullPage) {
+						setSet((s) => s.add(element));
+						listenRemove(element, () => {
+							setSet((s) => {
+								s.delete(element);
+								return s;
+							});
+						});
+					} else {
+						listenIntersectionOrRemove(element, (shouldRender) => {
+							shouldRender
+								? setSet((s) => s.add(element))
+								: setSet((s) => {
+										s.delete(element);
+										return s;
+									});
+						});
+					}
 				}
 			},
 		),

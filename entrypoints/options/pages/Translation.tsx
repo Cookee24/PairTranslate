@@ -191,6 +191,15 @@ export default (props: { navId: string }) => {
 						setLocalSettings("filterInteractive", e.target.checked)
 					}
 				/>
+
+				<SettingsCheckbox
+					label={t("settings.translation.translateFullPage")}
+					helperText={t("settings.translation.translateFullPageDesc")}
+					checked={localSettings.translateFullPage}
+					onChange={(e) =>
+						setLocalSettings("translateFullPage", e.target.checked)
+					}
+				/>
 			</FormGrid>
 			<div class="divider" />
 			<FormGrid gap="lg">

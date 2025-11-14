@@ -118,6 +118,8 @@ inputTranslateModel = "入力フィールド翻訳モデル"
 
 filterInteractive = "インタラクティブ要素をフィルター"
 filterInteractiveDesc = "ボタン、ヘッダー、ナビゲーション、フッターなどのインタラクティブ要素をスキップして、不要な翻訳を避けます"
+translateFullPage = "ページ全体を翻訳"
+translateFullPageDesc = "チェックすると、ページ全体のコンテンツを翻訳します。チェックしないと、表示されているコンテンツのみを翻訳します"
 
 [settings.translation.languages]
 en = "英語"
