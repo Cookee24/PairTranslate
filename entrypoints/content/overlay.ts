@@ -6,6 +6,7 @@ let _dispose: (() => void) | null = null;
 export const mountOverlay = (app: () => JSX.Element) => {
 	const container = document.createElement("div");
 	container.style.display = "contents";
+	container.setAttribute(ELEMENT_CONTAINER, "");
 	const root = container.attachShadow({ mode: "open" });
 
 	window.rpc.getContentStyles().then(([documentCss, shadowCss]) =>
