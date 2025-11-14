@@ -1,7 +1,6 @@
 import { createEffect, createSignal, on, onCleanup } from "solid-js";
 import { SUPPORTED_LANGUAGES } from "~/utils/constants";
-import type { Position } from "../types";
-import { clampPosition, type PopupActions, usePopup } from "./Popup";
+import { usePopup } from "./Popup";
 
 const TranslateElement = (props: {
 	element?: HTMLInputElement | HTMLTextAreaElement;
@@ -137,13 +136,10 @@ interface Props {
 	onClose?: () => void;
 }
 export default (props: Props) => {
-	const { createPopup, getPopupStore } = usePopup();
-	const [popupActions, setPopupActions] = createSignal<PopupActions>();
+	const { addPopup } = usePopup();
 
 	// Calculate position near the input element
-	const calculatePopupPosition = (
-		element: HTMLElement,
-	): { position: Position; width: number; height: number } => {
+	const calculatePopupPosition = (element: HTMLElement) => {
 		const rect = element.getBoundingClientRect();
 		const popupWidth = 400;
 		const popupHeight = 300;
@@ -168,51 +164,31 @@ export default (props: Props) => {
 			}
 		}
 
-		// Clamp position to viewport
-		const position = clampPosition(
-			{ x, y },
-			{ width: popupWidth, height: popupHeight },
-		);
-
-		return { position, width: popupWidth, height: popupHeight };
+		return { x, y, width: popupWidth, height: popupHeight };
 	};
 
 	createEffect(
 		on(
 			() => props.element,
 			(element) => {
-				// Clean up previous popup if exists
-				popupActions()?.setVisibility(false);
-				setPopupActions(undefined);
-
-				// Create new popup if element is provided
 				if (element) {
-					const { position, width, height } = calculatePopupPosition(element);
-
-					const id = createPopup(
-						() => (
+					const pos = calculatePopupPosition(element);
+					const currentPopup = addPopup({
+						...pos,
+						pinned: true,
+						content: () => (
 							<TranslateElement
 								element={element as HTMLInputElement | HTMLTextAreaElement}
-								onClose={() => popupActions()?.setVisibility(false)}
+								onClose={() => currentPopup.close()}
 							/>
 						),
-						{
-							position,
-							width,
-							height,
-						},
-					);
+					});
 
-					setPopupActions(getPopupStore(id)?.[1]);
+					onCleanup(() => currentPopup.close());
 				}
 			},
 		),
 	);
-
-	// Clean up on unmount
-	onCleanup(() => {
-		popupActions()?.setVisibility(false);
-	});
 
 	return null;
 };

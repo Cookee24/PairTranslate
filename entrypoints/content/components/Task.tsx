@@ -1,5 +1,4 @@
-import { createEffect, createSignal } from "solid-js";
-import { clampPosition, type PopupActions, usePopup } from "./Popup";
+import { usePopup } from "./Popup";
 
 const TaskPopupContent = () => {
 	const { runningTasks, totalTasks, completedTasks } = useTaskList();
@@ -24,30 +23,24 @@ const TaskPopupContent = () => {
 
 export default () => {
 	const { runningTasks } = useTaskList();
-	const { createPopup, getPopupStore } = usePopup();
+	const { addPopup } = usePopup();
 	const { settings } = useSettings();
-	const [popup, setPopup] = createSignal<PopupActions>();
 
 	createEffect(() => {
 		if (!settings.basic.progressIndicationEnabled) return;
-		const popup_ = untrack(popup);
-		if (runningTasks() > 0 && !popup_) {
-			const id = createPopup(() => <TaskPopupContent />, {
-				position: clampPosition(
-					{ x: window.innerWidth - 280, y: 20 },
-					{
-						width: 240,
-						height: 160,
-					},
-				),
+		if (runningTasks() > 0) {
+			const popup = addPopup({
+				x: window.innerWidth - 280,
+				y: 20,
 				width: 240,
 				height: 160,
 				pinned: true,
+				content: () => <TaskPopupContent />,
 			});
-			setPopup(getPopupStore(id)?.[1]);
-		} else if (runningTasks() === 0 && popup_) {
-			popup_.setVisibility(false);
-			setPopup(undefined);
+
+			onCleanup(() => {
+				popup.close();
+			});
 		}
 	});
 

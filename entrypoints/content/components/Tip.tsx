@@ -4,7 +4,7 @@ import { getPageContext } from "../context/page";
 import { extractContextFromSelection } from "../context/select";
 import type { Position, SelectEvent } from "../types";
 import FloatTranslation from "./FloatTranslation";
-import { clampPosition, usePopup } from "./Popup";
+import { usePopup } from "./Popup";
 
 interface Props {
 	event?: SelectEvent;
@@ -13,7 +13,7 @@ interface Props {
 export default (props: Props) => {
 	const [ref, setRef] = createSignal<HTMLElement>();
 	let pos = { x: 0, y: 0 };
-	const { createPopup } = usePopup();
+	const { addPopup } = usePopup();
 	const { settings } = useSettings();
 
 	const [show, setShow] = createSignal(false);
@@ -41,20 +41,16 @@ export default (props: Props) => {
 		const textContext = extractContextFromSelection(selection);
 		if (!textContext || !textContext.content) return;
 		const pageContext = getPageContext();
-		// Keep reactive
-		const pinned = () => settings.basic.autoPin;
 
-		createPopup(
-			() => (
+		addPopup({
+			...pos,
+			pinned: settings.basic.autoPin,
+			content: () => (
 				<FloatTranslation
 					operation={{ type: action, textContext, pageContext }}
 				/>
 			),
-			{
-				position: clampPosition(pos),
-				pinned: pinned(),
-			},
-		);
+		});
 	};
 
 	createEffect(() => {
