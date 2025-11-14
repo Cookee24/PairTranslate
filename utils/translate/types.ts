@@ -1,4 +1,6 @@
-export type TranslationService = "google" | "microsoft" | "deepl";
+import type { TraditionalTranslationConfig } from "../settings";
+
+export type TranslationService = TraditionalTranslationConfig["apiSpec"];
 
 export interface TranslationConfig {
 	apiKey: string;
@@ -49,4 +51,14 @@ export type DeepLTranslateResponse = {
 		detected_source_language?: string;
 		text: string;
 	}>;
+};
+
+export type DeepLXTranslateResponse = {
+	code: number;
+	data: string;
+	source_lang?: string;
+	target_lang: string;
+	alternatives?: string[];
+	id?: number;
+	method?: string;
 };

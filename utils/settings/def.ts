@@ -37,7 +37,9 @@ export type ModelConfig = z.infer<typeof ModelConfig>;
 export const TraditionalTranslationConfig = z.object({
 	name: z.string().min(1),
 	baseUrl: z.string().url().optional(),
-	apiSpec: z.enum(["microsoft", "google", "deepl"]).default("microsoft"),
+	apiSpec: z
+		.enum(["microsoft", "google", "deepl", "deeplx"])
+		.default("microsoft"),
 	apiKey: z.string().optional(),
 	region: z.string().optional(),
 });

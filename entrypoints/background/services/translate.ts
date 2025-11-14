@@ -118,7 +118,11 @@ const getModelConfig = async (modelId: string) => {
 		return {
 			...traditional,
 			type: "traditional" as const,
-			apiSpec: traditional.apiSpec as "google" | "microsoft" | "deepl",
+			apiSpec: traditional.apiSpec as
+				| "google"
+				| "microsoft"
+				| "deepl"
+				| "deeplx",
 		};
 	}
 

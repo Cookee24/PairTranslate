@@ -201,6 +201,7 @@ regionDesc = "Required for Microsoft Translator regional resources"
 microsoft = "Microsoft Bing Translate"
 google = "Google Translate"
 deepl = "DeepL"
+deeplx = "DeepLX"
 
 [settings.about]
 title = "About PairTranslate"

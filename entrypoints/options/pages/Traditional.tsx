@@ -23,7 +23,7 @@ export default (props: { navId: string }) => {
 	);
 
 	const renderTraditionalServiceDetails = (service: ServiceConfig) => (
-		<div class="space-y-1 text-sm text-base-content/70">
+		<div class="space-y-1 text-sm text-base-content/70 overflow-ellipsis">
 			<p>
 				<strong>{t("settings.traditionalServices.serviceDetails.api")}:</strong>{" "}
 				{service.apiSpec}

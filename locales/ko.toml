@@ -200,6 +200,7 @@ regionDesc = "Microsoft Translator 지역 리소스에 필요합니다"
 microsoft = "Microsoft Bing 번역"
 google = "Google 번역"
 deepl = "DeepL"
+deeplx = "DeepLX"
 
 [settings.about]
 title = "PairTranslate 정보"

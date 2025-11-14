@@ -201,6 +201,7 @@ regionDesc = "Microsoft Translatorのリージョンリソースに必要です"
 microsoft = "Microsoft Bing翻訳"
 google = "Google翻訳"
 deepl = "DeepL"
+deeplx = "DeepLX"
 
 [settings.about]
 title = "PairTranslateについて"

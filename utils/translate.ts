@@ -1,4 +1,5 @@
 import { deepLTranslate } from "./translate/deepl";
+import { deeplxTranslate } from "./translate/deeplx";
 import { googleTranslate } from "./translate/google";
 import { microsoftTranslate } from "./translate/microsoft";
 import type {
@@ -20,12 +21,15 @@ export const translate = async (
 			return microsoftTranslate(config, params);
 		case "deepl":
 			return deepLTranslate(config, params);
+		case "deeplx":
+			return deeplxTranslate(config, params);
 		default:
 			throw new Error(`Unknown translation service: ${service}`);
 	}
 };
 
 export { deepLTranslate } from "./translate/deepl";
+export { deeplxTranslate } from "./translate/deeplx";
 export { googleTranslate } from "./translate/google";
 export { microsoftTranslate } from "./translate/microsoft";
 export * from "./translate/types";

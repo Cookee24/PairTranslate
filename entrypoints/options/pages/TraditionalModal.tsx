@@ -103,19 +103,17 @@ export default (props: TraditionalModalProps) => {
 						onChange={(e) =>
 							setFormData({
 								...formData(),
-								apiSpec: e.target.value as "microsoft" | "google" | "deepl",
+								apiSpec: e.target.value as TranslationService,
 							})
 						}
 					>
-						<option value="microsoft">
-							{t("settings.traditionalModal.apiSpecs.microsoft")}
-						</option>
-						<option value="google">
-							{t("settings.traditionalModal.apiSpecs.google")}
-						</option>
-						<option value="deepl">
-							{t("settings.traditionalModal.apiSpecs.deepl")}
-						</option>
+						{(["microsoft", "google", "deepl", "deeplx"] as const).map(
+							(spec) => (
+								<option value={spec}>
+									{t(`settings.traditionalModal.apiSpecs.${spec}`)}
+								</option>
+							),
+						)}
 					</select>
 				</div>
 

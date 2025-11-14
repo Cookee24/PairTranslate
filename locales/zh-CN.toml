@@ -201,6 +201,7 @@ regionDesc = "Microsoft Translator 区域资源需要"
 microsoft = "微软必应翻译"
 google = "谷歌翻译"
 deepl = "DeepL"
+deeplx = "DeepLX"
 
 [settings.about]
 title = "关于 PairTranslate"
