@@ -1,5 +1,6 @@
 import { Check, Loader } from "lucide-solid";
-import { animate } from "motion";
+import { spring } from "motion";
+import { animate } from "motion/mini";
 
 interface Props {
 	enabled?: boolean;
@@ -19,19 +20,22 @@ export default (props: Props) => {
 
 	const { runningTasks } = useTaskList();
 
+	const exitedState = () => (isLeft() ? "-50%" : "50%");
 	const enter = (element: Element) =>
-			animate(
-				element,
-				{ translateX: 0, opacity: 1 },
-				{ type: "spring", bounce: 0, duration: 0.3 },
-			),
-		exit = (element: Element) =>
-			animate(
-				element,
-				{ translateX: isLeft() ? "-50%" : "50%", opacity: 0.5 },
-				{ type: "spring", bounce: 0, duration: 0.3 },
-			);
-
+		animate(
+			element,
+			{ transform: `translateX(0)`, opacity: 1 },
+			{ type: spring, bounce: 0, duration: 0.3 },
+		);
+	const exit = (element: Element) =>
+		animate(
+			element,
+			{
+				transform: `translateX(${exitedState()})`,
+				opacity: 0.5,
+			},
+			{ type: spring, bounce: 0, duration: 0.3 },
+		);
 	animatedHover(ref, () => !isDragging(), enter, exit);
 
 	const [isDragging, setIsDragging] = createSignal(false);
@@ -136,7 +140,7 @@ export default (props: Props) => {
 				}}
 				style={{
 					top: `${top()}vh`,
-					transform: isLeft() ? "translateX(-50%)" : "translateX(50%)",
+					transform: `translateX(${exitedState()})`,
 				}}
 			>
 				<Button

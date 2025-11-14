@@ -1,43 +1,40 @@
-import { type AnimationPlaybackControlsWithThen, animate } from "motion";
+import { spring } from "motion";
+import { animate } from "motion/mini";
 import type { Accessor } from "solid-js";
 
 export const animateEnter = (element: Element) =>
 	animate(
 		element,
 		{ opacity: [0, 1], scale: [0.8, 1], filter: ["blur(2px)", "blur(0px)"] },
-		{ type: "spring", bounce: 0, duration: 0.3 },
+		{ type: spring, bounce: 0, duration: 0.3 },
 	);
 
 export const animateExit = (element: Element) =>
 	animate(
 		element,
 		{ opacity: [1, 0], scale: [1, 0.8], filter: ["blur(0px)", "blur(2px)"] },
-		{ type: "spring", bounce: 0, duration: 0.3 },
+		{ type: spring, bounce: 0, duration: 0.3 },
 	);
 
 export const animateLift = (element: Element) =>
 	animate(
 		element,
 		{ boxShadow: "var(--shadow-lg)", scale: 0.98 },
-		{ type: "spring", bounce: 0, duration: 0.3 },
+		{ type: spring, bounce: 0, duration: 0.3 },
 	);
 
 export const animateDown = (element: Element) =>
 	animate(
 		element,
 		{ boxShadow: "var(--shadow-md)", scale: 1 },
-		{ type: "spring", bounce: 0, duration: 0.3 },
+		{ type: spring, bounce: 0, duration: 0.3 },
 	);
 
 export const animateScaleUp = (element: Element) =>
-	animate(
-		element,
-		{ scale: 1.05 },
-		{ type: "spring", bounce: 0, duration: 0.3 },
-	);
+	animate(element, { scale: 1.05 }, { type: spring, bounce: 0, duration: 0.3 });
 
 export const animateScaleDown = (element: Element) =>
-	animate(element, { scale: 1 }, { type: "spring", bounce: 0, duration: 0.3 });
+	animate(element, { scale: 1 }, { type: spring, bounce: 0, duration: 0.3 });
 
 export const animateBlink = (element: Element, times = 1) => {
 	const colors = [];
@@ -56,21 +53,13 @@ export const animateBlink = (element: Element, times = 1) => {
 };
 
 export const animatePress = (element: Element) =>
-	animate(
-		element,
-		{ scale: 0.95 },
-		{ type: "spring", bounce: 0, duration: 0.2 },
-	);
+	animate(element, { scale: 0.95 }, { type: spring, bounce: 0, duration: 0.2 });
 
 export const animateFocus = (element: Element) =>
-	animate(
-		element,
-		{ scale: 1.1 },
-		{ type: "spring", bounce: 0, duration: 0.2 },
-	);
+	animate(element, { scale: 1.1 }, { type: spring, bounce: 0, duration: 0.2 });
 
 export const animateUnfocus = (element: Element) =>
-	animate(element, { scale: 1 }, { type: "spring", bounce: 0, duration: 0.2 });
+	animate(element, { scale: 1 }, { type: spring, bounce: 0, duration: 0.2 });
 
 export const animateClose = (element: Element) =>
 	animate(
@@ -82,7 +71,7 @@ export const animateClose = (element: Element) =>
 			padding: [0, 0],
 			transform: ["translateY(0)", "translateY(-10px)"],
 		},
-		{ type: "spring", bounce: 0, duration: 0.3 },
+		{ type: spring, bounce: 0, duration: 0.3 },
 	);
 
 export const animatePulse = (element: Element) =>
@@ -92,9 +81,7 @@ export const animatePulse = (element: Element) =>
 		{ repeat: Infinity, repeatType: "reverse", duration: 1 },
 	);
 
-type AnimationFunction = (
-	element: Element,
-) => AnimationPlaybackControlsWithThen;
+type AnimationFunction = (element: Element) => ReturnType<typeof animate>;
 
 export const createAnimation = (
 	element: Accessor<Element | undefined>,

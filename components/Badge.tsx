@@ -1,5 +1,4 @@
 import { mergeRefs } from "@solid-primitives/refs";
-import { hover } from "motion";
 import {
 	type Component,
 	createEffect,
@@ -61,21 +60,18 @@ export const Badge: Component<BadgeProps> = (props) => {
 
 	let elementRef: HTMLDivElement | undefined;
 
-	// Use animation hooks
-	createEffect(() => {
-		if (!elementRef) return;
+	onMount(() => {
+		createEffect(() => {
+			if (local.pulse && elementRef) {
+				const anim = animatePulse(elementRef);
+				onCleanup(() => anim.cancel());
+			}
+		});
 
-		if (local.pulse) {
-			animatePulse(elementRef);
-		} else {
-			// Use standard hover and press animations
-			onCleanup(
-				hover(elementRef, (el) => {
-					animateScaleUp(el);
-					return () => animateScaleDown(el);
-				}),
-			);
-		}
+		animatedHover(
+			() => elementRef,
+			() => !local.pulse,
+		);
 	});
 
 	if (local.dot) {

@@ -1,14 +1,5 @@
 import { mergeRefs } from "@solid-primitives/refs";
-import { animate, hover } from "motion";
-import {
-	type Component,
-	createEffect,
-	For,
-	type JSX,
-	onCleanup,
-	Show,
-	splitProps,
-} from "solid-js";
+import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
 import { cn } from "~/utils/cn";
 
@@ -82,15 +73,10 @@ export const Avatar: Component<AvatarProps> = (props) => {
 
 	let imageRef: HTMLImageElement | undefined;
 
-	// Use animation hooks for hover effect
-	createEffect(() => {
-		if (!imageRef) return;
-
-		onCleanup(
-			hover(imageRef, (el) => {
-				animate(el, { scale: 1.1 });
-				return () => animate(el, { scale: 1 });
-			}),
+	onMount(() => {
+		animatedHover(
+			() => imageRef,
+			() => true,
 		);
 	});
 

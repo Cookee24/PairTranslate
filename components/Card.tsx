@@ -1,12 +1,5 @@
 import { mergeRefs } from "@solid-primitives/refs";
-import { animate, hover } from "motion";
-import {
-	type Component,
-	createEffect,
-	type JSX,
-	onCleanup,
-	splitProps,
-} from "solid-js";
+import { type Component, type JSX, splitProps } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
 import { cn } from "~/utils/cn";
 
@@ -47,15 +40,12 @@ const CardRoot: Component<CardProps> = (props) => {
 
 	let elementRef: HTMLDivElement | undefined;
 
-	// Use custom hover animation for cards
-	createEffect(() => {
+	onMount(() => {
 		if (!elementRef || !local.hoverable) return;
 
-		onCleanup(
-			hover(elementRef, (el) => {
-				animate(el, { scale: 1.02, y: -4 });
-				return () => animate(el, { scale: 1, y: 0 });
-			}),
+		animatedHover(
+			() => elementRef,
+			() => !local.hoverable,
 		);
 	});
 

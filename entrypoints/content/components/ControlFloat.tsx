@@ -1,4 +1,4 @@
-import { animate } from "motion";
+import { animate } from "motion/mini";
 import { getDomListener } from "../parser";
 
 interface SelectionBox {
