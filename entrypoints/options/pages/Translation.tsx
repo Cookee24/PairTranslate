@@ -132,7 +132,9 @@ export default (props: { navId: string }) => {
 						setLocalSettings("maxBatchSize", Number(e.target.value))
 					}
 				/>
-
+			</FormGrid>
+			<div class="divider" />
+			<FormGrid gap="lg">
 				<OptionSelect
 					label={t("settings.translation.sourceLanguage")}
 					options={sourceLanguageOptions()}
@@ -189,7 +191,9 @@ export default (props: { navId: string }) => {
 						setLocalSettings("filterInteractive", e.target.checked)
 					}
 				/>
-
+			</FormGrid>
+			<div class="divider" />
+			<FormGrid gap="lg">
 				<OptionSelect
 					label={t("settings.translation.inTextTranslateModel")}
 					options={allOptions()}
