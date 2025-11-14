@@ -1,3 +1,4 @@
+import { ifBatchRequestSupported } from "@/utils/if-batch";
 import { useTaskList } from "./task-list";
 
 interface Options extends TranslateOptions {
@@ -215,7 +216,12 @@ export function useBatchTranslation(
 
 			let task = emptyTask();
 			if (options.queue ?? true) {
-				task = add();
+				const weight = ifBatchRequestSupported(
+					settings.services.traditionalServices[modelId]?.apiSpec,
+				)
+					? undefined
+					: settings.translate.maxBatchSize;
+				task = add(weight);
 			}
 
 			let cancelled = false;
@@ -304,7 +310,12 @@ export function useBatchTranslation(
 
 		let task = emptyTask();
 		if (options.queue ?? true) {
-			task = add();
+			const weight = ifBatchRequestSupported(
+				settings.services.traditionalServices[modelId]?.apiSpec,
+			)
+				? undefined
+				: settings.translate.maxBatchSize;
+			task = add(weight);
 		}
 
 		try {

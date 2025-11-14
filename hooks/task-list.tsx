@@ -11,10 +11,11 @@ interface Task {
 	promise: Promise<void>;
 	resolve: () => void;
 	reject: (reason?: unknown) => void;
+	weight: number;
 }
 
 export interface TaskListContextType {
-	add: () => {
+	add: (weight?: number) => {
 		wait: () => Promise<void>;
 		done: () => void;
 		terminate: () => void;
@@ -37,33 +38,39 @@ export function TaskListProvider(props: { children: JSX.Element }) {
 	const [completed, setCompleted] = createSignal(0);
 
 	const maxConcurrent = () => settings.translate.concurrentRequests;
-	// Access the map by calling the signal function: tasks()
 
 	createEffect(() => {
 		const currentTasks = tasks();
-		while (running() < maxConcurrent() && currentTasks.size > 0) {
-			const nextTaskId = currentTasks.keys().next().value;
+		if (currentTasks.size === 0) return;
 
-			if (nextTaskId) {
-				const nextTask = currentTasks.get(nextTaskId);
+		const availableSlots = maxConcurrent() - running();
+		if (availableSlots <= 0) return;
 
-				if (nextTask) {
-					// 1. Mutate the map directly.
-					currentTasks.delete(nextTaskId);
-					// 2. Trigger the signal update.
-					setTasks(currentTasks);
+		const nextTaskId = currentTasks.keys().next().value;
+		if (!nextTaskId) return;
 
-					// 3. Increment the count of running tasks.
-					setRunning((r) => r + 1);
-					// 4. Resolve the task's promise.
-					nextTask.resolve();
-				}
-			}
+		const nextTask = currentTasks.get(nextTaskId);
+		if (!nextTask) return;
+
+		const canRun =
+			(nextTask.weight > maxConcurrent() && running() === 0) ||
+			nextTask.weight <= availableSlots;
+
+		if (canRun) {
+			// 1. Mutate the map directly.
+			currentTasks.delete(nextTaskId);
+			// 2. Trigger the signal update.
+			setTasks(currentTasks);
+
+			// 3. Increment the count of running tasks.
+			setRunning((r) => r + nextTask.weight);
+			// 4. Resolve the task's promise.
+			nextTask.resolve();
 		}
 	});
 
 	const value: TaskListContextType = {
-		add: () => {
+		add: (weight = 1) => {
 			const { promise, resolve, reject } = Promise.withResolvers<void>();
 
 			const task: Task = {
@@ -71,6 +78,7 @@ export function TaskListProvider(props: { children: JSX.Element }) {
 				promise,
 				resolve,
 				reject,
+				weight,
 			};
 
 			// 1. Mutate the map directly.
@@ -84,7 +92,7 @@ export function TaskListProvider(props: { children: JSX.Element }) {
 			return {
 				wait: () => promise,
 				done: () => {
-					setRunning((r) => r - 1);
+					setRunning((r) => r - weight);
 					setCompleted((c) => c + 1);
 				},
 				terminate: () => {
@@ -95,6 +103,10 @@ export function TaskListProvider(props: { children: JSX.Element }) {
 						// 2. Trigger the signal update.
 						setTasks(currentTasks);
 						reject(new Error("Task terminated"));
+					} else {
+						// Task is already running, so we just adjust the counters
+						setRunning((r) => r - weight);
+						setCompleted((c) => c + 1);
 					}
 				},
 			};
