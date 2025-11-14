@@ -9,15 +9,14 @@ interface LLMModalProps {
 }
 
 export default (props: LLMModalProps) => {
-	const [formData, setFormData] = createSignal<z.infer<typeof ModelConfig>>(
-		props.modelInfo || {
-			name: "",
-			baseUrl: "",
-			apiSpec: "openai",
-			apiKey: "",
-			model: "",
-		},
-	);
+	const DEFAULT: ModelConfig = {
+		name: "",
+		baseUrl: "",
+		apiSpec: "openai",
+		apiKey: "",
+		model: "",
+	};
+	const [formData, setFormData] = createSignal(props.modelInfo || DEFAULT);
 
 	const [validationErrors, setValidationErrors] =
 		createSignal<z.ZodError | null>(null);
@@ -31,17 +30,7 @@ export default (props: LLMModalProps) => {
 	createEffect(
 		on(
 			() => props.modelInfo,
-			(info) => {
-				setFormData(
-					info || {
-						name: "",
-						baseUrl: "",
-						apiSpec: "openai",
-						apiKey: "",
-						model: "",
-					},
-				);
-			},
+			(info) => setFormData(info || DEFAULT),
 		),
 	);
 

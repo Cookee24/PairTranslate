@@ -9,24 +9,28 @@ interface TraditionalModalProps {
 }
 
 export default (props: TraditionalModalProps) => {
-	const [formData, setFormData] = createSignal<
-		z.infer<typeof TraditionalTranslationConfig>
-	>(
-		props.modelInfo || {
-			name: "",
-			baseUrl: undefined,
-			apiSpec: "microsoft",
-			apiKey: undefined,
-			region: undefined,
-		},
-	);
+	const DEFAULT: TraditionalTranslationConfig = {
+		name: "",
+		baseUrl: undefined,
+		apiSpec: "microsoft",
+		apiKey: undefined,
+		region: undefined,
+	};
+	const [formData, setFormData] = createSignal(props.modelInfo || DEFAULT);
 
 	const [validationErrors, setValidationErrors] =
 		createSignal<z.ZodError | null>(null);
 
+	createEffect(
+		on(
+			() => props.modelInfo,
+			(info) => setFormData(info || DEFAULT),
+		),
+	);
+
 	const handleSave = (e: Event) => {
 		e.preventDefault();
-		const result = TraditionalTranslationConfig.safeParse(formData(), {});
+		const result = TraditionalTranslationConfig.safeParse(formData());
 		if (result.success) {
 			props.onSave(result.data);
 			props.onClose();
@@ -76,7 +80,7 @@ export default (props: TraditionalModalProps) => {
 					<input
 						type="text"
 						class={`input input-bordered ${getFieldError(["name"]) ? "input-error" : ""}`}
-						value={formData().name || ""}
+						value={formData().name}
 						onChange={(e) =>
 							setFormData({ ...formData(), name: e.target.value })
 						}
