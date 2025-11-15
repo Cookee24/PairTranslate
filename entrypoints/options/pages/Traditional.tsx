@@ -1,12 +1,16 @@
+import { TestTube2 } from "lucide-solid";
 import {
 	type ServiceConfig,
 	ServiceManager,
 } from "~/components/settings/ServiceManager";
 import { useServiceManagement } from "../hooks/useServiceManagement";
+import BrowserTranslatorModal from "./BrowserTranslatorModal";
 import TraditionalModal from "./TraditionalModal";
 
 export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
+	const [showBrowserTranslatorModal, setShowBrowserTranslatorModal] =
+		createSignal(false);
 
 	const {
 		services,
@@ -62,6 +66,16 @@ export default (props: { navId: string }) => {
 				onEditService={handleEditService}
 				onDeleteService={handleDeleteService}
 				renderServiceDetails={renderTraditionalServiceDetails}
+				extraActions={
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => setShowBrowserTranslatorModal(true)}
+					>
+						<TestTube2 size={16} />
+						{t("settings.traditionalServices.checkBrowserTranslator")}
+					</Button>
+				}
 			/>
 
 			<TraditionalModal
@@ -69,6 +83,12 @@ export default (props: { navId: string }) => {
 				modelInfo={editingService()?.[1]}
 				onSave={handleSaveService}
 				onClose={handleCloseModal}
+			/>
+
+			<BrowserTranslatorModal
+				open={showBrowserTranslatorModal()}
+				onClose={() => setShowBrowserTranslatorModal(false)}
+				onAddService={handleSaveService}
 			/>
 		</>
 	);

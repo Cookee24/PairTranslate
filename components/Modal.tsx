@@ -13,7 +13,7 @@ const modalVariants = tv({
 });
 
 const modalBoxVariants = tv({
-	base: "modal-box",
+	base: "modal-box max-h-[90vh]",
 });
 
 export interface ModalProps

@@ -1,3 +1,4 @@
+import { browserTranslate } from "./translate/browser";
 import { deepLTranslate } from "./translate/deepl";
 import { deeplxTranslate } from "./translate/deeplx";
 import { googleTranslate } from "./translate/google";
@@ -23,11 +24,14 @@ export const translate = async (
 			return deepLTranslate(config, params);
 		case "deeplx":
 			return deeplxTranslate(config, params);
+		case "browser":
+			return browserTranslate(config, params);
 		default:
 			throw new Error(`Unknown translation service: ${service}`);
 	}
 };
 
+export { browserTranslate } from "./translate/browser";
 export { deepLTranslate } from "./translate/deepl";
 export { deeplxTranslate } from "./translate/deeplx";
 export { googleTranslate } from "./translate/google";

@@ -18,13 +18,14 @@ export interface ServiceManagerProps {
 	onEditService: (id: string) => void;
 	onDeleteService: (id: string) => void;
 	renderServiceDetails: (service: ServiceConfig) => JSX.Element;
+	extraActions?: JSX.Element;
 }
 
 export const ServiceManager: Component<ServiceManagerProps> = (props) => {
 	return (
 		<SettingsCard title={props.title} navId={props.navId}>
 			<div class="flex justify-between items-center mb-4">
-				<div class="flex-1" />
+				<div class="flex gap-2">{props.extraActions}</div>
 				<Button variant="primary" size="sm" onClick={props.onAddService}>
 					<Plus size={16} />
 					{props.addServiceLabel}

@@ -182,12 +182,48 @@ editService = "Edit Service"
 deleteService = "Delete Service"
 noServicesConfigured = "No Traditional Translation Services Configured"
 noServicesDesc = "Add services to use traditional translation APIs"
+checkBrowserTranslator = "Check Browser Translator"
 
 [settings.traditionalServices.serviceDetails]
 api = "API"
 url = "URL"
 apiKey = "API Key"
 maskedKey = "••••••••"
+
+[settings.browserTranslator]
+title = "Browser Translation Detection"
+description = "Check if your browser supports built-in translation and language detection APIs. These APIs allow on-device translation without relying on external services."
+recheck = "Recheck"
+languageDetector = "Language Detector"
+translator = "Translator"
+helpText = "Browser Translation APIs are experimental features and currently only available in some browsers. If your browser doesn't support them, you can continue using traditional translation services or LLM services."
+learnMore = "Learn more about Browser Translation APIs"
+serviceName = "Browser Translation"
+addService = "Add to Services"
+noAvailablePairs = "No available language pairs found. Your browser may not support the translation API."
+
+[settings.browserTranslator.steps]
+initialize = "Initialize"
+checkDetector = "Check Language Detector"
+checkTranslator = "Check Translator"
+complete = "Complete"
+
+[settings.browserTranslator.status]
+label = "Status"
+supported = "Supported"
+unsupported = "Not Supported"
+
+[settings.browserTranslator.availability]
+label = "Availability"
+available = "Available"
+downloadable = "Downloadable"
+downloading = "Downloading"
+unavailable = "Unavailable"
+
+[settings.browserTranslator.table]
+languagePair = "Language Pair"
+status = "Status"
+availability = "Availability"
 
 [settings.traditionalModal]
 addTitle = "Add Traditional Service"
@@ -210,6 +246,7 @@ microsoft = "Microsoft Bing Translate"
 google = "Google Translate"
 deepl = "DeepL"
 deeplx = "DeepLX"
+browser = "Browser Built-in"
 
 [settings.about]
 title = "About PairTranslate"

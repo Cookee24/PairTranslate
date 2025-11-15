@@ -38,7 +38,7 @@ export const TraditionalTranslationConfig = z.object({
 	name: z.string().min(1),
 	baseUrl: z.string().url().optional(),
 	apiSpec: z
-		.enum(["microsoft", "google", "deepl", "deeplx"])
+		.enum(["microsoft", "google", "deepl", "deeplx", "browser"])
 		.default("microsoft"),
 	apiKey: z.string().optional(),
 	region: z.string().optional(),

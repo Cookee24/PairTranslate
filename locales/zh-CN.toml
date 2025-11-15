@@ -182,12 +182,48 @@ editService = "编辑服务"
 deleteService = "删除服务"
 noServicesConfigured = "未配置传统翻译服务"
 noServicesDesc = "添加服务以使用传统翻译 API"
+checkBrowserTranslator = "检测浏览器翻译"
 
 [settings.traditionalServices.serviceDetails]
 api = "API"
 url = "URL"
 apiKey = "API 密钥"
 maskedKey = "••••••••"
+
+[settings.browserTranslator]
+title = "浏览器端侧翻译检测"
+description = "检测您的浏览器是否支持内置的翻译和语言检测 API。这些 API 允许在浏览器端进行翻译，无需依赖外部服务。"
+recheck = "重新检测"
+languageDetector = "语言检测器"
+translator = "翻译器"
+helpText = "浏览器翻译 API 是一个实验性功能，目前仅在部分浏览器中可用。如果您的浏览器不支持，您可以继续使用传统翻译服务或 LLM 服务。"
+learnMore = "了解更多关于浏览器翻译 API"
+serviceName = "浏览器翻译"
+addService = "添加到服务列表"
+noAvailablePairs = "未找到可用的语言对。您的浏览器可能不支持翻译 API。"
+
+[settings.browserTranslator.steps]
+initialize = "初始化"
+checkDetector = "检测语言检测器"
+checkTranslator = "检测翻译器"
+complete = "完成"
+
+[settings.browserTranslator.status]
+label = "状态"
+supported = "支持"
+unsupported = "不支持"
+
+[settings.browserTranslator.availability]
+label = "可用性"
+available = "可用"
+downloadable = "需要下载"
+downloading = "下载中"
+unavailable = "不可用"
+
+[settings.browserTranslator.table]
+languagePair = "语言对"
+status = "状态"
+availability = "可用性"
 
 [settings.traditionalModal]
 addTitle = "添加传统服务"
@@ -210,6 +246,7 @@ microsoft = "微软必应翻译"
 google = "谷歌翻译"
 deepl = "DeepL"
 deeplx = "DeepLX"
+browser = "浏览器内置"
 
 [settings.about]
 title = "关于 PairTranslate"

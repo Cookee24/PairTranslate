@@ -176,18 +176,54 @@ anthropic = "Anthropic"
 gemini = "Google Gemini"
 
 [settings.traditionalServices]
-title = "전통 번역 서비스"
+title = "기존 번역 서비스"
 addService = "서비스 추가"
 editService = "서비스 편집"
 deleteService = "서비스 삭제"
-noServicesConfigured = "구성된 전통 번역 서비스가 없습니다"
-noServicesDesc = "전통 번역 API를 사용하려면 서비스를 추가하세요"
+noServicesConfigured = "기존 번역 서비스가 구성되지 않았습니다"
+noServicesDesc = "기존 번역 API를 사용하려면 서비스를 추가하세요"
+checkBrowserTranslator = "브라우저 번역 확인"
 
 [settings.traditionalServices.serviceDetails]
 api = "API"
 url = "URL"
 apiKey = "API 키"
 maskedKey = "••••••••"
+
+[settings.browserTranslator]
+title = "브라우저 번역 감지"
+description = "브라우저가 내장 번역 및 언어 감지 API를 지원하는지 확인합니다. 이러한 API를 사용하면 외부 서비스에 의존하지 않고 기기에서 번역을 수행할 수 있습니다."
+recheck = "다시 확인"
+languageDetector = "언어 감지기"
+translator = "번역기"
+helpText = "브라우저 번역 API는 실험적 기능이며 현재 일부 브라우저에서만 사용할 수 있습니다. 브라우저가 지원하지 않는 경우 기존 번역 서비스 또는 LLM 서비스를 계속 사용할 수 있습니다."
+learnMore = "브라우저 번역 API에 대해 자세히 알아보기"
+serviceName = "브라우저 번역"
+addService = "서비스에 추가"
+noAvailablePairs = "사용 가능한 언어 쌍이 없습니다. 브라우저가 번역 API를 지원하지 않을 수 있습니다."
+
+[settings.browserTranslator.steps]
+initialize = "초기화"
+checkDetector = "언어 감지기 확인"
+checkTranslator = "번역기 확인"
+complete = "완료"
+
+[settings.browserTranslator.status]
+label = "상태"
+supported = "지원됨"
+unsupported = "지원되지 않음"
+
+[settings.browserTranslator.availability]
+label = "가용성"
+available = "사용 가능"
+downloadable = "다운로드 가능"
+downloading = "다운로드 중"
+unavailable = "사용 불가"
+
+[settings.browserTranslator.table]
+languagePair = "언어 쌍"
+status = "상태"
+availability = "가용성"
 
 [settings.traditionalModal]
 addTitle = "전통 서비스 추가"
@@ -210,6 +246,7 @@ microsoft = "Microsoft Bing 번역"
 google = "Google 번역"
 deepl = "DeepL"
 deeplx = "DeepLX"
+browser = "브라우저 내장"
 
 [settings.about]
 title = "PairTranslate 정보"

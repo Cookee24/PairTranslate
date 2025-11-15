@@ -181,13 +181,49 @@ addService = "サービスを追加"
 editService = "サービスを編集"
 deleteService = "サービスを削除"
 noServicesConfigured = "従来の翻訳サービスが設定されていません"
-noServicesDesc = "従来の翻訳APIを使用するにはサービスを追加します"
+noServicesDesc = "従来の翻訳APIを使用するにはサービスを追加してください"
+checkBrowserTranslator = "ブラウザ翻訳を確認"
 
 [settings.traditionalServices.serviceDetails]
 api = "API"
 url = "URL"
 apiKey = "APIキー"
 maskedKey = "••••••••"
+
+[settings.browserTranslator]
+title = "ブラウザ翻訳の検出"
+description = "ブラウザが内蔵の翻訳および言語検出APIをサポートしているかを確認します。これらのAPIは、外部サービスに依存せずにデバイス上で翻訳を行うことができます。"
+recheck = "再確認"
+languageDetector = "言語検出器"
+translator = "翻訳器"
+helpText = "ブラウザ翻訳APIは実験的な機能であり、現在一部のブラウザでのみ利用可能です。ブラウザがサポートしていない場合は、従来の翻訳サービスまたはLLMサービスを引き続き使用できます。"
+learnMore = "ブラウザ翻訳APIの詳細を確認"
+serviceName = "ブラウザ翻訳"
+addService = "サービスに追加"
+noAvailablePairs = "利用可能な言語ペアが見つかりません。ブラウザが翻訳APIをサポートしていない可能性があります。"
+
+[settings.browserTranslator.steps]
+initialize = "初期化"
+checkDetector = "言語検出器を確認"
+checkTranslator = "翻訳器を確認"
+complete = "完了"
+
+[settings.browserTranslator.status]
+label = "ステータス"
+supported = "サポート済み"
+unsupported = "非サポート"
+
+[settings.browserTranslator.availability]
+label = "利用可能性"
+available = "利用可能"
+downloadable = "ダウンロード可能"
+downloading = "ダウンロード中"
+unavailable = "利用不可"
+
+[settings.browserTranslator.table]
+languagePair = "言語ペア"
+status = "ステータス"
+availability = "利用可能性"
 
 [settings.traditionalModal]
 addTitle = "従来サービスを追加"
@@ -210,6 +246,7 @@ microsoft = "Microsoft Bing翻訳"
 google = "Google翻訳"
 deepl = "DeepL"
 deeplx = "DeepLX"
+browser = "ブラウザ内蔵"
 
 [settings.about]
 title = "PairTranslateについて"
