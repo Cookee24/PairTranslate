@@ -78,22 +78,24 @@ export default (props: Props) => {
 			>
 				<Menu.Item>
 					<Button
+						class="tooltip"
 						variant="ghost"
 						size="xs"
 						onClick={() => handleClick("translate")}
+						data-tip={t("actions.translate")}
 					>
 						<Languages size={16} />
-						{t("actions.translate")}
 					</Button>
 				</Menu.Item>
 				<Menu.Item>
 					<Button
+						class="tooltip"
 						variant="ghost"
 						size="xs"
 						onClick={() => handleClick("explain")}
+						data-tip={t("actions.explain")}
 					>
 						<Lightbulb size={16} />
-						{t("actions.explain")}
 					</Button>
 				</Menu.Item>
 			</Menu.Root>
