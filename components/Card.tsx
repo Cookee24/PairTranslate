@@ -7,7 +7,7 @@ const cardVariants = tv({
 	base: "card",
 	variants: {
 		variant: {
-			bordered: "card-bordered",
+			border: "card-border",
 			compact: "card-compact",
 			normal: "card-normal",
 			side: "card-side",

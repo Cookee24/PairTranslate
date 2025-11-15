@@ -44,21 +44,24 @@ export const Toggle: Component<ToggleProps> = (props) => {
 		"class",
 	]);
 
-	const toggleClasses = cn(
-		toggleVariants({
-			variant: local.variant,
-			size: local.size,
-			error: !!local.error,
-		}),
-		local.class,
-	);
+	const toggleClasses = () =>
+		cn(
+			toggleVariants({
+				variant: local.variant,
+				size: local.size,
+				error: !!local.error,
+			}),
+			local.class,
+			"mx-2",
+		);
 
 	if (local.label || local.helperText || local.error) {
 		return (
-			<div class="form-control w-fit">
-				<label class="label cursor-pointer gap-3">
+			<div class="form-control">
+				<label class="label cursor-pointer w-full">
 					<span class="label-text">{local.label}</span>
-					<input {...inputProps} type="checkbox" class={toggleClasses} />
+					<div class="flex-1" />
+					<input {...inputProps} type="checkbox" class={toggleClasses()} />
 				</label>
 				{(local.helperText || local.error) && (
 					<>
@@ -77,5 +80,5 @@ export const Toggle: Component<ToggleProps> = (props) => {
 		);
 	}
 
-	return <input {...inputProps} type="checkbox" class={toggleClasses} />;
+	return <input {...inputProps} type="checkbox" class={toggleClasses()} />;
 };

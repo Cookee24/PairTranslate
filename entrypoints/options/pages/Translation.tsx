@@ -1,16 +1,16 @@
 import { trackStore } from "@solid-primitives/deep";
 import { unwrap } from "solid-js/store";
 import type z from "zod";
-import * as s from "~/utils/settings/def";
-import { ButtonGroup } from "../components/settings/ButtonGroup";
-import { FormGrid } from "../components/settings/FormGrid";
-import { NumberInput } from "../components/settings/NumberInput";
+import { ButtonGroup } from "~/components/settings/ButtonGroup";
+import { FormGrid } from "~/components/settings/FormGrid";
+import { NumberInput } from "~/components/settings/NumberInput";
 import {
 	OptionSelect,
 	type SelectOption,
-} from "../components/settings/OptionSelect";
-import { SettingsCard } from "../components/settings/SettingsCard";
-import { SettingsCheckbox } from "../components/settings/SettingsCheckbox";
+} from "~/components/settings/OptionSelect";
+import { SettingsCard } from "~/components/settings/SettingsCard";
+import { SettingsCheckbox } from "~/components/settings/SettingsCheckbox";
+import * as s from "~/utils/settings/def";
 
 export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
@@ -133,7 +133,7 @@ export default (props: { navId: string }) => {
 					}
 				/>
 			</FormGrid>
-			<div class="divider" />
+			<div class="divider m-0" />
 			<FormGrid gap="lg">
 				<OptionSelect
 					label={t("settings.translation.sourceLanguage")}
@@ -201,7 +201,7 @@ export default (props: { navId: string }) => {
 					}
 				/>
 			</FormGrid>
-			<div class="divider" />
+			<div class="divider m-0" />
 			<FormGrid gap="lg">
 				<OptionSelect
 					label={t("settings.translation.inTextTranslateModel")}

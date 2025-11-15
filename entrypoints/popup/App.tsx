@@ -1,64 +1,49 @@
-import { Settings } from "lucide-solid";
+import { Route, Router, useLocation, useNavigate } from "@solidjs/router";
+import { Earth, ExternalLink, Settings2 } from "lucide-solid";
+import type { JSX } from "solid-js";
+import Overall from "./pages/Overall";
+import Website from "./pages/Website";
 
-const Content = () => {
-	const { settings, setSettings } = useSettings();
-	const enabled = () => settings.basic.enabled;
-	const translationMode = () => settings.translate.translationMode;
+const Content = (props: { children?: JSX.Element }) => {
+	const navigate = useNavigate();
+	const location = useLocation();
 
 	return (
-		<>
-			<div
-				class={
-					"flex flex-col items-center gap-2 p-4 rounded transition-colors duration-200" +
-					(enabled() ? " bg-success" : " bg-error")
-				}
-			>
-				<Toggle
-					variant="primary"
-					checked={enabled()}
-					onChange={(e) => setSettings("basic", "enabled", e.target.checked)}
-				/>
-				<span class="text-xl text-primary-content">
-					{enabled() ? t("common.enabled") : t("common.disabled")}
-				</span>
-			</div>
-			<div class="join">
+		<div class="p-4 flex flex-col gap-4 w-full h-full">
+			{props.children}
+			<div class="flex-1" />
+			<div class="self-end">
+				{location.pathname.includes("/website") ? (
+					<Button variant="ghost" on:click={() => navigate("/")}>
+						<Settings2 size={16} />
+						常规设置
+					</Button>
+				) : (
+					<Button variant="ghost" on:click={() => navigate("/website")}>
+						<Earth size={16} />
+						网站设置
+					</Button>
+				)}
 				<Button
-					size="sm"
-					variant={translationMode() === "parallel" ? "primary" : "ghost"}
-					class="join-item flex-1"
-					classList={{ "btn-active": translationMode() === "parallel" }}
-					onClick={() =>
-						setSettings("translate", "translationMode", "parallel")
-					}
+					variant="ghost"
+					class="self-end"
+					on:click={() => browser.runtime.openOptionsPage()}
 				>
-					{t("settings.translation.modeParallel")}
-				</Button>
-				<Button
-					size="sm"
-					variant={translationMode() === "replace" ? "primary" : "ghost"}
-					class="join-item flex-1"
-					classList={{ "btn-active": translationMode() === "replace" }}
-					onClick={() => setSettings("translate", "translationMode", "replace")}
-				>
-					{t("settings.translation.modeReplace")}
+					<ExternalLink size={16} />
+					更多设置
 				</Button>
 			</div>
-			<Button
-				variant="secondary"
-				onClick={() => browser.runtime.openOptionsPage()}
-			>
-				<Settings />
-				{t("settings.title")}
-			</Button>
-		</>
+		</div>
 	);
 };
 
 export default () => {
 	return (
 		<SettingsProvider>
-			<Content />
+			<Router root={Content}>
+				<Route path="/*" component={Overall} />
+				<Route path="/website" component={Website} />
+			</Router>
 		</SettingsProvider>
 	);
 };

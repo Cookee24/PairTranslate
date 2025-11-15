@@ -25,6 +25,7 @@
 		"@pie-framework/mathml-to-latex": "^1.4.4",
 		"@solid-primitives/deep": "^0.3.3",
 		"@solid-primitives/refs": "^1.1.2",
+		"@solidjs/router": "^0.15.4",
 		"@wxt-dev/i18n": "^0.2.4",
 		"clsx": "^2.1.1",
 		"katex": "^0.16.25",

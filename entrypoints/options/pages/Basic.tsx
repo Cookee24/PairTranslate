@@ -1,8 +1,8 @@
+import { ButtonGroup } from "~/components/settings/ButtonGroup";
+import { FormGrid } from "~/components/settings/FormGrid";
+import { SettingsCard } from "~/components/settings/SettingsCard";
+import { SettingsToggle } from "~/components/settings/SettingsToggle";
 import ShortcutInput from "../components/ShortcutInput";
-import { ButtonGroup } from "../components/settings/ButtonGroup";
-import { FormGrid } from "../components/settings/FormGrid";
-import { SettingsCard } from "../components/settings/SettingsCard";
-import { SettingsToggle } from "../components/settings/SettingsToggle";
 
 export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
@@ -28,6 +28,26 @@ export default (props: { navId: string }) => {
 					onChange={(e) => setSettings("basic", "enabled", e.target.checked)}
 				/>
 
+				<SettingsToggle
+					label={t("settings.basic.selectionPopupEnabled")}
+					helperText={t("settings.basic.selectionPopupEnabledDesc")}
+					checked={settings.basic.selectionPopupEnabled}
+					onChange={(e) =>
+						setSettings("basic", "selectionPopupEnabled", e.target.checked)
+					}
+				/>
+
+				<SettingsToggle
+					label={t("settings.basic.floatingBallEnabled")}
+					helperText={t("settings.basic.floatingBallEnabledDesc")}
+					checked={settings.basic.floatingBallEnabled}
+					onChange={(e) =>
+						setSettings("basic", "floatingBallEnabled", e.target.checked)
+					}
+				/>
+			</FormGrid>
+			<div class="divider m-0" />
+			<FormGrid>
 				<div class="form-control">
 					<label class="label">
 						<span class="label-text">{t("settings.basic.theme")}</span>
@@ -51,31 +71,6 @@ export default (props: { navId: string }) => {
 						</span>
 					</label>
 				</div>
-
-				<SettingsToggle
-					label={t("settings.basic.selectionPopupEnabled")}
-					helperText={t("settings.basic.selectionPopupEnabledDesc")}
-					checked={settings.basic.selectionPopupEnabled}
-					onChange={(e) =>
-						setSettings("basic", "selectionPopupEnabled", e.target.checked)
-					}
-				/>
-
-				<SettingsToggle
-					label={t("settings.basic.autoPin")}
-					helperText={t("settings.basic.autoPinDesc")}
-					checked={settings.basic.autoPin}
-					onChange={(e) => setSettings("basic", "autoPin", e.target.checked)}
-				/>
-
-				<SettingsToggle
-					label={t("settings.basic.floatingBallEnabled")}
-					helperText={t("settings.basic.floatingBallEnabledDesc")}
-					checked={settings.basic.floatingBallEnabled}
-					onChange={(e) =>
-						setSettings("basic", "floatingBallEnabled", e.target.checked)
-					}
-				/>
 
 				<div class="form-control">
 					<label class="label">
@@ -103,7 +98,9 @@ export default (props: { navId: string }) => {
 						</span>
 					</label>
 				</div>
-
+			</FormGrid>
+			<div class="divider m-0" />
+			<FormGrid>
 				<ShortcutInput
 					value={settings.basic.keyboardShortcut}
 					enabled={settings.basic.keyboardShortcutEnabled}
@@ -113,6 +110,13 @@ export default (props: { navId: string }) => {
 					onEnabledChange={(enabled) =>
 						setSettings("basic", "keyboardShortcutEnabled", enabled)
 					}
+				/>
+
+				<SettingsToggle
+					label={t("settings.basic.autoPin")}
+					helperText={t("settings.basic.autoPinDesc")}
+					checked={settings.basic.autoPin}
+					onChange={(e) => setSettings("basic", "autoPin", e.target.checked)}
 				/>
 
 				<SettingsToggle

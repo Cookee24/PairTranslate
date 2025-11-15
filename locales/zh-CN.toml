@@ -11,6 +11,7 @@ llmServices = "LLM 服务"
 traditionalServices = "传统翻译"
 advanced = "高级设置"
 about = "关于"
+website = "网站"
 
 # Common UI Elements
 
@@ -41,6 +42,7 @@ completed = "已完成"
 running = "运行中"
 resize = "调整大小"
 resetFilter = "重置筛选"
+featureInDevelopment = "功能开发中"
 
 # Settings Pages
 
@@ -115,6 +117,10 @@ inTextTranslateModel = "文本内翻译模型"
 floatingTranslateModel = "浮窗翻译模型"
 floatingExplainModel = "浮窗解释模型"
 inputTranslateModel = "输入框翻译模型"
+modelSettings = "模型设置"
+translationSettings = "翻译设置"
+fullPage = "整页"
+visible = "可见"
 
 filterInteractive = "过滤交互元素"
 filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素，以避免不必要的翻译"

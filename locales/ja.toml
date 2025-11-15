@@ -11,6 +11,7 @@ llmServices = "LLMサービス"
 traditionalServices = "従来の翻訳"
 advanced = "詳細設定"
 about = "について"
+website = "ウェブサイト"
 
 # Common UI Elements
 
@@ -41,6 +42,7 @@ completed = "完了"
 running = "実行中"
 resize = "サイズ変更"
 resetFilter = "フィルターをリセット"
+featureInDevelopment = "機能開発中"
 
 # Settings Pages
 
@@ -115,6 +117,10 @@ inTextTranslateModel = "テキスト内翻訳モデル"
 floatingTranslateModel = "フローティング翻訳モデル"
 floatingExplainModel = "フローティング説明モデル"
 inputTranslateModel = "入力フィールド翻訳モデル"
+modelSettings = "モデル設定"
+translationSettings = "翻訳設定"
+fullPage = "ページ全体"
+visible = "表示"
 
 filterInteractive = "インタラクティブ要素をフィルター"
 filterInteractiveDesc = "ボタン、ヘッダー、ナビゲーション、フッターなどのインタラクティブ要素をスキップして、不要な翻訳を避けます"

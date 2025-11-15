@@ -1,7 +1,7 @@
 import {
 	type ServiceConfig,
 	ServiceManager,
-} from "../components/settings/ServiceManager";
+} from "~/components/settings/ServiceManager";
 import { useServiceManagement } from "../hooks/useServiceManagement";
 import TraditionalModal from "./TraditionalModal";
 

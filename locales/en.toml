@@ -11,6 +11,7 @@ llmServices = "LLM Services"
 traditionalServices = "Traditional Translation"
 advanced = "Advanced Settings"
 about = "About"
+website = "Website"
 
 # Common UI Elements
 
@@ -41,6 +42,7 @@ completed = "completed"
 running = "running"
 resize = "Resize"
 resetFilter = "Reset filter"
+featureInDevelopment = "Feature in development"
 
 # Settings Pages
 
@@ -115,6 +117,10 @@ inTextTranslateModel = "In-text Translation Model"
 floatingTranslateModel = "Floating Translation Model"
 floatingExplainModel = "Floating Explanation Model"
 inputTranslateModel = "Input Translation Model"
+modelSettings = "Model Settings"
+translationSettings = "Translation Settings"
+fullPage = "Full Page"
+visible = "Visible"
 
 filterInteractive = "Filter Interactive Elements"
 filterInteractiveDesc = "Skip interactive elements like buttons, headers, navigation, and footers to avoid unwanted translations"
