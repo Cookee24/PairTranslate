@@ -99,9 +99,9 @@ export function TaskListProvider(props: { children: JSX.Element }) {
 				},
 			};
 		},
-		runningTasks: () => running(),
-		totalTasks: () => total(),
-		completedTasks: () => completed(),
+		runningTasks: running,
+		totalTasks: total,
+		completedTasks: completed,
 	};
 
 	return (

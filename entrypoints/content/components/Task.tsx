@@ -38,9 +38,7 @@ export default () => {
 				content: () => <TaskPopupContent />,
 			});
 
-			onCleanup(() => {
-				popup.close();
-			});
+			onCleanup(() => popup.close());
 		}
 	});
 

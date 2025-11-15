@@ -150,7 +150,7 @@ export function useBatchTranslation(
 ) {
 	const { add } = useTaskList();
 	const { floating = false } = options;
-	const { settings, loading: settingsLoading } = useSettings();
+	const { settings } = useSettings();
 
 	const [store, setStore] = createStore<TranslationState[]>([]);
 	const [retry, setRetry] = createSignal<TranslateOptions>(
@@ -159,124 +159,115 @@ export function useBatchTranslation(
 	);
 
 	createEffect(
-		on(
-			[texts, retry, settingsLoading],
-			async ([textArray, currentRetry, isSettingsLoading]) => {
-				if (isSettingsLoading) return;
+		on([texts, retry], async ([textArray, currentRetry]) => {
+			if (!textArray || textArray.length === 0) {
+				if (store.length > 0) setStore([]);
+				return;
+			}
 
-				if (!textArray || textArray.length === 0) {
-					if (store.length > 0) setStore([]);
-					return;
-				}
+			const cleanCache = currentRetry.cleanCache ?? options.cleanCache ?? false;
+			const isFullRetry = Object.keys(currentRetry).length > 0;
 
-				const cleanCache =
-					currentRetry.cleanCache ?? options.cleanCache ?? false;
-				const isFullRetry = Object.keys(currentRetry).length > 0;
+			const modelId = floating
+				? settings.translate.floatingTranslateModel
+				: settings.translate.inTextTranslateModel;
 
-				const modelId = floating
-					? settings.translate.floatingTranslateModel
-					: settings.translate.inTextTranslateModel;
+			if (!modelId) {
+				const errorMsg = t("settings.translation.noModel");
+				setStore(
+					{ from: 0, to: textArray.length - 1 },
+					{ loading: false, error: errorMsg },
+				);
+				return;
+			}
 
-				if (!modelId) {
-					const errorMsg = t("settings.translation.noModel");
-					setStore(
-						{ from: 0, to: textArray.length - 1 },
-						{ loading: false, error: errorMsg },
-					);
-					return;
-				}
+			const translationRequests: [string, number][] = [];
 
-				const translationRequests: [string, number][] = [];
-
-				const newStoreState = textArray.map((text, index) => {
-					const existing = store[index];
-					// Keep existing state if text is unchanged, not in error, and not a full retry
-					if (
-						!isFullRetry &&
-						existing?.origin === text &&
-						!existing.error &&
-						!existing.loading
-					) {
-						return existing;
-					}
-					translationRequests.push([text, index]);
-					return {
-						origin: text,
-						loading: true,
-						result: existing?.result, // Preserve old result to prevent flickering
-						error: undefined,
-					};
-				});
-
-				// Reconcile the store: SolidJS will only update what has changed.
+			const newStoreState = textArray.map((text, index) => {
+				const existing = store[index];
+				// Keep existing state if text is unchanged, not in error, and not a full retry
 				if (
-					translationRequests.length > 0 ||
-					store.length !== textArray.length
+					!isFullRetry &&
+					existing?.origin === text &&
+					!existing.error &&
+					!existing.loading
 				) {
-					setStore(reconcile(newStoreState));
+					return existing;
 				}
+				translationRequests.push([text, index]);
+				return {
+					origin: text,
+					loading: true,
+					result: existing?.result, // Preserve old result to prevent flickering
+					error: undefined,
+				};
+			});
 
-				if (translationRequests.length === 0) {
-					if (isFullRetry) setRetry({}); // Reset retry signal if it was used
-					return;
-				}
+			// Reconcile the store: SolidJS will only update what has changed.
+			if (translationRequests.length > 0 || store.length !== textArray.length) {
+				setStore(reconcile(newStoreState));
+			}
 
-				let task = emptyTask();
-				if (options.queue ?? true) {
-					task = add();
-				}
+			if (translationRequests.length === 0) {
+				if (isFullRetry) setRetry({}); // Reset retry signal if it was used
+				return;
+			}
 
-				let cancelled = false;
-				onCleanup(() => {
-					task.terminate();
-					cancelled = true;
-				});
+			let task = emptyTask();
+			if (options.queue ?? true) {
+				task = add();
+			}
 
-				try {
-					await task.wait();
-					if (cancelled) return;
+			let cancelled = false;
+			onCleanup(() => {
+				task.terminate();
+				cancelled = true;
+			});
 
-					const textsToTranslate = translationRequests.map((req) => req[0]);
-					const response = await window.rpc.batchTranslate(
-						modelId,
-						textsToTranslate,
-						pageContext,
-						{ cleanCache },
-					);
+			try {
+				await task.wait();
+				if (cancelled) return;
 
-					if (cancelled) return;
+				const textsToTranslate = translationRequests.map((req) => req[0]);
+				const response = await window.rpc.batchTranslate(
+					modelId,
+					textsToTranslate,
+					pageContext,
+					{ cleanCache },
+				);
 
-					batch(() => {
-						for (let i = 0; i < response.length; i++) {
-							const originalIndex = translationRequests[i][1];
-							setStore(originalIndex, {
-								loading: false,
-								result: response[i],
-							});
-						}
-					});
-				} catch (error) {
-					let errorMsg = "";
-					if (error instanceof Error) {
-						errorMsg = error.message;
-					} else if (isTranslateError(error)) {
-						if (error.code) errorMsg += `[${error.code}] `;
-						errorMsg += error.message;
-					} else {
-						errorMsg = JSON.stringify(error, null, 2);
-					}
+				if (cancelled) return;
 
-					batch(() => {
-						translationRequests.forEach(([_, index]) => {
-							setStore(index, { loading: false, error: errorMsg });
+				batch(() => {
+					for (let i = 0; i < response.length; i++) {
+						const originalIndex = translationRequests[i][1];
+						setStore(originalIndex, {
+							loading: false,
+							result: response[i],
 						});
-					});
-				} finally {
-					task.done();
-					if (isFullRetry) setRetry({});
+					}
+				});
+			} catch (error) {
+				let errorMsg = "";
+				if (error instanceof Error) {
+					errorMsg = error.message;
+				} else if (isTranslateError(error)) {
+					if (error.code) errorMsg += `[${error.code}] `;
+					errorMsg += error.message;
+				} else {
+					errorMsg = JSON.stringify(error, null, 2);
 				}
-			},
-		),
+
+				batch(() => {
+					translationRequests.forEach(([_, index]) => {
+						setStore(index, { loading: false, error: errorMsg });
+					});
+				});
+			} finally {
+				task.done();
+				if (isFullRetry) setRetry({});
+			}
+		}),
 	);
 
 	const retryAll = (options: TranslateOptions = {}) => {
