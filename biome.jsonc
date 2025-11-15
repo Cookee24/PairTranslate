@@ -6,7 +6,11 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!public"]
+		"includes": [
+			"**",
+			"!public",
+			"!assets/*.css" // Tailwind CSS
+		]
 	},
 	"linter": {
 		"rules": {
