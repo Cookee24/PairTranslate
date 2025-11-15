@@ -26,9 +26,11 @@ export default () => {
 	const { addPopup } = usePopup();
 	const { settings } = useSettings();
 
+	const running = createMemo(() => runningTasks() > 0);
+
 	createEffect(() => {
 		if (!settings.basic.progressIndicationEnabled) return;
-		if (runningTasks() > 0) {
+		if (running()) {
 			const popup = addPopup({
 				x: window.innerWidth - 280,
 				y: 20,
