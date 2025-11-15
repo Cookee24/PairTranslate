@@ -137,11 +137,14 @@ jobs:
 
       - name: ⬆️ Submit to All Stores (Chrome, Firefox, Edge)
         if: needs.version.outputs.is_rc != '1'
-        run: bunx wxt submit \
-          --chrome-zip .output/*-chrome.zip \
-          --firefox-zip .output/*-firefox.zip \
-          --firefox-sources-zip .output/*-sources.zip \
-          --edge-zip .output/*-chrome.zip
+        run: |
+          PREFIX=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+          VERSION=${{ needs.version.outputs.version }}
+          bunx wxt submit \
+            --chrome-zip .output/${PREFIX}-${VERSION}-chrome.zip \
+            --firefox-zip .output/${PREFIX}-${VERSION}-firefox.zip \
+            --firefox-sources-zip .output/${PREFIX}-${VERSION}-sources.zip \
+            --edge-zip .output/${PREFIX}-${VERSION}-chrome.zip
 
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
