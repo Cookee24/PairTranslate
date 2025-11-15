@@ -35,7 +35,7 @@ export const PopupProvider = (props: { children: JSX.Element }) => {
 
 	const value: PopupContext = {
 		addPopup: (inputState) => {
-			const lastIdx = popups.length;
+			const lastIdx = untrack(() => popups.length);
 			const [state, setState] = createStore<PopupState>({
 				...DEFAULT_STATE,
 				...inputState,
@@ -351,7 +351,7 @@ const PopupImpl = (props: ImplProps) => {
 						<X size={16} />
 					</Button>
 				</div>
-				<div class="overflow-y-auto">{props.content()}</div>
+				<div class="overflow-y-auto">{untrack(props.content)}</div>
 				<button
 					type="button"
 					class="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize touch-none"
