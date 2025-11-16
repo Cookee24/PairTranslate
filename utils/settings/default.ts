@@ -48,6 +48,8 @@ export function generateTranslateSettings(): s.TranslateSettings {
 }
 
 export function generateServicesSettings(): s.ServicesSettings {
+	const supportBrowserTranslator =
+		"Translator" in globalThis && "LanguageDetector" in globalThis;
 	return {
 		llmServices: {},
 		traditionalServices: {
@@ -56,6 +58,12 @@ export function generateServicesSettings(): s.ServicesSettings {
 				apiSpec: "microsoft",
 				apiKey: "edge",
 			},
+			...(supportBrowserTranslator && {
+				"5b02ae2c-9a84-491c-830d-53a99227e03d": {
+					name: t("settings.browserTranslator.serviceName"),
+					apiSpec: "browser",
+				},
+			}),
 		},
 	};
 }

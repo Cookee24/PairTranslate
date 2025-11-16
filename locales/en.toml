@@ -200,6 +200,7 @@ helpText = "Browser Translation APIs are experimental features and currently onl
 learnMore = "Learn more about Browser Translation APIs"
 serviceName = "Browser Translation"
 addService = "Add to Services"
+alreadyAdded = "Browser translation service already added"
 noAvailablePairs = "No available language pairs found. Your browser may not support the translation API."
 
 [settings.browserTranslator.steps]

@@ -1,9 +1,4 @@
-import {
-	HashRouter,
-	Route,
-	useLocation,
-	useNavigate,
-} from "@solidjs/router";
+import { HashRouter, Route, useLocation, useNavigate } from "@solidjs/router";
 import { Earth, ExternalLink, Settings2 } from "lucide-solid";
 import type { JSX } from "solid-js";
 import Overall from "./pages/Overall";

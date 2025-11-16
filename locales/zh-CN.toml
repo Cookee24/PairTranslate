@@ -200,6 +200,7 @@ helpText = "浏览器翻译 API 是一个实验性功能，目前仅在部分浏
 learnMore = "了解更多关于浏览器翻译 API"
 serviceName = "浏览器翻译"
 addService = "添加到服务列表"
+alreadyAdded = "浏览器翻译服务已添加"
 noAvailablePairs = "未找到可用的语言对。您的浏览器可能不支持翻译 API。"
 
 [settings.browserTranslator.steps]

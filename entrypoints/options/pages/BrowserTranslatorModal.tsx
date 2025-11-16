@@ -1,4 +1,4 @@
-import { Check, Download, Plus, X } from "lucide-solid";
+import { Check, CheckCheck, Download, Plus, X } from "lucide-solid";
 import { createSignal, For, onMount, Show } from "solid-js";
 import {
 	checkBrowserTranslationCapabilities,
@@ -47,6 +47,7 @@ const generateLanguagePairs = (): LanguagePair[] => {
 const COMMON_LANGUAGE_PAIRS = generateLanguagePairs();
 
 export default (props: BrowserTranslatorModalProps) => {
+	const { settings } = useSettings();
 	const [isChecking, setIsChecking] = createSignal(false);
 	const [currentStep, setCurrentStep] = createSignal(0);
 	const [translatorResults, setTranslatorResults] = createSignal<
@@ -57,6 +58,13 @@ export default (props: BrowserTranslatorModalProps) => {
 		availability?: string;
 		error?: string;
 	} | null>(null);
+
+	// Check if browser translator service already exists
+	const hasBrowserService = createMemo(() =>
+		Object.values(settings.services.traditionalServices).some(
+			(service) => service.apiSpec === "browser",
+		),
+	);
 
 	const checkCapabilities = async () => {
 		setIsChecking(true);
@@ -93,16 +101,6 @@ export default (props: BrowserTranslatorModalProps) => {
 
 	const handleAddBrowserService = () => {
 		if (!props.onAddService) return;
-
-		// Check if there's at least one available language pair
-		const hasAvailable = Array.from(translatorResults().values()).some(
-			(result) => result.isSupported && result.availability === "available",
-		);
-
-		if (!hasAvailable) {
-			alert(t("settings.browserTranslator.noAvailablePairs"));
-			return;
-		}
 
 		const config: TraditionalTranslationConfig = {
 			name: t("settings.browserTranslator.serviceName"),
@@ -170,12 +168,27 @@ export default (props: BrowserTranslatorModalProps) => {
 						<Button
 							variant="success"
 							onClick={handleAddBrowserService}
-							disabled={Array.from(translatorResults().values()).every(
-								(r) => !r.isSupported || r.availability !== "available",
-							)}
+							disabled={
+								hasBrowserService() ||
+								Array.from(translatorResults().values()).every(
+									(r) =>
+										!r.isSupported ||
+										(r.availability !== "available" &&
+											r.availability !== "downloadable"),
+								)
+							}
 						>
-							<Plus size={16} />
-							{t("settings.browserTranslator.addService")}
+							{hasBrowserService() ? (
+								<>
+									<CheckCheck size={16} />
+									{t("settings.browserTranslator.alreadyAdded")}
+								</>
+							) : (
+								<>
+									<Plus size={16} />
+									{t("settings.browserTranslator.addService")}
+								</>
+							)}
 						</Button>
 					</Show>
 				</div>
