@@ -20,7 +20,6 @@
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.33.1",
-		"@biomejs/biome": "^2.3.5",
 		"@google/generative-ai": "^0.21.0",
 		"@pie-framework/mathml-to-latex": "^1.4.4",
 		"@solid-primitives/deep": "^0.3.3",
@@ -45,11 +44,12 @@
 		"zod": "^4.1.12"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.3.5",
 		"@tailwindcss/vite": "^4.1.17",
 		"@types/mdast": "^4.0.4",
 		"@wxt-dev/auto-icons": "^1.1.0",
 		"@wxt-dev/module-solid": "^1.1.4",
-		"daisyui": "^5.5.4",
+		"daisyui": "^5.5.5",
 		"tailwindcss": "^4.1.17",
 		"typescript": "^5.9.3",
 		"wxt": "^0.20.11"
