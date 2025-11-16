@@ -46,7 +46,7 @@ export default defineConfig({
 				name: "fix-encoding",
 				generateBundle(_, bundle) {
 					for (const file in bundle) {
-						const list = ["content", "background"];
+						const list = ["content"];
 						if (
 							bundle[file].type === "chunk" &&
 							list.some((item) => file.includes(item))
