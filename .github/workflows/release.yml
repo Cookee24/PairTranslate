@@ -10,6 +10,7 @@ jobs:
     permissions:
       contents: write
     outputs:
+      name: ${{ steps.get_name.outputs.name }}
       version: ${{ steps.get_version.outputs.version }}
       version_changed: ${{ steps.check_version.outputs.version_changed }}
       is_rc: ${{ steps.get_version.outputs.is_rc }}
@@ -34,6 +35,12 @@ jobs:
           fi
 
           echo "version_changed=$VERSION_CHANGED" >> "$GITHUB_OUTPUT"
+
+      - name: 🔍 Get name
+        id: get_name
+        run: |
+          NAME=$(jq -r .name package.json)
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
 
       - name: 🔍 Get version
         if: steps.check_version.outputs.version_changed == '1'
@@ -138,13 +145,13 @@ jobs:
       - name: ⬆️ Submit to All Stores (Chrome, Firefox, Edge)
         if: needs.version.outputs.is_rc != '1'
         run: |
-          PREFIX=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+          NAME=${{ needs.version.outputs.name }}
           VERSION=${{ needs.version.outputs.version }}
           bunx wxt submit \
-            --chrome-zip .output/${PREFIX}-${VERSION}-chrome.zip \
-            --firefox-zip .output/${PREFIX}-${VERSION}-firefox.zip \
-            --firefox-sources-zip .output/${PREFIX}-${VERSION}-sources.zip \
-            --edge-zip .output/${PREFIX}-${VERSION}-chrome.zip
+            --chrome-zip .output/${NAME}-${VERSION}-chrome.zip \
+            --firefox-zip .output/${NAME}-${VERSION}-firefox.zip \
+            --firefox-sources-zip .output/${NAME}-${VERSION}-sources.zip \
+            --edge-zip .output/${NAME}-${VERSION}-edge.zip
 
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
@@ -158,5 +165,4 @@ jobs:
 
           EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
           EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
-          EDGE_CLIENT_SECRET: ${{ secrets.EDGE_CLIENT_SECRET }}
-          EDGE_ACCESS_TOKEN: ${{ secrets.EDGE_ACCESS_TOKEN }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
