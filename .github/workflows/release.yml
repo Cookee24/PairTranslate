@@ -151,7 +151,7 @@ jobs:
             --chrome-zip .output/${NAME}-${VERSION}-chrome.zip \
             --firefox-zip .output/${NAME}-${VERSION}-firefox.zip \
             --firefox-sources-zip .output/${NAME}-${VERSION}-sources.zip \
-            --edge-zip .output/${NAME}-${VERSION}-edge.zip
+            --edge-zip .output/${NAME}-${VERSION}-chrome.zip
 
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
