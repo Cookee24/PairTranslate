@@ -53,10 +53,16 @@ export interface StyleService extends RpcService {
 	getContentStyles(): Promise<[documentCss: string, shadowCss: string]>;
 }
 
+export interface MatchService extends RpcService {
+	matchParser(domain: string): Promise<number | null>;
+	matchWebsite(domain: string): Promise<number | null>;
+}
+
 export interface AllServices
 	extends CoreService,
 		TranslateService,
-		StyleService {}
+		StyleService,
+		MatchService {}
 
 export * from "./rpc/core";
 export * from "./rpc/factory";

@@ -20,7 +20,7 @@ export default (props: Props) => {
 			async (enabled) => {
 				if (!enabled) return;
 				let cancelled = false;
-				const listener = getDomListener(window.location.hostname, {
+				const listener = await getDomListener(window.location.hostname, {
 					filterInteractive: settings.translate.filterInteractive,
 				});
 

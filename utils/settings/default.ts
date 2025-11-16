@@ -68,6 +68,10 @@ export function generateServicesSettings(): s.ServicesSettings {
 	};
 }
 
+export function generateWebsiteSettings(): s.WebsiteSettings {
+	return [];
+}
+
 /**
  * Generate complete default settings
  */
@@ -76,6 +80,7 @@ export function generateDefaultSettings(): s.SettingsSchema {
 		basic: generateBasicSettings(),
 		translate: generateTranslateSettings(),
 		services: generateServicesSettings(),
+		website: generateWebsiteSettings(),
 	};
 }
 

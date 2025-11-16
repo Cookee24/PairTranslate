@@ -142,7 +142,7 @@ export default (props: Props) => {
 };
 
 const elementsInBox = async (box: SelectionBox) => {
-	const listener = getDomListener(window.location.hostname, {
+	const listener = await getDomListener(window.location.hostname, {
 		judgeFns: [
 			(element) => {
 				const rect = element.getBoundingClientRect();

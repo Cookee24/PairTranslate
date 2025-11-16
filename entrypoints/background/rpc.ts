@@ -1,9 +1,11 @@
+import { createMatchService } from "./services/match";
 import { createStyleService } from "./services/style";
 import { createTranslateService } from "./services/translate";
 
 export const setRpc = async () => {
 	const translateService = await createTranslateService();
 	const styleService = createStyleService();
+	const matchService = createMatchService();
 
 	const clientImpl: Server<AllServices> = {
 		ping: async () => "pong",
@@ -17,6 +19,9 @@ export const setRpc = async () => {
 		clearCache: translateService.clearCache,
 
 		getContentStyles: styleService.getContentStyles,
+
+		matchParser: matchService.matchParser,
+		matchWebsite: matchService.matchWebsite,
 	};
 
 	setupWxtServer(clientImpl, WXT_TRANSPORTATION_NAME);

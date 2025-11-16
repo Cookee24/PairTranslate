@@ -85,7 +85,7 @@ export default (props: Props) => {
 };
 
 const elementsAtPoint = async (point: { x: number; y: number }) => {
-	const listener = getDomListener(window.location.hostname, {
+	const listener = await getDomListener(window.location.hostname, {
 		judgeFns: [
 			(element) => {
 				const rect = element.getBoundingClientRect();
