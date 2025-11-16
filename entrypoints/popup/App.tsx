@@ -18,17 +18,20 @@ const Content = (props: { children?: JSX.Element }) => {
 		<div class="p-4 flex flex-col gap-4 w-full h-full">
 			<div class="flex-1 overflow-y-auto">{props.children}</div>
 			<div class="self-end">
-				{location.pathname.includes("website") ? (
-					<Button variant="ghost" on:click={() => navigate("overall")}>
-						<Settings2 size={16} />
-						常规设置
-					</Button>
-				) : (
-					<Button variant="ghost" on:click={() => navigate("website")}>
-						<Earth size={16} />
-						网站设置
-					</Button>
-				)}
+				<Switch>
+					<Match when={location.pathname.includes("overall")}>
+						<Button variant="ghost" on:click={() => navigate("website")}>
+							<Settings2 size={16} />
+							常规设置
+						</Button>
+					</Match>
+					<Match when={location.pathname.includes("website")}>
+						<Button variant="ghost" on:click={() => navigate("overall")}>
+							<Earth size={16} />
+							网站规则
+						</Button>
+					</Match>
+				</Switch>
 				<Button
 					variant="ghost"
 					class="self-end"
