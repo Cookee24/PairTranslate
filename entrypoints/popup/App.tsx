@@ -1,4 +1,9 @@
-import { Route, Router, useLocation, useNavigate } from "@solidjs/router";
+import {
+	HashRouter,
+	Route,
+	useLocation,
+	useNavigate,
+} from "@solidjs/router";
 import { Earth, ExternalLink, Settings2 } from "lucide-solid";
 import type { JSX } from "solid-js";
 import Overall from "./pages/Overall";
@@ -40,10 +45,10 @@ const Content = (props: { children?: JSX.Element }) => {
 export default () => {
 	return (
 		<SettingsProvider>
-			<Router root={Content}>
+			<HashRouter root={Content}>
 				<Route path="/*" component={Overall} />
 				<Route path="/website" component={Website} />
-			</Router>
+			</HashRouter>
 		</SettingsProvider>
 	);
 };
