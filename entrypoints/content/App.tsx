@@ -24,7 +24,9 @@ export default () => {
 		<SettingsProvider>
 			<PopupProvider>
 				<TaskListProvider>
-					<Content />
+					<WebsiteRuleProvider>
+						<Content />
+					</WebsiteRuleProvider>
 				</TaskListProvider>
 			</PopupProvider>
 		</SettingsProvider>

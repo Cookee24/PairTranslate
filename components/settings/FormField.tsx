@@ -22,7 +22,7 @@ export const FormField: Component<FormFieldProps> = (props) => {
 	return (
 		<div class={cn("form-control w-full", local.class)} {...divProps}>
 			{local.label && (
-				<div class="label">
+				<div class="label mr-4">
 					<span class="label-text">
 						{local.label}
 						{local.required && <span class="text-error ml-1">*</span>}
@@ -31,7 +31,7 @@ export const FormField: Component<FormFieldProps> = (props) => {
 			)}
 			{local.children}
 			{(local.helperText || local.error) && (
-				<div class="label">
+				<div class="label text-wrap">
 					<span class={cn("label-text-alt", local.error && "text-error")}>
 						{local.error || local.helperText}
 					</span>

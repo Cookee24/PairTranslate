@@ -6,7 +6,6 @@ export const getDomListener = async (
 ): Promise<ElementGenerator> => {
 	const idx = await window.rpc.matchParser(domain);
 	const listener =
-		idx === null ? DEFAULT_DOM_LISTENER : LISTENER_FROM_PATTERN_INDEX[idx];
-	console.log("Using listener index:", idx);
+		idx === null ? DEFAULT_DOM_LISTENER : PARSER_LIST[idx].domListener;
 	return listener(options);
 };

@@ -72,10 +72,10 @@ export const ServicesSettings = z.object({
 });
 export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
-export const WebsiteSettings = z.array(
+export const WebsiteRulesSettings = z.array(
 	z.object({
 		urlPatterns: z.array(z.string()).min(1),
-		alwaysTranslate: z.boolean().default(false),
+		enableTranslation: z.optional(z.boolean()),
 		floatingBallEnabled: z.optional(z.boolean()),
 		translateFullPage: z.optional(z.boolean()),
 		sourceLang: z.optional(z.string()),
@@ -84,12 +84,13 @@ export const WebsiteSettings = z.array(
 		translateMode: z.optional(z.enum(["parallel", "replace"])),
 	}),
 );
-export type WebsiteSettings = z.infer<typeof WebsiteSettings>;
+export type WebsiteRulesSettings = z.infer<typeof WebsiteRulesSettings>;
+export type WebsiteRuleSetting = z.infer<typeof WebsiteRulesSettings.element>;
 
 export const SettingsSchema = z.object({
 	basic: BasicSettings,
 	translate: TranslateSettings,
 	services: ServicesSettings,
-	website: WebsiteSettings,
+	websiteRules: WebsiteRulesSettings,
 });
 export type SettingsSchema = z.infer<typeof SettingsSchema>;

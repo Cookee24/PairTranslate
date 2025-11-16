@@ -68,7 +68,7 @@ export function generateServicesSettings(): s.ServicesSettings {
 	};
 }
 
-export function generateWebsiteSettings(): s.WebsiteSettings {
+export function generateWebsiteRuleSettings(): s.WebsiteRulesSettings {
 	return [];
 }
 
@@ -80,7 +80,7 @@ export function generateDefaultSettings(): s.SettingsSchema {
 		basic: generateBasicSettings(),
 		translate: generateTranslateSettings(),
 		services: generateServicesSettings(),
-		website: generateWebsiteSettings(),
+		websiteRules: generateWebsiteRuleSettings(),
 	};
 }
 

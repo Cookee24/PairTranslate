@@ -21,7 +21,7 @@ export const setRpc = async () => {
 		getContentStyles: styleService.getContentStyles,
 
 		matchParser: matchService.matchParser,
-		matchWebsite: matchService.matchWebsite,
+		matchWebsiteRule: matchService.matchWebsiteRule,
 	};
 
 	setupWxtServer(clientImpl, WXT_TRANSPORTATION_NAME);

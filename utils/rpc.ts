@@ -55,7 +55,7 @@ export interface StyleService extends RpcService {
 
 export interface MatchService extends RpcService {
 	matchParser(domain: string): Promise<number | null>;
-	matchWebsite(domain: string): Promise<number | null>;
+	matchWebsiteRule(domain: string): Promise<number | null>;
 }
 
 export interface AllServices

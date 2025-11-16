@@ -29,8 +29,8 @@ export const PARSER_PATTERNS = PARSER_LIST.flatMap(
 	(parser) => parser.urlPatterns,
 );
 
-export const LISTENER_FROM_PATTERN_INDEX = PARSER_LIST.flatMap((parser) =>
-	parser.urlPatterns.map(() => parser.domListener),
+export const PATTERNS_IDX_TO_PARSER_IDX = PARSER_LIST.flatMap((parser, index) =>
+	Array(parser.urlPatterns.length).fill(index),
 );
 
 export const DEFAULT_DOM_LISTENER = domListener;
