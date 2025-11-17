@@ -6,5 +6,8 @@ export default defineBackground(() => {
 		id: browser.runtime.id,
 	});
 
+	browser.storage.session.setAccessLevel({
+		accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS",
+	});
 	initializeSettings().then(setRpc);
 });

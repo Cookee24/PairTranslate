@@ -156,6 +156,7 @@ export const STORAGE_KEYS = {
 	settings: "pair-translate:settings",
 	cache: "pair-translate:cache",
 	translateEnabled: "pair-translate:translate-enabled",
+	domainTimer: "pair-translate:domain-timer",
 };
 
 export const WXT_TRANSPORTATION_NAME = "wxt-transport";

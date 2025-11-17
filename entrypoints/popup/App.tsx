@@ -1,6 +1,7 @@
 import { HashRouter, Route, useLocation, useNavigate } from "@solidjs/router";
 import { Earth, ExternalLink, Settings2 } from "lucide-solid";
 import type { JSX } from "solid-js";
+import { getCurrentDomain } from "./get-current";
 import Overall from "./pages/Overall";
 import Website from "./pages/Website";
 
@@ -8,33 +9,30 @@ const Content = (props: { children?: JSX.Element }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	browser.tabs
-		.query({ active: true, currentWindow: true })
-		.then((tabs) => new URL(tabs[0]?.url || "").hostname)
+	getCurrentDomain()
 		.then((hostname) => window.rpc.matchWebsiteRule(hostname))
 		.then((idx) => (idx === null ? navigate("overall") : navigate("website")));
 
 	return (
 		<div class="p-4 flex flex-col gap-4 w-full h-full">
 			<div class="flex-1 overflow-y-auto">{props.children}</div>
-			<div class="self-end">
+			<div class="self-end flex gap-2">
 				<Switch>
 					<Match when={location.pathname.includes("overall")}>
 						<Button variant="ghost" on:click={() => navigate("website")}>
-							<Settings2 size={16} />
-							常规设置
+							<Earth size={16} />
+							网站规则
 						</Button>
 					</Match>
 					<Match when={location.pathname.includes("website")}>
 						<Button variant="ghost" on:click={() => navigate("overall")}>
-							<Earth size={16} />
-							网站规则
+							<Settings2 size={16} />
+							常规设置
 						</Button>
 					</Match>
 				</Switch>
 				<Button
 					variant="ghost"
-					class="self-end"
 					on:click={() => browser.runtime.openOptionsPage()}
 				>
 					<ExternalLink size={16} />

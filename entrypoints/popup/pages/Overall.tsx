@@ -1,12 +1,30 @@
 import { trackStore } from "@solid-primitives/deep";
-import { Power, PowerOff } from "lucide-solid";
+import { Link, Power, PowerOff, Trash2 } from "lucide-solid";
 import { unwrap } from "solid-js/store";
 import { ButtonGroup } from "@/components/settings/ButtonGroup";
+import { getCurrentDomain } from "../get-current";
 
 export default () => {
 	const { settings, setSettings } = useSettings();
 
 	const enabled = () => settings.basic.enabled;
+
+	const [domain] = createResource(getCurrentDomain);
+	const [remaining, setTimer] = createDomainEnabledTimer(() => domain() || "");
+
+	const remainingDisplay = createMemo(() => {
+		const rem = remaining();
+		if (rem === undefined) return "";
+		if (rem < 60) {
+			return `${rem} 秒后`;
+		} else if (rem < 3600) {
+			return `${Math.ceil(rem / 60)} 分钟后`;
+		} else if (rem < 3600 * 24) {
+			return `${Math.ceil(rem / 3600)} 小时后`;
+		} else {
+			return `关闭浏览器`;
+		}
+	});
 
 	const modelList = createMemo(() => {
 		trackStore(settings.services);
@@ -147,6 +165,55 @@ export default () => {
 								)
 							}
 						/>
+					</div>
+				</Card.Body>
+			</Card.Root>
+			<Card.Root class="w-full" variant="border">
+				<Card.Body>
+					<span class="flex items-center gap-2">
+						<Link class="inline" size={16} />
+						<span class="font-mono text-sm">
+							{(domain() || "").split(".").slice(-2).join(".")}
+						</span>
+					</span>
+					<div class="flex gap-2 items-center">
+						<span class="text-sm font-bold">保持翻译，直到</span>
+						<select
+							id="domain-timer-select"
+							class="select select-sm max-w-32"
+							on:change={(e) => {
+								const value = e.target.value;
+								switch (value) {
+									case "close":
+										setTimer(1e99);
+										break;
+									case "":
+										break;
+									default:
+										setTimer(parseInt(value, 10));
+										break;
+								}
+							}}
+						>
+							<option value="" disabled selected>
+								{remainingDisplay() || "选择时间"}
+							</option>
+							<option value="close">关闭浏览器</option>
+							<option value={`${5 * 60}`}>5 分钟后</option>
+							<option value={`${15 * 60}`}>15 分钟后</option>
+							<option value={`${30 * 60}`}>30 分钟后</option>
+							<option value={`${60 * 60}`}>1 小时后</option>
+							<option value={`${3 * 60 * 60}`}>3 小时后</option>
+						</select>
+						<Button
+							class="ml-auto"
+							size="xs"
+							variant="error"
+							on:click={() => setTimer(0)}
+							disabled={remaining() === undefined}
+						>
+							<Trash2 size={16} />
+						</Button>
 					</div>
 				</Card.Body>
 			</Card.Root>

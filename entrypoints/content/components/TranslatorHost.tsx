@@ -13,6 +13,11 @@ export default () => {
 		HTMLElement | undefined
 	>(undefined, { equals: false });
 
+	const [remaining] = createDomainEnabledTimer();
+	createEffect(() => {
+		if ((remaining() || 0) > 0) setInTextTranslateEnabled(true);
+	});
+
 	// Handle keyboard shortcut
 	useKeyboardShortcut(
 		() => settings.basic.keyboardShortcut,

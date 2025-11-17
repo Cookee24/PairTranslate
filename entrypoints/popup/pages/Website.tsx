@@ -1,6 +1,7 @@
 import { CheckCheck, Link, Plus, Trash2 } from "lucide-solid";
 import { WebsiteRuleEditor } from "~/components/website-rule/Editor";
 import type { WebsiteRuleSettings } from "~/utils/settings";
+import { getCurrentDomain } from "../get-current";
 
 export default () => {
 	const { settings, setSettings } = useSettings();
@@ -8,10 +9,7 @@ export default () => {
 	const [rule, setRule] = createSignal<WebsiteRuleSettings>();
 	const [idx, setIdx] = createSignal<number>();
 
-	browser.tabs
-		.query({ active: true, currentWindow: true })
-		.then((tabs) => new URL(tabs[0]?.url || "").hostname)
-		.then((hostname) => setDomain(hostname));
+	getCurrentDomain().then((hostname) => setDomain(hostname));
 
 	createEffect(
 		on(
@@ -56,7 +54,6 @@ export default () => {
 			[rule, idx],
 			([r, i]) => {
 				if (r && i !== undefined) {
-					console.log("Updating existing rule at index", i);
 					setSettings("websiteRules", i, r);
 				}
 			},
