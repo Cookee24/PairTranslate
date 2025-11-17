@@ -89,12 +89,42 @@ export type WebsiteRulesSettings = z.infer<typeof WebsiteRulesSettings>;
 
 export const PromptSettings = z.object({
 	name: z.string().min(1),
-	system: z.string().optional(),
-	user: z.string().optional(),
-	batch: z.optional(
+	input: z.enum(["string", "stringArray"]).default("string"),
+	output: z.enum(["string", "stringArray", "structured"]).default("string"),
+	// Accessor to get specific field from structured output
+	// Default to `step[N]`, where N is the last step index
+	outputAccessor: z.string().optional(),
+	// Optional schemas for structured output
+	tools: z.array(z.string().optional()).optional(),
+	steps: z.array(
+		// Define multi steps prompt. Every single step is added into the conversation history.
+		// Outputted content of previous steps can be referenced by {{step[N]}} or {{tool[N][T]}}
+		// where N is the step index starting from 0, T is the tool call index that llm responded with
 		z.object({
-			delimiter: z.string(),
-			trimWhitespace: z.boolean().default(true),
+			message: z.array(
+				z.object({
+					role: z.enum(["system", "user", "assistant"]),
+					// Optional text content for the step
+					content: z.string().optional(),
+				}),
+			),
+			// Optional decoder which can parse plain text into structured data
+			// On the case of non-structured output
+			decoder: z
+				.union([
+					z.object({
+						// JSON decoder
+						type: z.literal("json"),
+					}),
+					z.object({
+						type: z.literal("stringArray"),
+						// Regexp separator to split items
+						separator: z.string(),
+						trimWhiteSpace: z.boolean().default(true),
+					}),
+				])
+				// When none, output is treated as string
+				.optional(),
 		}),
 	),
 });

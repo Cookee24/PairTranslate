@@ -1,5 +1,5 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: any type can be returned */
 import type { RpcService } from "./rpc/factory";
-import type { PageContext, TextContext } from "./types";
 
 export interface CoreService extends RpcService {
 	ping(): Promise<string>;
@@ -7,26 +7,24 @@ export interface CoreService extends RpcService {
 
 export interface TranslateService extends RpcService {
 	unary(
-		context: [PageContext | undefined, TextContext],
+		text: string | string[],
+		ctx: Record<string, any>,
 		options: TranslateOptions,
-	): Promise<string>;
+	): Promise<any>;
 	stream(
-		context: [PageContext | undefined, TextContext],
+		text: string,
+		ctx: Record<string, any>,
 		options: TranslateOptions,
-	): AsyncGenerator<string, void, unknown>;
-	batch(
-		context: [PageContext | undefined, string[]],
-		options: TranslateOptions,
-	): Promise<string[]>;
+	): AsyncGenerator<any, void, unknown>;
 	clearCache(): Promise<void>;
 }
 
 export interface TranslateOptions {
 	modelId: string;
-	promptId: string; // Indicating the prompt uuid, can be queried in settings
+	promptId: string;
 	cleanCache?: boolean;
-	sourceLang: string;
-	targetLang: string;
+	srcLang: string;
+	dstLang: string;
 }
 
 export interface StyleService extends RpcService {

@@ -1,7 +1,6 @@
 import { CircleX, Languages } from "lucide-solid";
 import InTextTooltip from "../components/InTextTooltip";
 import { extractTextContext } from "../context/element";
-import { getPageContext } from "../context/page";
 import { NativeLoading } from "./Loading";
 
 interface SingleProps {

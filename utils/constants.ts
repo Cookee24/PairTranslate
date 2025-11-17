@@ -173,8 +173,8 @@ export const TAGS = {
 
 export const MS_TRANSLATOR_ID = "a404995f-8bf9-4e3c-86aa-bbc4698bc050"; // Fixed ID for Microsoft Translator
 export const PROMPT_ID = {
-	translate: "f7c3d8a1-2b4e-4f9a-8c1d-5e6f7a8b9c0d",
-	batchTranslate: "a1b2c3d4-e5f6-47a8-9b0c-1d2e3f4a5b6c",
-	explain: "9e8f7d6c-5b4a-3291-8a7f-6e5d4c3b2a19",
-	inputTranslate: "c0d1e2f3-4a5b-6c7d-8e9f-0a1b2c3d4e5f",
+	translate: "00000000-0000-0000-0000-000000000001",
+	batchTranslate: "00000000-0000-0000-0000-000000000002",
+	explain: "00000000-0000-0000-0000-000000000003",
+	inputTranslate: "00000000-0000-0000-0000-000000000004",
 };
