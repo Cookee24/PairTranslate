@@ -7,8 +7,14 @@ import { FormField } from "~/components/settings/FormField";
 import type { SelectOption } from "~/components/settings/OptionSelect";
 import type { WebsiteRuleSettings } from "~/utils/settings";
 
+export interface WebsiteRuleEditorRef {
+	getConfig: () => WebsiteRuleSettings;
+	hasChanges: () => boolean;
+}
+
 interface Props {
 	s: WebsiteRuleSettings;
+	ref?: (ref: WebsiteRuleEditorRef) => void;
 	onChange?: (newSettings: WebsiteRuleSettings) => void;
 }
 
@@ -18,12 +24,38 @@ export const WebsiteRuleEditor = (props: Props) => {
 	const [errors, setErrors] = createStore({
 		urlPatterns: "" as string,
 	});
+	const [initialConfig, setInitialConfig] = createSignal(
+		JSON.stringify(props.s),
+	);
+
+	// Expose ref to parent
+	if (props.ref) {
+		props.ref({
+			getConfig: () => local,
+			hasChanges: () => {
+				const current = JSON.stringify(local);
+				return current !== initialConfig();
+			},
+		});
+	}
 
 	createEffect(
 		on(
 			() => props.s,
 			(s) => {
 				setLocal(reconcile(s));
+				setInitialConfig(JSON.stringify(s));
+			},
+			{ defer: true },
+		),
+	);
+
+	// Support auto-save mode for popup
+	createEffect(
+		on(
+			() => trackStore(local),
+			(val) => {
+				props.onChange?.(val);
 			},
 			{ defer: true },
 		),
@@ -75,6 +107,7 @@ export const WebsiteRuleEditor = (props: Props) => {
 
 	const handleAddPattern = (e: SubmitEvent) => {
 		e.preventDefault();
+		e.stopPropagation();
 		const formData = new FormData(e.currentTarget as HTMLFormElement);
 		const pattern = (formData.get("pattern") as string).trim();
 
@@ -90,6 +123,9 @@ export const WebsiteRuleEditor = (props: Props) => {
 
 		setLocal("urlPatterns", [...local.urlPatterns, pattern.trim()]);
 		setErrors("urlPatterns", "");
+
+		// Clear the input after adding
+		(e.currentTarget as HTMLFormElement).reset();
 	};
 
 	const handleRemovePattern = (index: number) => {
@@ -99,15 +135,9 @@ export const WebsiteRuleEditor = (props: Props) => {
 		);
 	};
 
-	createEffect(
-		on(
-			() => trackStore(local),
-			(val) => {
-				props.onChange?.(val);
-			},
-			{ defer: true },
-		),
-	);
+	const handleClearAllPatterns = () => {
+		setLocal("urlPatterns", []);
+	};
 
 	return (
 		<div class="flex flex-col gap-4 w-full wrap-anywhere">
@@ -145,6 +175,19 @@ export const WebsiteRuleEditor = (props: Props) => {
 						}
 					>
 						<div class="flex flex-col gap-2">
+							<div class="flex justify-between items-center mb-2">
+								<span class="text-sm opacity-70">
+									{local.urlPatterns.length} {t("websiteRule.patternsCount")}
+								</span>
+								<Button
+									size="xs"
+									variant="ghost"
+									onClick={handleClearAllPatterns}
+								>
+									<Trash2 size={14} />
+									{t("websiteRule.deleteAllPatterns")}
+								</Button>
+							</div>
 							<For each={local.urlPatterns}>
 								{(pattern, index) => (
 									<div class="flex items-center gap-2 p-2 bg-base-300 rounded">

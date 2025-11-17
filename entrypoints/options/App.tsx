@@ -1,4 +1,11 @@
-import { BrainCircuit, Cog, Globe, Info, Languages } from "lucide-solid";
+import {
+	BrainCircuit,
+	Cog,
+	FileText,
+	Globe,
+	Info,
+	Languages,
+} from "lucide-solid";
 import { getThemeClass } from "~/utils/theme";
 import Nav from "./components/Nav";
 import About from "./pages/About";
@@ -7,6 +14,7 @@ import Basic from "./pages/Basic";
 import LLM from "./pages/LLM";
 import Traditional from "./pages/Traditional";
 import Translation from "./pages/Translation";
+import WebsiteRules from "./pages/WebsiteRules";
 
 const Content = () => {
 	const [top, setTop] = createSignal(8);
@@ -54,6 +62,10 @@ const Content = () => {
 					<Globe size={16} />
 					{t("nav.traditionalServices")}
 				</Nav.Item>
+				<Nav.Item navId="websiteRules">
+					<FileText size={16} />
+					{t("nav.websiteRules")}
+				</Nav.Item>
 				<Nav.Item navId="advanced">
 					<Cog size={16} />
 					{t("nav.advanced")}
@@ -73,6 +85,7 @@ const Content = () => {
 				<Translation navId="translate" />
 				<LLM navId="llm" />
 				<Traditional navId="traditional" />
+				<WebsiteRules navId="websiteRules" />
 				<Advanced navId="advanced" />
 				<About navId="about" />
 			</div>

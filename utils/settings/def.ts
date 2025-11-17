@@ -73,7 +73,7 @@ export const ServicesSettings = z.object({
 export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
 export const WebsiteRuleSettings = z.object({
-	urlPatterns: z.array(z.string()).min(1),
+	urlPatterns: z.array(z.string()),
 	enableTranslation: z.optional(z.boolean()),
 	floatingBallEnabled: z.optional(z.boolean()),
 	translateFullPage: z.optional(z.boolean()),
