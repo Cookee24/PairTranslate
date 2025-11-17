@@ -50,9 +50,9 @@ export default (props: Props) => {
 						<br /> <br />
 					</span>
 				</p>
-				<div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-accent to-transparent pointer-events-none" />
+				<div class="absolute bottom-0 left-0 right-0 h-8 bg-linear-to-t from-accent to-transparent pointer-events-none" />
 			</div>
-			<div class="overflow-y-auto flex-1 bg-gradient-to-b from-accent to-transparent to-20%">
+			<div class="overflow-y-auto flex-1 bg-linear-to-b from-accent to-transparent to-20%">
 				{props.operation.type === "explain" && (
 					<div class="m-2">
 						<Mdx text={text()} />
