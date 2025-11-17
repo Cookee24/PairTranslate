@@ -43,6 +43,9 @@ running = "실행 중"
 resize = "크기 조정"
 resetFilter = "필터 재설정"
 featureInDevelopment = "기능 개발 중"
+globalDefault = "기본값"
+yes = "예"
+no = "아니요"
 
 # Settings Pages
 
@@ -124,20 +127,8 @@ visible = "표시"
 
 filterInteractive = "인터랙티브 요소 필터링"
 filterInteractiveDesc = "버튼, 헤더, 내비게이션, 푸터 등 인터랙티브 요소를 건너뛰어 원치 않는 번역을 방지합니다"
-translateFullPage = "전체 페이지 번역"
-translateFullPageDesc = "선택하면 전체 페이지 콘텐츠를 번역합니다. 선택하지 않으면 표시되는 콘텐츠만 번역합니다"
-
-[settings.translation.languages]
-en = "영어"
-es = "스페인어"
-fr = "프랑스어"
-de = "독일어"
-it = "이탈리아어"
-pt = "포르투갈어"
-ru = "러시아어"
-ja = "일본어"
-ko = "한국어"
-zh = "중국어"
+translateFullPage = "번역 범위"
+translateFullPageDesc = "체크하면 전체 페이지 콘텐츠를 번역하고, 체크하지 않으면 보이는 콘텐츠만 번역합니다"
 
 [settings.llmServices]
 title = "LLM 서비스"
@@ -290,14 +281,11 @@ _6 = "기타 OpenAI 호환 서비스"
 [actions]
 translate = "번역"
 explain = "설명"
-example = "예시"
-contextMean = "문맥 의미"
+example = "예제"
+contextMean = "문맥적 의미"
 mean = "의미"
-loading = "로딩 중..."
 fetchModels = "모델 가져오기"
-copyAsMarkdown = "마크다운으로 복사"
-retry = "재시도"
-delete = "삭제"
+copyAsMarkdown = "Markdown으로 복사"
 
 # Error Messages
 
@@ -324,6 +312,8 @@ streamingExplanationFailed = "스트리밍 설명에 실패했습니다"
 noTranslationModel = "번역 모델이 구성되지 않았습니다"
 noExplanationModel = "설명 모델이 구성되지 않았습니다"
 batchResponseMismatch = "배치 응답 불일치, $1항을 예상했지만 $2항을 받았습니다"
+promptNotFound = "설정에서 ID '$1' 프롬프트를 찾을 수 없습니다"
+promptNotBatch = "프롬프트는 배치 작업을 지원하지 않습니다"
 
 # Template Names
 
@@ -442,3 +432,28 @@ googleTranslateNetworkError = "네트워크 오류: Google Translate API 연결�
 deeplInvalidResponse = "DeepL API에서 잘못된 응답 형식입니다"
 deeplNetworkError = "네트워크 오류: DeepL API 연결에 실패했습니다"
 taskTerminated = "작업이 종료되었습니다"
+
+# Website Rules
+
+[websiteRule]
+urlPatterns = "URL 패턴"
+urlPatternsDesc = "이 규칙이 적용되는 웹사이트 URL 패턴을 구성합니다"
+patternPlaceholder = "*.example.com 또는 example.com"
+errorPatternRequired = "URL 패턴을 입력하세요"
+errorPatternExists = "이 패턴은 이미 존재합니다"
+noPatterns = "추가된 URL 패턴이 없습니다"
+patternExamples = "패턴 예제:"
+patternExact = "정확한 도메인 일치"
+patternSubdomains = "모든 서브도메인 일치"
+patternExample = "gist.github.com처럼 일치"
+translationSettings = "번역 설정"
+enableTranslation = "번역 활성화"
+enableTranslationDesc = "이 웹사이트의 번역을 활성화하거나 비활성화합니다"
+translationMode = "번역 모드"
+translationModeDesc = "번역 표시 모드를 선택합니다"
+modeParallel = "나란히 번역"
+modeReplace = "대체 번역"
+advancedSettings = "고급 설정"
+floatingBallToggleDesc = "이 웹사이트에서 플로팅 볼을 표시하거나 숨깁니다"
+addRule = "규칙 추가"
+deleteRule = "규칙 삭제"

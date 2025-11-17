@@ -43,6 +43,9 @@ running = "実行中"
 resize = "サイズ変更"
 resetFilter = "フィルターをリセット"
 featureInDevelopment = "機能開発中"
+globalDefault = "グローバルデフォルト"
+yes = "はい"
+no = "いいえ"
 
 # Settings Pages
 
@@ -124,20 +127,8 @@ visible = "表示"
 
 filterInteractive = "インタラクティブ要素をフィルター"
 filterInteractiveDesc = "ボタン、ヘッダー、ナビゲーション、フッターなどのインタラクティブ要素をスキップして、不要な翻訳を避けます"
-translateFullPage = "ページ全体を翻訳"
-translateFullPageDesc = "チェックすると、ページ全体のコンテンツを翻訳します。チェックしないと、表示されているコンテンツのみを翻訳します"
-
-[settings.translation.languages]
-en = "英語"
-es = "スペイン語"
-fr = "フランス語"
-de = "ドイツ語"
-it = "イタリア語"
-pt = "ポルトガル語"
-ru = "ロシア語"
-ja = "日本語"
-ko = "韓国語"
-zh = "中国語"
+translateFullPage = "翻訳範囲"
+translateFullPageDesc = "チェックするとページ全体のコンテンツを翻訳します。チェックしないと、表示されているコンテンツのみを翻訳します"
 
 [settings.llmServices]
 title = "LLMサービス"
@@ -293,11 +284,8 @@ explain = "説明"
 example = "例"
 contextMean = "文脈上の意味"
 mean = "意味"
-loading = "読み込み中..."
 fetchModels = "モデルを取得"
 copyAsMarkdown = "Markdownとしてコピー"
-retry = "再試行"
-delete = "削除"
 
 # Error Messages
 
@@ -324,6 +312,8 @@ streamingExplanationFailed = "ストリーミング説明に失敗しました"
 noTranslationModel = "翻訳モデルが設定されていません"
 noExplanationModel = "説明モデルが設定されていません"
 batchResponseMismatch = "バッチ応答の不一致、$1項を期待しましたが$2項を取得しました"
+promptNotFound = "設定にID '$1' のプロンプトが見つかりません"
+promptNotBatch = "このプロンプトはバッチ操作をサポートしていません"
 
 # Template Names
 
@@ -442,3 +432,28 @@ googleTranslateNetworkError = "ネットワークエラー：Google Translate AP
 deeplInvalidResponse = "DeepL APIからの無効な応答形式です"
 deeplNetworkError = "ネットワークエラー：DeepL APIへの接続に失敗しました"
 taskTerminated = "タスクが終了しました"
+
+# Website Rules
+
+[websiteRule]
+urlPatterns = "URL パターン"
+urlPatternsDesc = "このルールが適用されるウェブサイト URL パターンを設定します"
+patternPlaceholder = "*.example.com または example.com"
+errorPatternRequired = "URL パターンを入力してください"
+errorPatternExists = "このパターンは既に存在します"
+noPatterns = "URL パターンが追加されていません"
+patternExamples = "パターンの例："
+patternExact = "正確なドメインマッチ"
+patternSubdomains = "すべてのサブドメインにマッチ"
+patternExample = "gist.github.com のようにマッチ"
+translationSettings = "翻訳設定"
+enableTranslation = "翻訳を有効化"
+enableTranslationDesc = "このウェブサイトの翻訳を有効または無効にします"
+translationMode = "翻訳モード"
+translationModeDesc = "翻訳表示モードを選択します"
+modeParallel = "サイドバイサイド翻訳"
+modeReplace = "置換翻訳"
+advancedSettings = "詳細設定"
+floatingBallToggleDesc = "このウェブサイトのフローティングボールを表示または非表示にします"
+addRule = "ルールを追加"
+deleteRule = "ルールを削除"

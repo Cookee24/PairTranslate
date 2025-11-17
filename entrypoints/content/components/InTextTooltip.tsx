@@ -93,7 +93,7 @@ export default (props: Props) => {
 				</Menu.Item>
 				<Menu.Item
 					class="tooltip tooltip-right"
-					data-tip={props.error ?? t("actions.retry")}
+					data-tip={props.error ?? t("common.retry")}
 				>
 					<Button
 						variant={props.error ? "error" : "ghost"}
@@ -104,7 +104,7 @@ export default (props: Props) => {
 						<RotateCcw size={16} />
 					</Button>
 				</Menu.Item>
-				<Menu.Item class="tooltip tooltip-right" data-tip={t("actions.delete")}>
+				<Menu.Item class="tooltip tooltip-right" data-tip={t("common.delete")}>
 					<Button variant="warning" size="xs" onClick={props.onDelete}>
 						<Trash2 size={16} />
 					</Button>

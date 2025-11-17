@@ -43,6 +43,9 @@ running = "running"
 resize = "Resize"
 resetFilter = "Reset filter"
 featureInDevelopment = "Feature in development"
+globalDefault = "Global Default"
+yes = "Yes"
+no = "No"
 
 # Settings Pages
 
@@ -126,18 +129,6 @@ filterInteractive = "Filter Interactive Elements"
 filterInteractiveDesc = "Skip interactive elements like buttons, headers, navigation, and footers to avoid unwanted translations"
 translateFullPage = "Translation Scope"
 translateFullPageDesc = "When checked, translate entire page content; when unchecked, only translate visible content"
-
-[settings.translation.languages]
-en = "English"
-es = "Spanish"
-fr = "French"
-de = "German"
-it = "Italian"
-pt = "Portuguese"
-ru = "Russian"
-ja = "Japanese"
-ko = "Korean"
-zh = "Chinese"
 
 [settings.llmServices]
 title = "LLM Services"
@@ -291,13 +282,10 @@ _6 = "Other OpenAI-compatible services"
 translate = "Translate"
 explain = "Explain"
 example = "Example"
-contextMean = "Context Meaning"
+contextMean = "Context meaning"
 mean = "Meaning"
-loading = "Loading..."
 fetchModels = "Fetch Models"
 copyAsMarkdown = "Copy as Markdown"
-retry = "Retry"
-delete = "Delete"
 
 # Error Messages
 
@@ -444,3 +432,28 @@ googleTranslateNetworkError = "Network error: Failed to connect to Google Transl
 deeplInvalidResponse = "Invalid response format from DeepL API"
 deeplNetworkError = "Network error: Failed to connect to DeepL API"
 taskTerminated = "Task terminated"
+
+# Website Rules
+
+[websiteRule]
+urlPatterns = "URL Patterns"
+urlPatternsDesc = "Configure the website URL patterns that this rule applies to"
+patternPlaceholder = "*.example.com or example.com"
+errorPatternRequired = "Please enter a URL pattern"
+errorPatternExists = "This pattern already exists"
+noPatterns = "No URL patterns added"
+patternExamples = "Pattern Examples:"
+patternExact = "Exact domain match"
+patternSubdomains = "Match all subdomains"
+patternExample = "Matches like gist.github.com"
+translationSettings = "Translation Settings"
+enableTranslation = "Enable Translation"
+enableTranslationDesc = "Enable or disable translation for this website"
+translationMode = "Translation Mode"
+translationModeDesc = "Choose translation display mode"
+modeParallel = "Side-by-side Translation"
+modeReplace = "Replace Translation"
+advancedSettings = "Advanced Settings"
+floatingBallToggleDesc = "Show or hide floating ball on this website"
+addRule = "Add Rule"
+deleteRule = "Delete Rule"

@@ -30,7 +30,7 @@ export default (props: Props) => {
 			{local.loading && <Loading size="sm" />}
 			{local.loading && (
 				<span class="ml-2 text-sm font-mono">
-					↓ {local.len} {t("actions.loading")}
+					↓ {local.len} {t("common.loading")}
 				</span>
 			)}
 			{local.error && <CircleX size={20} />}

@@ -43,6 +43,9 @@ running = "运行中"
 resize = "调整大小"
 resetFilter = "重置筛选"
 featureInDevelopment = "功能开发中"
+globalDefault = "全局默认"
+yes = "是"
+no = "否"
 
 # Settings Pages
 
@@ -124,20 +127,8 @@ visible = "可见"
 
 filterInteractive = "过滤交互元素"
 filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素，以避免不必要的翻译"
-translateFullPage = "翻译整页"
-translateFullPageDesc = "勾选后翻译整页内容，不勾选则仅翻译可见内容"
-
-[settings.translation.languages]
-en = "英语"
-es = "西班牙语"
-fr = "法语"
-de = "德语"
-it = "意大利语"
-pt = "葡萄牙语"
-ru = "俄语"
-ja = "日语"
-ko = "韩语"
-zh = "中文"
+translateFullPage = "翻译范围"
+translateFullPageDesc = "勾选后翻译全部页面内容；不勾选则仅翻译可见内容"
 
 [settings.llmServices]
 title = "LLM 服务"
@@ -291,13 +282,10 @@ _6 = "及其他 OpenAI 兼容服务"
 translate = "翻译"
 explain = "解释"
 example = "示例"
-contextMean = "语境含义"
+contextMean = "上下文含义"
 mean = "含义"
-loading = "加载中..."
 fetchModels = "获取模型"
 copyAsMarkdown = "复制为 Markdown"
-retry = "重试"
-delete = "删除"
 
 # Error Messages
 
@@ -444,3 +432,28 @@ googleTranslateNetworkError = "网络错误：无法连接到 Google Translate A
 deeplInvalidResponse = "DeepL API 响应格式无效"
 deeplNetworkError = "网络错误：无法连接到 DeepL API"
 taskTerminated = "任务已终止"
+
+# Website Rules
+
+[websiteRule]
+urlPatterns = "URL 模式"
+urlPatternsDesc = "配置此规则适用的网站 URL 模式"
+patternPlaceholder = "*.example.com 或 example.com"
+errorPatternRequired = "请输入 URL 模式"
+errorPatternExists = "此模式已存在"
+noPatterns = "未添加任何 URL 模式"
+patternExamples = "模式示例："
+patternExact = "精确匹配域名"
+patternSubdomains = "匹配所有子域名"
+patternExample = "匹配如 gist.github.com"
+translationSettings = "翻译设置"
+enableTranslation = "启用翻译"
+enableTranslationDesc = "为此网站启用或禁用翻译"
+translationMode = "翻译模式"
+translationModeDesc = "选择翻译模式"
+modeParallel = "对照翻译"
+modeReplace = "替换翻译"
+advancedSettings = "高级设置"
+floatingBallToggleDesc = "在此网站显示或隐藏悬浮球"
+addRule = "添加规则"
+deleteRule = "删除规则"

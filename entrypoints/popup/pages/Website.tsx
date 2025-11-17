@@ -73,7 +73,7 @@ export default () => {
 					class="tooltip tooltip-left ml-auto"
 					variant="success"
 					size="xs"
-					data-tip="添加规则"
+					data-tip={t("websiteRule.addRule")}
 					onClick={() => {
 						if (idx() !== undefined) return;
 						const newIdx = settings.websiteRules.length;
@@ -91,7 +91,7 @@ export default () => {
 					class="tooltip tooltip-left"
 					variant="warning"
 					size="xs"
-					data-tip="删除规则"
+					data-tip={t("websiteRule.deleteRule")}
 					onClick={() => {
 						const idx_ = idx();
 						if (idx_ === undefined) return;
