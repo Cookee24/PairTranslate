@@ -1,31 +1,61 @@
+import { trackStore } from "@solid-primitives/deep";
 import { Plus, Trash2 } from "lucide-solid";
 import { createEffect, createMemo, For, Show } from "solid-js";
-import { createStore, reconcile } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormField } from "~/components/settings/FormField";
-import type { WebsiteRuleSetting } from "~/utils/settings";
+import type { SelectOption } from "~/components/settings/OptionSelect";
+import type { WebsiteRuleSettings } from "~/utils/settings";
 
 interface Props {
-	s: WebsiteRuleSetting;
-	index?: number;
+	s: WebsiteRuleSettings;
+	onChange?: (newSettings: WebsiteRuleSettings) => void;
 }
 
 export const WebsiteRuleEditor = (props: Props) => {
-	const [local, setLocal] = createStore<WebsiteRuleSetting>(props.s);
-
-	const { settings, setSettings } = useSettings();
-	const [newPattern, setNewPattern] = createStore({ value: "" });
+	const { settings } = useSettings();
+	const [local, setLocal] = createStore<WebsiteRuleSettings>({ ...props.s });
 	const [errors, setErrors] = createStore({
 		urlPatterns: "" as string,
 	});
 
-	// Sync props changes to local state
-	createEffect(() => {
-		setLocal(reconcile(props.s));
+	createEffect(
+		on(
+			() => props.s,
+			(s) => {
+				setLocal(reconcile(s));
+			},
+			{ defer: true },
+		),
+	);
+
+	const modelOptions = createMemo<SelectOption[]>(() => {
+		const options: SelectOption[] = [{ value: "default", label: "全局默认" }];
+
+		const llmServices = settings.services.llmServices;
+		const traditionalServices = settings.services.traditionalServices;
+
+		for (const [uuid, service] of Object.entries(llmServices)) {
+			options.push({
+				value: uuid,
+				label: service.name,
+				disabled: false,
+			});
+		}
+
+		for (const [uuid, service] of Object.entries(traditionalServices)) {
+			options.push({
+				value: uuid,
+				label: service.name,
+				disabled: false,
+			});
+		}
+
+		return options;
 	});
 
 	const sourceLanguageOptions = createMemo<SelectOption[]>(() => [
-		{ value: "default", label: "默认" },
+		{ value: "default", label: "全局默认" },
 		{ value: "", label: t("settings.translation.autoDetect") },
 		...SUPPORTED_LANGUAGES.map((lang) => ({
 			value: lang.code,
@@ -34,15 +64,18 @@ export const WebsiteRuleEditor = (props: Props) => {
 	]);
 
 	const targetLanguageOptions = createMemo<SelectOption[]>(() => [
-		{ value: "default", label: "默认" },
+		{ value: "default", label: "全局默认" },
 		...SUPPORTED_LANGUAGES.map((lang) => ({
 			value: lang.code,
 			label: `${lang.nativeName} (${lang.name})`,
 		})),
 	]);
 
-	const handleAddPattern = () => {
-		const pattern = newPattern.value.trim();
+	const handleAddPattern = (e: SubmitEvent) => {
+		e.preventDefault();
+		const formData = new FormData(e.currentTarget as HTMLFormElement);
+		const pattern = (formData.get("pattern") as string).trim();
+
 		if (!pattern) {
 			setErrors("urlPatterns", "请输入 URL 模式");
 			return;
@@ -53,8 +86,7 @@ export const WebsiteRuleEditor = (props: Props) => {
 			return;
 		}
 
-		setLocal("urlPatterns", [...local.urlPatterns, pattern]);
-		setNewPattern("value", "");
+		setLocal("urlPatterns", [...local.urlPatterns, pattern.trim()]);
 		setErrors("urlPatterns", "");
 	};
 
@@ -65,20 +97,15 @@ export const WebsiteRuleEditor = (props: Props) => {
 		);
 	};
 
-	const isModified = createMemo(() => {
-		return JSON.stringify(local) !== JSON.stringify(props.s);
-	});
-
-	createEffect(() => {
-		if (isModified()) {
-			const timeout = setTimeout(() => {
-				const index_ = props.index ?? settings.websiteRules.length;
-
-				setSettings("websiteRules", index_, local);
-			}, 300);
-			onCleanup(() => clearTimeout(timeout));
-		}
-	});
+	createEffect(
+		on(
+			() => trackStore(local),
+			(val) => {
+				props.onChange?.(val);
+			},
+			{ defer: true },
+		),
+	);
 
 	return (
 		<div class="flex flex-col gap-4 w-full wrap-anywhere">
@@ -89,24 +116,18 @@ export const WebsiteRuleEditor = (props: Props) => {
 					<p class="text-sm opacity-70">配置此规则适用的网站 URL 模式</p>
 
 					{/* Pattern Input */}
-					<div class="flex gap-2">
+					<form class="flex gap-2" onSubmit={handleAddPattern}>
 						<Input
+							name="pattern"
 							class="flex-1"
 							placeholder="*.example.com 或 example.com"
-							value={newPattern.value}
-							onInput={(e) => setNewPattern("value", e.currentTarget.value)}
-							onKeyPress={(e) => {
-								if (e.key === "Enter") {
-									handleAddPattern();
-								}
-							}}
 							error={!!errors.urlPatterns}
 						/>
-						<Button variant="primary" onClick={handleAddPattern}>
+						<Button variant="primary" type="submit">
 							<Plus size={16} />
 							{t("common.add")}
 						</Button>
-					</div>
+					</form>
 
 					<Show when={errors.urlPatterns}>
 						<p class="text-error text-sm">{errors.urlPatterns}</p>
@@ -166,7 +187,7 @@ export const WebsiteRuleEditor = (props: Props) => {
 					<FormField label="启用翻译" helperText="为此网站启用或禁用翻译">
 						<ButtonGroup
 							options={[
-								{ value: "default", label: "默认" },
+								{ value: "default", label: "全局默认" },
 								{ value: "true", label: "是" },
 								{ value: "false", label: "否" },
 							]}
@@ -191,7 +212,7 @@ export const WebsiteRuleEditor = (props: Props) => {
 					<FormField label="翻译模式" helperText="选择翻译模式">
 						<ButtonGroup
 							options={[
-								{ value: "default", label: "默认" },
+								{ value: "default", label: "全局默认" },
 								{ value: "parallel", label: "对照翻译" },
 								{ value: "replace", label: "替换翻译" },
 							]}
@@ -233,6 +254,22 @@ export const WebsiteRuleEditor = (props: Props) => {
 							options={targetLanguageOptions()}
 						/>
 					</FormField>
+
+					{/* In-text Translation Model */}
+					<FormField label={t("settings.translation.inTextTranslateModel")}>
+						<Select
+							value={local.inTextTranslateModel || "default"}
+							onChange={(e) => {
+								const value = e.currentTarget.value;
+								if (value === "default") {
+									setLocal("inTextTranslateModel", undefined);
+								} else {
+									setLocal("inTextTranslateModel", value);
+								}
+							}}
+							options={modelOptions()}
+						/>
+					</FormField>
 				</div>
 			</div>
 
@@ -248,7 +285,7 @@ export const WebsiteRuleEditor = (props: Props) => {
 					>
 						<ButtonGroup
 							options={[
-								{ value: "default", label: "默认" },
+								{ value: "default", label: "全局默认" },
 								{ value: "true", label: "是" },
 								{ value: "false", label: "否" },
 							]}
@@ -278,7 +315,7 @@ export const WebsiteRuleEditor = (props: Props) => {
 					>
 						<ButtonGroup
 							options={[
-								{ value: "default", label: "默认" },
+								{ value: "default", label: "全局默认" },
 								{ value: "true", label: "是" },
 								{ value: "false", label: "否" },
 							]}
@@ -308,7 +345,7 @@ export const WebsiteRuleEditor = (props: Props) => {
 					>
 						<ButtonGroup
 							options={[
-								{ value: "default", label: "默认" },
+								{ value: "default", label: "全局默认" },
 								{ value: "true", label: "是" },
 								{ value: "false", label: "否" },
 							]}

@@ -10,14 +10,10 @@ export const setRpc = async () => {
 	const clientImpl: Server<AllServices> = {
 		ping: async () => "pong",
 
-		translate: translateService.translate,
-		batchTranslate: translateService.batchTranslate,
-		streamTranslate: translateService.streamTranslate,
-		explain: translateService.explain,
-		streamExplain: translateService.streamExplain,
-		streamInputTranslate: translateService.streamInputTranslate,
+		unary: translateService.unary,
+		stream: translateService.stream,
+		batch: translateService.batch,
 		clearCache: translateService.clearCache,
-
 		getContentStyles: styleService.getContentStyles,
 
 		matchParser: matchService.matchParser,

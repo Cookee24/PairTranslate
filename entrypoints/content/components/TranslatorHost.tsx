@@ -5,8 +5,10 @@ import SelectionInTextTranslator from "./SelectionInTextTranslator";
 
 export default () => {
 	const { settings } = useSettings();
-	const [inTextTranslateEnabled, setInTextTranslateEnabled] =
-		createSignal(false);
+	const websiteRule = useWebsiteRule();
+	const [inTextTranslateEnabled, setInTextTranslateEnabled] = createSignal(
+		websiteRule.enableTranslation ?? false,
+	);
 	const [inputTranslateElement, setInputTranslateElement] = createSignal<
 		HTMLElement | undefined
 	>(undefined, { equals: false });
@@ -29,10 +31,16 @@ export default () => {
 
 	return (
 		<>
-			<FloatingBall
-				enabled={inTextTranslateEnabled()}
-				onSwitch={() => setInTextTranslateEnabled((v) => !v)}
-			/>
+			<Show
+				when={
+					websiteRule.floatingBallEnabled ?? settings.basic.floatingBallEnabled
+				}
+			>
+				<FloatingBall
+					translateEnabled={inTextTranslateEnabled()}
+					onSwitch={() => setInTextTranslateEnabled((v) => !v)}
+				/>
+			</Show>
 			<InTextTranslator enabled={inTextTranslateEnabled()} />
 			<Show when={settings.basic.inputTranslateEnabled}>
 				<InputTranslator

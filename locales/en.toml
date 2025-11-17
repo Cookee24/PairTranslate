@@ -324,6 +324,8 @@ streamingExplanationFailed = "Streaming explanation failed"
 noTranslationModel = "No translation model configured"
 noExplanationModel = "No explanation model configured"
 batchResponseMismatch = "Batch response mismatch, expected $1 items but got $2"
+promptNotFound = "Prompt with ID '$1' not found in settings"
+promptNotBatch = "Prompt does not support batch operations"
 
 # Template Names
 

@@ -45,7 +45,8 @@ export default (props: { navId: string }) => {
 				type: "success",
 				message: t("settings.advanced.resetSettingsSuccess"),
 			});
-		} catch (_error) {
+		} catch (error) {
+			console.error("Failed to reset settings: ", error);
 			setFeedback({
 				type: "error",
 				message: t("settings.advanced.resetSettingsFailed"),

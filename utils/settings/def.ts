@@ -72,25 +72,42 @@ export const ServicesSettings = z.object({
 });
 export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
-export const WebsiteRulesSettings = z.array(
-	z.object({
-		urlPatterns: z.array(z.string()).min(1),
-		enableTranslation: z.optional(z.boolean()),
-		floatingBallEnabled: z.optional(z.boolean()),
-		translateFullPage: z.optional(z.boolean()),
-		sourceLang: z.optional(z.string()),
-		targetLang: z.optional(z.string()),
-		filterInteractive: z.optional(z.boolean()),
-		translateMode: z.optional(z.enum(["parallel", "replace"])),
-	}),
-);
+export const WebsiteRuleSettings = z.object({
+	urlPatterns: z.array(z.string()).min(1),
+	enableTranslation: z.optional(z.boolean()),
+	floatingBallEnabled: z.optional(z.boolean()),
+	translateFullPage: z.optional(z.boolean()),
+	sourceLang: z.optional(z.string()),
+	targetLang: z.optional(z.string()),
+	filterInteractive: z.optional(z.boolean()),
+	translateMode: z.optional(z.enum(["parallel", "replace"])),
+	inTextTranslateModel: z.uuid().optional(),
+});
+export type WebsiteRuleSettings = z.infer<typeof WebsiteRuleSettings>;
+export const WebsiteRulesSettings = z.array(WebsiteRuleSettings);
 export type WebsiteRulesSettings = z.infer<typeof WebsiteRulesSettings>;
-export type WebsiteRuleSetting = z.infer<typeof WebsiteRulesSettings.element>;
+
+export const PromptSettings = z.object({
+	name: z.string().min(1),
+	system: z.string().optional(),
+	user: z.string().optional(),
+	batch: z.optional(
+		z.object({
+			delimiter: z.string(),
+			trimWhitespace: z.boolean().default(true),
+		}),
+	),
+});
+export type PromptSettings = z.infer<typeof PromptSettings>;
+export const PromptsSettings = z.record(z.uuid(), PromptSettings);
+export type PromptsSettings = z.infer<typeof PromptsSettings>;
 
 export const SettingsSchema = z.object({
+	__v: z.number().default(0),
 	basic: BasicSettings,
 	translate: TranslateSettings,
 	services: ServicesSettings,
 	websiteRules: WebsiteRulesSettings,
+	prompts: PromptsSettings,
 });
 export type SettingsSchema = z.infer<typeof SettingsSchema>;

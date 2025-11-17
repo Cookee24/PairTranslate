@@ -1,11 +1,14 @@
 import { ifBatchRequestSupported } from "@/utils/if-batch";
 import { useTaskList } from "./task-list";
+import { useWebsiteRule } from "./website-rule";
 
-interface Options extends TranslateOptions {
+interface Options {
 	stream?: boolean;
 	floating?: boolean;
 	queue?: boolean;
+	cleanCache?: boolean;
 }
+
 export function useTranslation(
 	operation: () => Operation | undefined,
 	options: Options = {},
@@ -13,12 +16,13 @@ export function useTranslation(
 	const { add } = useTaskList();
 	const { stream = false, floating = false } = options;
 	const { settings, loading: settingsLoading } = useSettings();
+	const websiteRule = useWebsiteRule();
 
 	const [error, setError] = createSignal<string>();
 	const [loading, setLoading] = createSignal(false);
 	const [len, setLen] = createSignal(0);
 	const [text, setText] = createSignal("");
-	const [retry, setRetry] = createSignal<TranslateOptions | undefined>(
+	const [retry, setRetry] = createSignal<{ cleanCache?: boolean } | undefined>(
 		undefined,
 		{
 			equals: false,
@@ -45,12 +49,15 @@ export function useTranslation(
 					? floating && settings.translate.floatingExplainModel
 					: floating
 						? settings.translate.floatingTranslateModel
-						: settings.translate.inTextTranslateModel;
+						: (websiteRule.inTextTranslateModel ??
+							settings.translate.inTextTranslateModel);
 
 				if (!modelId) {
 					setError(t("settings.translation.noModel"));
 					return;
 				}
+
+				const promptId = isExplain ? PROMPT_ID.explain : PROMPT_ID.translate;
 
 				let task = emptyTask();
 				if (options.queue ?? true) {
@@ -71,20 +78,19 @@ export function useTranslation(
 
 					await task.wait();
 
+					const translateOptions: TranslateOptions = {
+						modelId,
+						promptId,
+						cleanCache,
+						sourceLang: websiteRule.sourceLang ?? settings.translate.sourceLang,
+						targetLang: websiteRule.targetLang ?? settings.translate.targetLang,
+					};
+
 					if (stream) {
-						const listener = isExplain
-							? window.rpc.streamExplain(
-									modelId,
-									op.textContext,
-									op.pageContext,
-									{ cleanCache },
-								)
-							: window.rpc.streamTranslate(
-									modelId,
-									op.textContext,
-									op.pageContext,
-									{ cleanCache },
-								);
+						const listener = window.rpc.stream(
+							[op.pageContext, op.textContext],
+							translateOptions,
+						);
 
 						for await (const chunk of listener) {
 							if (cancelled) return;
@@ -92,19 +98,10 @@ export function useTranslation(
 							setLen((l) => l + chunk.length);
 						}
 					} else {
-						const response = isExplain
-							? await window.rpc.explain(
-									modelId,
-									op.textContext,
-									op.pageContext,
-									{ cleanCache },
-								)
-							: await window.rpc.translate(
-									modelId,
-									op.textContext,
-									op.pageContext,
-									{ cleanCache },
-								);
+						const response = await window.rpc.unary(
+							[op.pageContext, op.textContext],
+							translateOptions,
+						);
 
 						setText(response);
 						setLen(response.length);
@@ -132,9 +129,10 @@ export function useTranslation(
 	return [text, { error, loading, len, retry: setRetry }] as const;
 }
 
-interface BatchOptions extends TranslateOptions {
+interface BatchOptions {
 	floating?: boolean;
 	queue?: boolean;
+	cleanCache?: boolean;
 }
 
 interface TranslationState {
@@ -152,9 +150,10 @@ export function useBatchTranslation(
 	const { add } = useTaskList();
 	const { floating = false } = options;
 	const { settings } = useSettings();
+	const websiteRule = useWebsiteRule();
 
 	const [store, setStore] = createStore<TranslationState[]>([]);
-	const [retry, setRetry] = createSignal<TranslateOptions>(
+	const [retry, setRetry] = createSignal<{ cleanCache?: boolean }>(
 		{},
 		{ equals: false },
 	);
@@ -171,7 +170,8 @@ export function useBatchTranslation(
 
 			const modelId = floating
 				? settings.translate.floatingTranslateModel
-				: settings.translate.inTextTranslateModel;
+				: (websiteRule.inTextTranslateModel ??
+					settings.translate.inTextTranslateModel);
 
 			if (!modelId) {
 				const errorMsg = t("settings.translation.noModel");
@@ -235,11 +235,18 @@ export function useBatchTranslation(
 				if (cancelled) return;
 
 				const textsToTranslate = translationRequests.map((req) => req[0]);
-				const response = await window.rpc.batchTranslate(
+
+				const translateOptions: TranslateOptions = {
 					modelId,
-					textsToTranslate,
-					pageContext,
-					{ cleanCache },
+					promptId: PROMPT_ID.batchTranslate,
+					cleanCache,
+					sourceLang: websiteRule.sourceLang ?? settings.translate.sourceLang,
+					targetLang: websiteRule.targetLang ?? settings.translate.targetLang,
+				};
+
+				const response = await window.rpc.batch(
+					[pageContext, textsToTranslate],
+					translateOptions,
 				);
 
 				if (cancelled) return;
@@ -276,32 +283,29 @@ export function useBatchTranslation(
 		}),
 	);
 
-	const retryAll = (options: TranslateOptions = {}) => {
-		setRetry(options);
+	const retryAll = (retryOptions: { cleanCache?: boolean } = {}) => {
+		setRetry(retryOptions);
 	};
 
 	const retrySingle = async (
 		index: number,
-		translateOptions: TranslateOptions = {},
+		retryOptions: { cleanCache?: boolean } = {},
 	) => {
 		const textArray = texts();
 		const textToTranslate = textArray[index];
 
 		if (!textToTranslate) return;
 
-		const singleOperation: Operation = {
-			type: "translate",
-			pageContext,
-			textContext: {
-				content: textToTranslate,
-				before: "",
-				after: "",
-			},
+		const textContext: TextContext = {
+			content: textToTranslate,
+			before: "",
+			after: "",
 		};
 
 		const modelId = floating
 			? settings.translate.floatingTranslateModel
-			: settings.translate.inTextTranslateModel;
+			: (websiteRule.inTextTranslateModel ??
+				settings.translate.inTextTranslateModel);
 
 		if (!modelId) {
 			setStore(index, "error", t("settings.translation.noModel"));
@@ -329,14 +333,17 @@ export function useBatchTranslation(
 
 			await task.wait();
 
-			const response = await window.rpc.translate(
+			const translateOptions: TranslateOptions = {
 				modelId,
-				singleOperation.textContext,
-				singleOperation.pageContext,
-				{
-					...translateOptions,
-					cleanCache: translateOptions.cleanCache ?? options.cleanCache,
-				},
+				promptId: PROMPT_ID.translate,
+				cleanCache: retryOptions.cleanCache ?? options.cleanCache ?? false,
+				sourceLang: websiteRule.sourceLang ?? settings.translate.sourceLang,
+				targetLang: websiteRule.targetLang ?? settings.translate.targetLang,
+			};
+
+			const response = await window.rpc.unary(
+				[pageContext, textContext],
+				translateOptions,
 			);
 
 			setStore(index, { result: response, loading: false });
@@ -366,6 +373,7 @@ export function useInputTranslation(
 	pageContext?: () => PageContext | undefined,
 ) {
 	const { settings, loading: settingsLoading } = useSettings();
+	const websiteRule = useWebsiteRule();
 
 	const [error, setError] = createSignal<string>();
 	const [loading, setLoading] = createSignal(false);
@@ -406,11 +414,27 @@ export function useInputTranslation(
 					setError(undefined);
 					setResult("");
 
-					const listener = window.rpc.streamInputTranslate(
+					const textContext: TextContext = {
+						content: inputText,
+						before: "",
+						after: "",
+					};
+
+					const translateOptions: TranslateOptions = {
 						modelId,
-						inputText,
-						context,
-						lang,
+						promptId: PROMPT_ID.inputTranslate,
+						cleanCache: false,
+						sourceLang: websiteRule.sourceLang ?? settings.translate.sourceLang,
+						targetLang:
+							lang ||
+							websiteRule.targetLang ||
+							settings.translate.inputTranslateLang ||
+							settings.translate.targetLang,
+					};
+
+					const listener = window.rpc.stream(
+						[context, textContext],
+						translateOptions,
 					);
 
 					for await (const chunk of listener) {

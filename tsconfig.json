@@ -4,6 +4,7 @@
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true
+		"emitDecoratorMetadata": true,
+		"types": ["bun-types"]
 	}
 }

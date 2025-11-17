@@ -35,6 +35,5 @@ jobs:
       - name: 🧹 Run Biome Lint Check
         run: bun run lint
 
-      # Optional: Run tests if you have any
-      # - name: ✅ Run Tests
-      #   run: bun test
+      - name: ✅ Run Tests
+        run: bun test

@@ -11,6 +11,7 @@ export enum TranslateErrorType {
 	QUOTA_EXCEEDED = "QUOTA_EXCEEDED",
 	INVALID_LANGUAGE = "INVALID_LANGUAGE",
 	CONTENT_TOO_LONG = "CONTENT_TOO_LONG",
+	INVALID_PROMPT = "INVALID_PROMPT",
 }
 
 export interface TranslateError {

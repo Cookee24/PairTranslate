@@ -1,82 +1,9 @@
 import type * as s from "~/utils/settings";
 import { translate as traditionalTranslate } from "~/utils/translate";
 
-const buildPageContextString = (pageContext?: PageContext): string => {
-	if (!pageContext) return "";
-
-	let content = `\nTitle: ${pageContext.pageTitle}`;
-	content += `\nDomain: ${pageContext.domain}`;
-
-	if (pageContext.pageDescription) {
-		content += `\nDescription: ${pageContext.pageDescription}`;
-	}
-
-	if (pageContext.pageKeywords?.length) {
-		content += `\nKeywords: ${pageContext.pageKeywords.join(", ")}`;
-	}
-
-	for (const [key, value] of Object.entries(pageContext.extra || {})) {
-		content += `\n${key}: ${value}`;
-	}
-
-	return content;
-};
-
-const buildUserPrompt = (
-	textContext: TextContext,
-	pageContext?: PageContext,
-): string => {
-	let user = `<${TAGS.page}>`;
-	user += buildPageContextString(pageContext);
-	user += `</${TAGS.page}>`;
-
-	if (textContext.before) {
-		user += `\n\n<${TAGS.context} before>${textContext.before}</${TAGS.context}>`;
-	}
-	if (textContext.after) {
-		user += `\n<${TAGS.context} after>${textContext.after}</${TAGS.context}>`;
-	}
-	user += `\n<${TAGS.content}>${textContext.content}</${TAGS.content}>`;
-
-	return user;
-};
-
-const buildPrompt = (
-	promptTemplate: string,
-	targetLang: string,
-	textContext: TextContext,
-	pageContext?: PageContext,
-): { system: string; user: string } => {
-	const system = promptTemplate.replaceAll(
-		`{{${REPLACEMENT.targetLang}}}`,
-		getNativeName(targetLang),
-	);
-	const user = buildUserPrompt(textContext, pageContext);
-	return { system, user };
-};
-
-const buildBatchPrompt = (
-	texts: string[],
-	targetLang: string,
-	pageContext?: PageContext,
-): { system: string; user: string } => {
-	let user = `<${TAGS.page}>`;
-	user += buildPageContextString(pageContext);
-	user += `</${TAGS.page}>`;
-
-	// Add each text as a section
-	texts.forEach((text, index) => {
-		user += `\n@@P${index + 1}\n${text}`;
-	});
-
-	const system = BATCH_TRANSLATE_PROMPT.replaceAll(
-		`{{${REPLACEMENT.targetLang}}}`,
-		getNativeName(targetLang),
-	);
-
-	return { system, user };
-};
-
+/**
+ * Handle API errors and convert to TranslateError
+ */
 const handleApiError = (error: unknown): never => {
 	if (isTranslateError(error)) {
 		throw error;
@@ -95,34 +22,35 @@ const handleApiError = (error: unknown): never => {
 	}
 };
 
-const emptyContext = (content: string): TextContext => ({
-	content,
-	before: "",
-	after: "",
-});
-
-const getModelConfig = async (modelId: string) => {
+/**
+ * Get model configuration by ID
+ */
+const getModelConfig = async (
+	modelId: string,
+): Promise<
+	| { type: "llm"; config: s.ModelConfig }
+	| {
+			type: "traditional";
+			config: s.TraditionalTranslationConfig;
+			apiSpec: s.TraditionalTranslationConfig["apiSpec"];
+	  }
+> => {
 	const settings = await getSettings();
 
 	const llm = settings.services.llmServices[modelId];
 	if (llm) {
 		return {
-			...llm,
-			type: "llm" as const,
-			apiSpec: llm.apiSpec as LLMProvider,
+			type: "llm",
+			config: llm,
 		};
 	}
 
 	const traditional = settings.services.traditionalServices[modelId];
 	if (traditional) {
 		return {
-			...traditional,
-			type: "traditional" as const,
-			apiSpec: traditional.apiSpec as
-				| "google"
-				| "microsoft"
-				| "deepl"
-				| "deeplx",
+			type: "traditional",
+			config: traditional,
+			apiSpec: traditional.apiSpec,
 		};
 	}
 
@@ -132,6 +60,28 @@ const getModelConfig = async (modelId: string) => {
 	);
 };
 
+/**
+ * Get prompt settings by ID
+ */
+const getPromptSettings = async (
+	promptId: string,
+): Promise<s.PromptSettings> => {
+	const settings = await getSettings();
+	const prompt = settings.prompts[promptId];
+
+	if (!prompt) {
+		throw createTranslateError(
+			TranslateErrorType.INVALID_PROMPT,
+			t("errors.promptNotFound", [promptId]),
+		);
+	}
+
+	return prompt;
+};
+
+/**
+ * Create cache manager for translation results
+ */
 const createCacheManager = (
 	cacheStorage: import("~/utils/storage").Storage<string>,
 ) => ({
@@ -167,23 +117,11 @@ const createCacheManager = (
 	},
 
 	async withCache<T>(
-		params: {
-			operation: string;
-			modelId: string;
-			textContext: TextContext;
-			pageContext?: PageContext;
-			cleanCache?: boolean;
-		},
+		cacheKey: ArrayBuffer,
+		cleanCache: boolean,
 		apiCall: () => Promise<T>,
 	): Promise<T> {
-		const cacheKey = await generateCacheKey(
-			params.operation,
-			params.modelId,
-			params.textContext,
-			params.pageContext,
-		);
-
-		if (params.cleanCache) {
+		if (cleanCache) {
 			await this.del(cacheKey);
 		} else {
 			const cachedResult = await this.get(cacheKey);
@@ -198,23 +136,11 @@ const createCacheManager = (
 	},
 
 	async *withStreamingCache(
-		params: {
-			operation: string;
-			modelId: string;
-			textContext: TextContext;
-			pageContext?: PageContext;
-			cleanCache?: boolean;
-		},
+		cacheKey: ArrayBuffer,
+		cleanCache: boolean,
 		streamCall: () => AsyncGenerator<string>,
 	): AsyncGenerator<string> {
-		const cacheKey = await generateCacheKey(
-			params.operation,
-			params.modelId,
-			params.textContext,
-			params.pageContext,
-		);
-
-		if (params.cleanCache) {
+		if (cleanCache) {
 			await this.del(cacheKey);
 		} else {
 			const cachedResult = await this.get(cacheKey);
@@ -233,35 +159,35 @@ const createCacheManager = (
 	},
 });
 
-const executeTraditionalTranslation = async (
+/**
+ * Execute unary translation with traditional service
+ */
+const executeTraditionalUnary = async (
 	config: s.TraditionalTranslationConfig,
-	operation: "translate" | "explain",
 	textContext: TextContext,
+	sourceLang: string,
 	targetLang: string,
 ): Promise<string> => {
-	if (operation === "explain") {
-		throw createTranslateError(
-			TranslateErrorType.UNSUPPORTED_OPERATION,
-			t("errors.explainOnlyLlm"),
-		);
-	}
-
 	const { translatedText } = await traditionalTranslate(
 		config.apiSpec,
 		{
 			apiKey: config.apiKey || "",
 			apiUrl: config.baseUrl,
 		},
-		{ text: [textContext.content], sourceLang: "auto", targetLang },
+		{ text: [textContext.content], sourceLang, targetLang },
 	);
 	return translatedText[0];
 };
 
-const executeLLMTranslation = async (
+/**
+ * Execute unary translation with LLM service
+ */
+const executeLLMUnary = async (
 	config: s.ModelConfig,
-	operation: "translate" | "explain",
-	textContext: TextContext,
+	promptSettings: s.PromptSettings,
 	pageContext: PageContext | undefined,
+	textContext: TextContext,
+	sourceLang: string,
 	targetLang: string,
 ): Promise<string> => {
 	const client = createLLMClient(config.apiSpec, {
@@ -269,14 +195,14 @@ const executeLLMTranslation = async (
 		baseUrl: config.baseUrl,
 	});
 
-	const promptTemplate =
-		operation === "translate" ? TRANSLATE_PROMPT : EXPLAIN_PROMPT;
-	const { system, user } = buildPrompt(
-		promptTemplate,
+	const promptContext: PromptContext = {
 		targetLang,
+		sourceLang,
+		page: pageContext,
 		textContext,
-		pageContext,
-	);
+	};
+
+	const { system, user } = buildPrompt(promptSettings, promptContext);
 
 	const request: UnifiedChatRequest = {
 		model: config.model,
@@ -292,170 +218,30 @@ const executeLLMTranslation = async (
 	return response.content;
 };
 
-const executeApiCall = async (
-	operation: "translate" | "explain",
-	modelId: string,
-	textContext: TextContext,
-	pageContext?: PageContext,
-): Promise<string> => {
-	const config = await getModelConfig(modelId);
-	const settings = await getSettings();
-	const targetLang = settings.translate.targetLang;
-
-	try {
-		if (config.type === "traditional") {
-			return await executeTraditionalTranslation(
-				config,
-				operation,
-				textContext,
-				targetLang,
-			);
-		}
-
-		return await executeLLMTranslation(
-			config,
-			operation,
-			textContext,
-			pageContext,
-			targetLang,
-		);
-	} catch (error) {
-		handleApiError(error);
-		throw "Unreachable code"; // Make tsc happy
-	}
-};
-
-const executeBatchTraditionalTranslation = async (
-	config: s.TraditionalTranslationConfig,
-	text: string[],
-	targetLang: string,
-): Promise<string[]> => {
-	const { translatedText } = await traditionalTranslate(
-		config.apiSpec,
-		{
-			apiKey: config.apiKey || "",
-			apiUrl: config.baseUrl,
-		},
-		{ text: text, sourceLang: "auto", targetLang },
-	);
-
-	return translatedText;
-};
-
-const executeBatchLLMTranslation = async (
+/**
+ * Execute streaming translation with LLM service
+ */
+async function* executeLLMStream(
 	config: s.ModelConfig,
-	texts: string[],
+	promptSettings: s.PromptSettings,
 	pageContext: PageContext | undefined,
+	textContext: TextContext,
+	sourceLang: string,
 	targetLang: string,
-): Promise<string[]> => {
+): AsyncGenerator<string> {
 	const client = createLLMClient(config.apiSpec, {
 		apiKey: config.apiKey || "",
 		baseUrl: config.baseUrl,
 	});
 
-	const { system, user } = buildBatchPrompt(texts, targetLang, pageContext);
-
-	const request: UnifiedChatRequest = {
-		model: config.model,
-		messages: [
-			{ role: "system", content: system },
-			{ role: "user", content: user },
-		],
-		temperature: config.temperature,
-		maxTokens: config.maxOutputTokens,
+	const promptContext: PromptContext = {
+		targetLang,
+		sourceLang,
+		page: pageContext,
+		textContext,
 	};
 
-	const response = await client.chat(request);
-
-	// Parse the response to extract individual translations
-	const sections = response.content.split(/@@P\d+/).slice(1);
-	return sections.map((section) => section.trim());
-};
-
-const executeBatchApiCall = async (
-	modelId: string,
-	texts: string[],
-	pageContext?: PageContext,
-): Promise<string[]> => {
-	const config = await getModelConfig(modelId);
-	const settings = await getSettings();
-	const targetLang = settings.translate.targetLang;
-
-	try {
-		let result: string[];
-		if (config.type === "traditional") {
-			result = await executeBatchTraditionalTranslation(
-				config,
-				texts,
-				targetLang,
-			);
-		} else {
-			result = await executeBatchLLMTranslation(
-				config,
-				texts,
-				pageContext,
-				targetLang,
-			);
-		}
-
-		if (result.length !== texts.length) {
-			throw createTranslateError(
-				TranslateErrorType.API_ERROR,
-				t("errors.batchResponseMismatch", [texts.length, result.length]),
-			);
-		}
-
-		return result;
-	} catch (error) {
-		handleApiError(error);
-		throw "Unreachable code"; // Make tsc happy
-	}
-};
-
-// --- Streaming Functions ---
-async function* streamTraditionalTranslation(
-	operation: "translate" | "explain",
-	modelId: string,
-	textContext: TextContext,
-	pageContext?: PageContext,
-): AsyncGenerator<string> {
-	if (operation === "explain") {
-		throw createTranslateError(
-			TranslateErrorType.UNSUPPORTED_OPERATION,
-			t("errors.explainOnlyLlm"),
-		);
-	}
-
-	// Traditional services don't stream, so we yield the full result once.
-	const result = await executeApiCall(
-		"translate",
-		modelId,
-		textContext,
-		pageContext,
-	);
-	yield result;
-}
-
-async function* streamLLMTranslation(
-	config: s.ModelConfig,
-	operation: "translate" | "explain",
-	textContext: TextContext,
-	pageContext: PageContext | undefined,
-	targetLang: string,
-): AsyncGenerator<string> {
-	const client = createLLMClient(config.apiSpec, {
-		apiKey: config.apiKey || "",
-		baseUrl: config.baseUrl,
-	});
-
-	const promptTemplate =
-		operation === "translate" ? TRANSLATE_PROMPT : EXPLAIN_PROMPT;
-	const { system, user } = buildPrompt(
-		promptTemplate,
-		targetLang,
-		textContext,
-		pageContext,
-	);
+	const { system, user } = buildPrompt(promptSettings, promptContext);
 
 	const request: UnifiedChatRequest = {
 		model: config.model,
@@ -474,44 +260,91 @@ async function* streamLLMTranslation(
 	}
 }
 
-async function* streamApiCall(
-	operation: "translate" | "explain",
-	modelId: string,
-	textContext: TextContext,
-	pageContext?: PageContext,
-): AsyncGenerator<string> {
-	const config = await getModelConfig(modelId);
-	const settings = await getSettings();
-	const targetLang = settings.translate.targetLang;
+/**
+ * Execute batch translation with traditional service
+ */
+const executeTraditionalBatch = async (
+	config: s.TraditionalTranslationConfig,
+	texts: string[],
+	sourceLang: string,
+	targetLang: string,
+): Promise<string[]> => {
+	const { translatedText } = await traditionalTranslate(
+		config.apiSpec,
+		{
+			apiKey: config.apiKey || "",
+			apiUrl: config.baseUrl,
+		},
+		{ text: texts, sourceLang, targetLang },
+	);
 
-	try {
-		if (config.type === "traditional") {
-			yield* streamTraditionalTranslation(
-				operation,
-				modelId,
-				textContext,
-				pageContext,
-			);
-			return;
-		}
+	return translatedText;
+};
 
-		yield* streamLLMTranslation(
-			config,
-			operation,
-			textContext,
-			pageContext,
-			targetLang,
+/**
+ * Execute batch translation with LLM service
+ */
+const executeLLMBatch = async (
+	config: s.ModelConfig,
+	promptSettings: s.PromptSettings,
+	pageContext: PageContext | undefined,
+	texts: string[],
+	sourceLang: string,
+	targetLang: string,
+): Promise<string[]> => {
+	if (!isBatchPrompt(promptSettings)) {
+		throw createTranslateError(
+			TranslateErrorType.INVALID_PROMPT,
+			t("errors.promptNotBatch"),
 		);
-	} catch (error) {
-		handleApiError(error);
 	}
-}
 
+	const client = createLLMClient(config.apiSpec, {
+		apiKey: config.apiKey || "",
+		baseUrl: config.baseUrl,
+	});
+
+	const promptContext: PromptContext = {
+		targetLang,
+		sourceLang,
+		page: pageContext,
+		texts,
+	};
+
+	const { system, user } = buildPrompt(promptSettings, promptContext);
+
+	const request: UnifiedChatRequest = {
+		model: config.model,
+		messages: [
+			{ role: "system", content: system },
+			{ role: "user", content: user },
+		],
+		temperature: config.temperature,
+		maxTokens: config.maxOutputTokens,
+	};
+
+	const response = await client.chat(request);
+
+	// Parse the response to extract individual translations
+	const result = parseBatchResponse(response.content, promptSettings);
+
+	if (result.length !== texts.length) {
+		throw createTranslateError(
+			TranslateErrorType.API_ERROR,
+			t("errors.batchResponseMismatch", [texts.length, result.length]),
+		);
+	}
+
+	return result;
+};
+
+/**
+ * Handle batch caching logic
+ */
 const handleBatchCaching = async (
 	texts: string[],
-	modelId: string,
+	options: TranslateOptions,
 	pageContext: PageContext | undefined,
-	cleanCache: boolean,
 	cacheManager: ReturnType<typeof createCacheManager>,
 ) => {
 	const results: string[] = [];
@@ -519,18 +352,24 @@ const handleBatchCaching = async (
 	const uncachedTexts: string[] = [];
 
 	for (let i = 0; i < texts.length; i++) {
-		const textContext = emptyContext(texts[i]);
+		const text = texts[i];
+		const textContext: TextContext = {
+			content: text,
+			before: "",
+			after: "",
+		};
+
 		const cacheKey = await generateCacheKey(
-			"translate",
-			modelId,
+			options.promptId,
+			options.modelId,
 			textContext,
 			pageContext,
 		);
 
-		if (cleanCache) {
+		if (options.cleanCache) {
 			await cacheManager.del(cacheKey);
 			uncachedIndices.push(i);
-			uncachedTexts.push(texts[i]);
+			uncachedTexts.push(text);
 			results.push(""); // Placeholder
 		} else {
 			const cachedResult = await cacheManager.get(cacheKey);
@@ -538,7 +377,7 @@ const handleBatchCaching = async (
 				results.push(cachedResult);
 			} else {
 				uncachedIndices.push(i);
-				uncachedTexts.push(texts[i]);
+				uncachedTexts.push(text);
 				results.push(""); // Placeholder
 			}
 		}
@@ -547,34 +386,43 @@ const handleBatchCaching = async (
 	return { results, uncachedIndices, uncachedTexts };
 };
 
+/**
+ * Cache batch results
+ */
 const cacheBatchResults = async (
 	results: string[],
 	uncachedIndices: number[],
 	translatedTexts: string[],
 	texts: string[],
-	modelId: string,
+	options: TranslateOptions,
 	pageContext: PageContext | undefined,
 	cacheManager: ReturnType<typeof createCacheManager>,
 ) => {
 	for (let i = 0; i < uncachedIndices.length; i++) {
 		const originalIndex = uncachedIndices[i];
 		const translatedText = translatedTexts[i];
-
 		results[originalIndex] = translatedText;
 
-		// Cache the individual result
-		const textContext = emptyContext(texts[originalIndex]);
+		const textContext: TextContext = {
+			content: texts[originalIndex],
+			before: "",
+			after: "",
+		};
+
 		const cacheKey = await generateCacheKey(
-			"translate",
-			modelId,
+			options.promptId,
+			options.modelId,
 			textContext,
 			pageContext,
 		);
+
 		await cacheManager.set(cacheKey, translatedText);
 	}
 };
 
-// --- Main Service Factory ---
+/**
+ * Main service factory
+ */
 export const createTranslateService = async (): Promise<TranslateService> => {
 	const cacheStorage = createLRUStorage<string>(
 		"translate-cache",
@@ -583,197 +431,158 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 	);
 	const cacheManager = createCacheManager(cacheStorage);
 
-	const createCacheParams = (
-		operation: string,
-		modelId: string,
-		textContext: TextContext,
-		pageContext?: PageContext,
-		cleanCache = false,
-	) => ({
-		operation,
-		modelId,
-		textContext,
-		pageContext,
-		cleanCache,
-	});
-
 	return {
-		translate: (
-			modelId,
-			textContext,
-			pageContext,
-			options: TranslateOptions = {},
-		) => {
-			const params = createCacheParams(
-				"translate",
-				modelId,
+		unary: async (
+			context: [PageContext | undefined, TextContext],
+			options: TranslateOptions,
+		): Promise<string> => {
+			const [pageContext, textContext] = context;
+			const modelConfig = await getModelConfig(options.modelId);
+			const promptSettings = await getPromptSettings(options.promptId);
+
+			const cacheKey = await generateCacheKey(
+				options.promptId,
+				options.modelId,
 				textContext,
 				pageContext,
-				options.cleanCache,
 			);
-			return cacheManager.withCache(params, () =>
-				executeApiCall("translate", modelId, textContext, pageContext),
-			);
+
+			try {
+				return await cacheManager.withCache(
+					cacheKey,
+					options.cleanCache ?? false,
+					async () => {
+						if (modelConfig.type === "traditional") {
+							return await executeTraditionalUnary(
+								modelConfig.config,
+								textContext,
+								options.sourceLang,
+								options.targetLang,
+							);
+						}
+
+						return await executeLLMUnary(
+							modelConfig.config,
+							promptSettings,
+							pageContext,
+							textContext,
+							options.sourceLang,
+							options.targetLang,
+						);
+					},
+				);
+			} catch (error) {
+				handleApiError(error);
+				throw error; // Unreachable but satisfies TypeScript
+			}
 		},
 
-		streamTranslate: (
-			modelId,
-			textContext,
-			pageContext,
-			options: TranslateOptions = {},
-		) => {
-			const params = createCacheParams(
-				"translate",
-				modelId,
+		stream: async function* (
+			context: [PageContext | undefined, TextContext],
+			options: TranslateOptions,
+		): AsyncGenerator<string> {
+			const [pageContext, textContext] = context;
+			const modelConfig = await getModelConfig(options.modelId);
+			const promptSettings = await getPromptSettings(options.promptId);
+
+			const cacheKey = await generateCacheKey(
+				options.promptId,
+				options.modelId,
 				textContext,
 				pageContext,
-				options.cleanCache,
 			);
-			return cacheManager.withStreamingCache(params, () =>
-				streamApiCall("translate", modelId, textContext, pageContext),
-			);
+
+			try {
+				if (modelConfig.type === "traditional") {
+					// Traditional services don't support streaming, yield full result
+					const result = await cacheManager.withCache(
+						cacheKey,
+						options.cleanCache ?? false,
+						async () => {
+							return await executeTraditionalUnary(
+								modelConfig.config,
+								textContext,
+								options.sourceLang,
+								options.targetLang,
+							);
+						},
+					);
+					yield result;
+					return;
+				}
+
+				// Stream from LLM
+				yield* cacheManager.withStreamingCache(
+					cacheKey,
+					options.cleanCache ?? false,
+					() =>
+						executeLLMStream(
+							modelConfig.config,
+							promptSettings,
+							pageContext,
+							textContext,
+							options.sourceLang,
+							options.targetLang,
+						),
+				);
+			} catch (error) {
+				handleApiError(error);
+			}
 		},
 
-		explain: (
-			modelId,
-			textContext,
-			pageContext,
-			options: TranslateOptions = {},
-		) => {
-			const params = createCacheParams(
-				"explain",
-				modelId,
-				textContext,
-				pageContext,
-				options.cleanCache,
-			);
-			return cacheManager.withCache(params, () =>
-				executeApiCall("explain", modelId, textContext, pageContext),
-			);
-		},
-
-		streamExplain: (
-			modelId,
-			textContext,
-			pageContext,
-			options: TranslateOptions = {},
-		) => {
-			const params = createCacheParams(
-				"explain",
-				modelId,
-				textContext,
-				pageContext,
-				options.cleanCache,
-			);
-			return cacheManager.withStreamingCache(params, () =>
-				streamApiCall("explain", modelId, textContext, pageContext),
-			);
-		},
-
-		batchTranslate: async (
-			modelId: string,
-			texts: string[],
-			pageContext?: PageContext,
-			options: TranslateOptions = {},
+		batch: async (
+			context: [PageContext | undefined, string[]],
+			options: TranslateOptions,
 		): Promise<string[]> => {
-			const { cleanCache = false } = options;
+			const [pageContext, texts] = context;
+			const modelConfig = await getModelConfig(options.modelId);
+			const promptSettings = await getPromptSettings(options.promptId);
 
 			const { results, uncachedIndices, uncachedTexts } =
-				await handleBatchCaching(
-					texts,
-					modelId,
-					pageContext,
-					cleanCache,
-					cacheManager,
-				);
+				await handleBatchCaching(texts, options, pageContext, cacheManager);
 
 			// If all texts are cached, return immediately
 			if (uncachedIndices.length === 0) {
 				return results;
 			}
 
-			// Translate uncached texts
-			const translatedTexts = await executeBatchApiCall(
-				modelId,
-				uncachedTexts,
-				pageContext,
-			);
-
-			// Cache and update results
-			await cacheBatchResults(
-				results,
-				uncachedIndices,
-				translatedTexts,
-				texts,
-				modelId,
-				pageContext,
-				cacheManager,
-			);
-
-			return results;
-		},
-
-		streamInputTranslate: async function* (
-			modelId: string,
-			text: string,
-			pageContext?: PageContext,
-			targetLang?: string,
-		): AsyncGenerator<string> {
-			const config = await getModelConfig(modelId);
-			const settings = await getSettings();
-			const effectiveTargetLang =
-				targetLang ||
-				settings.translate.inputTranslateLang ||
-				settings.translate.targetLang;
-
-			if (config.type === "traditional") {
-				// Traditional services don't support streaming for input translation
-				const { translatedText } = await traditionalTranslate(
-					config.apiSpec,
-					{
-						apiKey: config.apiKey || "",
-						apiUrl: config.baseUrl,
-					},
-					{ text: [text], sourceLang: "auto", targetLang: effectiveTargetLang },
-				);
-				yield translatedText[0];
-				return;
-			}
-
-			// LLM-based streaming translation for input
-			const client = createLLMClient(config.apiSpec, {
-				apiKey: config.apiKey || "",
-				baseUrl: config.baseUrl,
-			});
-
-			const system = INPUT_TRANSLATE_PROMPT.replaceAll(
-				`{{${REPLACEMENT.targetLang}}}`,
-				getNativeName(effectiveTargetLang),
-			);
-
-			let user = `<${TAGS.page}>`;
-			user += buildPageContextString(pageContext);
-			user += `</${TAGS.page}>`;
-			user += `\n<${TAGS.content}>${text}</${TAGS.content}>`;
-
-			const request: UnifiedChatRequest = {
-				model: config.model,
-				messages: [
-					{ role: "system", content: system },
-					{ role: "user", content: user },
-				],
-				temperature: config.temperature,
-				maxTokens: config.maxOutputTokens,
-				stream: true,
-			};
-
 			try {
-				const stream = client.chatStream(request);
-				for await (const chunk of stream) {
-					yield chunk.content;
+				// Translate uncached texts
+				let translatedTexts: string[];
+
+				if (modelConfig.type === "traditional") {
+					translatedTexts = await executeTraditionalBatch(
+						modelConfig.config,
+						uncachedTexts,
+						options.sourceLang,
+						options.targetLang,
+					);
+				} else {
+					translatedTexts = await executeLLMBatch(
+						modelConfig.config,
+						promptSettings,
+						pageContext,
+						uncachedTexts,
+						options.sourceLang,
+						options.targetLang,
+					);
 				}
+
+				// Cache and update results
+				await cacheBatchResults(
+					results,
+					uncachedIndices,
+					translatedTexts,
+					texts,
+					options,
+					pageContext,
+					cacheManager,
+				);
+
+				return results;
 			} catch (error) {
 				handleApiError(error);
+				throw error; // Unreachable but satisfies TypeScript
 			}
 		},
 

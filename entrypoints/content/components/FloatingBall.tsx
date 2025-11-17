@@ -3,7 +3,7 @@ import { spring } from "motion";
 import { animate } from "motion/mini";
 
 interface Props {
-	enabled?: boolean;
+	translateEnabled?: boolean;
 	onSwitch?: () => void;
 }
 
@@ -130,60 +130,58 @@ export default (props: Props) => {
 	});
 
 	return (
-		<Show when={settings.basic.floatingBallEnabled}>
-			<div
-				ref={setRef}
-				class="fixed p-2 opacity-50"
-				classList={{
-					"left-0": isLeft(),
-					"right-0": !isLeft(),
+		<div
+			ref={setRef}
+			class="fixed p-2 opacity-50"
+			classList={{
+				"left-0": isLeft(),
+				"right-0": !isLeft(),
+			}}
+			style={{
+				top: `${top()}vh`,
+				transform: `translateX(${exitedState()})`,
+			}}
+		>
+			<Button
+				variant={props.translateEnabled ? "success" : "ghost"}
+				onMouseDown={handleDragStart}
+				onTouchStart={handleDragStart}
+				onClick={() => {
+					if (wasDragged) return;
+					props.onSwitch?.();
 				}}
-				style={{
-					top: `${top()}vh`,
-					transform: `translateX(${exitedState()})`,
-				}}
+				class="btn-circle shadow-lg relative self-end"
+				classList={{ "cursor-grabbing": isDragging() }}
+				size="sm"
 			>
-				<Button
-					variant={props.enabled ? "success" : "ghost"}
-					onMouseDown={handleDragStart}
-					onTouchStart={handleDragStart}
-					onClick={() => {
-						if (wasDragged) return;
-						props.onSwitch?.();
-					}}
-					class="btn-circle shadow-lg relative self-end"
-					classList={{ "cursor-grabbing": isDragging() }}
-					size="sm"
-				>
-					<Show when={props.enabled}>
-						{runningTasks() === 0 ? (
-							<Check
-								class="p-1 bg-success text-success-content rounded-full"
-								style={{
-									position: "absolute",
-									[isLeft() ? "right" : "left"]: "0",
-									bottom: "0",
-								}}
-								size={12}
-							/>
-						) : (
-							<Loader
-								class="p-1 bg-accent text-accent-content rounded-full animate-spin"
-								style={{
-									position: "absolute",
-									[isLeft() ? "right" : "left"]: "0",
-									bottom: "0",
-								}}
-								size={12}
-							/>
-						)}
-					</Show>
-					<img
-						src={browser.runtime.getURL("/icons/128.png")}
-						alt={t("common.floatingBallIcon")}
-					/>
-				</Button>
-			</div>
-		</Show>
+				<Show when={props.translateEnabled}>
+					{runningTasks() === 0 ? (
+						<Check
+							class="p-1 bg-success text-success-content rounded-full"
+							style={{
+								position: "absolute",
+								[isLeft() ? "right" : "left"]: "0",
+								bottom: "0",
+							}}
+							size={12}
+						/>
+					) : (
+						<Loader
+							class="p-1 bg-accent text-accent-content rounded-full animate-spin"
+							style={{
+								position: "absolute",
+								[isLeft() ? "right" : "left"]: "0",
+								bottom: "0",
+							}}
+							size={12}
+						/>
+					)}
+				</Show>
+				<img
+					src={browser.runtime.getURL("/icons/128.png")}
+					alt={t("common.floatingBallIcon")}
+				/>
+			</Button>
+		</div>
 	);
 };

@@ -1,15 +1,15 @@
 import { trackDeep } from "@solid-primitives/deep";
 import type { JSX } from "solid-js";
 import type { Store } from "solid-js/store";
-import type { WebsiteRuleSetting } from "~/utils/settings";
+import type { WebsiteRuleSettings } from "~/utils/settings";
 
-type WebsiteRuleContextType = Store<WebsiteRuleSetting> | undefined;
+type WebsiteRuleContextType = Store<WebsiteRuleSettings> | undefined;
 const WebsiteRuleContext = createContext<WebsiteRuleContextType>();
 
 export function WebsiteRuleProvider(props: { children: JSX.Element }) {
 	const { settings } = useSettings();
 
-	const [websiteRule, setWebsiteRule] = createStore<WebsiteRuleSetting>({
+	const [websiteRule, setWebsiteRule] = createStore<WebsiteRuleSettings>({
 		urlPatterns: [],
 	});
 	const [initialized, setInitialized] = createSignal(false);

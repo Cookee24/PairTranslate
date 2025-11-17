@@ -6,47 +6,27 @@ export interface CoreService extends RpcService {
 }
 
 export interface TranslateService extends RpcService {
-	translate(
-		modelId: string,
-		textContext: TextContext,
-		pageContext?: PageContext,
-		options?: TranslateOptions,
+	unary(
+		context: [PageContext | undefined, TextContext],
+		options: TranslateOptions,
 	): Promise<string>;
-	streamTranslate(
-		modelId: string,
-		textContext: TextContext,
-		pageContext?: PageContext,
-		options?: TranslateOptions,
+	stream(
+		context: [PageContext | undefined, TextContext],
+		options: TranslateOptions,
 	): AsyncGenerator<string, void, unknown>;
-	explain(
-		modelId: string,
-		textContext: TextContext,
-		pageContext?: PageContext,
-		options?: TranslateOptions,
-	): Promise<string>;
-	streamExplain(
-		modelId: string,
-		textContext: TextContext,
-		pageContext?: PageContext,
-		options?: TranslateOptions,
-	): AsyncGenerator<string, void, unknown>;
-	batchTranslate(
-		modelId: string,
-		texts: string[],
-		pageContext?: PageContext,
-		options?: TranslateOptions,
+	batch(
+		context: [PageContext | undefined, string[]],
+		options: TranslateOptions,
 	): Promise<string[]>;
-	streamInputTranslate(
-		modelId: string,
-		text: string,
-		pageContext?: PageContext,
-		targetLang?: string,
-	): AsyncGenerator<string, void, unknown>;
 	clearCache(): Promise<void>;
 }
 
 export interface TranslateOptions {
+	modelId: string;
+	promptId: string; // Indicating the prompt uuid, can be queried in settings
 	cleanCache?: boolean;
+	sourceLang: string;
+	targetLang: string;
 }
 
 export interface StyleService extends RpcService {

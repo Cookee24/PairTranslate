@@ -9,6 +9,7 @@ interface SingleProps {
 }
 export const SingleInTextTranslation = (props: SingleProps) => {
 	const { settings } = useSettings();
+	const websiteRule = useWebsiteRule();
 	const [operation, setOperation] = createSignal<Operation>();
 	const [text, { loading, error, retry }] = useTranslation(operation, {
 		stream: false,
@@ -35,7 +36,9 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 		}
 	};
 
-	const hideOriginal = () => settings.translate.translationMode === "replace";
+	const hideOriginal = () =>
+		(websiteRule.translateMode ?? settings.translate.translationMode) ===
+		"replace";
 
 	return (
 		<TranslationRender
@@ -162,12 +165,15 @@ interface BatchRenderProps {
 }
 const BatchRender = (props: BatchRenderProps) => {
 	const { settings } = useSettings();
+	const websiteRule = useWebsiteRule();
 	const texts = createMemo(() =>
 		props.elements.map((el) => extractMarkdownContent(el)),
 	);
 	const [store, retry] = useBatchTranslation(texts, getPageContext());
 
-	const hideOriginal = () => settings.translate.translationMode === "replace";
+	const hideOriginal = () =>
+		(websiteRule.translateMode ?? settings.translate.translationMode) ===
+		"replace";
 
 	return (
 		<For each={store}>

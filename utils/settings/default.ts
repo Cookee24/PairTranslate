@@ -1,7 +1,5 @@
 import type * as s from "./def";
 
-const id = "a404995f-8bf9-4e3c-86aa-bbc4698bc050"; // Fixed ID for Microsoft Translator
-
 /**
  * Generate default basic settings
  */
@@ -39,10 +37,10 @@ export function generateTranslateSettings(): s.TranslateSettings {
 		filterInteractive: true,
 		translationMode: "parallel",
 		translateFullPage: false,
-		inTextTranslateModel: id,
-		floatingTranslateModel: id,
+		inTextTranslateModel: MS_TRANSLATOR_ID,
+		floatingTranslateModel: MS_TRANSLATOR_ID,
 		floatingExplainModel: undefined,
-		inputTranslateModel: id,
+		inputTranslateModel: MS_TRANSLATOR_ID,
 		inputTranslateLang: "en",
 	};
 }
@@ -53,7 +51,7 @@ export function generateServicesSettings(): s.ServicesSettings {
 	return {
 		llmServices: {},
 		traditionalServices: {
-			[id]: {
+			[MS_TRANSLATOR_ID]: {
 				name: t("services.microsoftTranslatorDefault"),
 				apiSpec: "microsoft",
 				apiKey: "edge",
@@ -72,15 +70,160 @@ export function generateWebsiteRuleSettings(): s.WebsiteRulesSettings {
 	return [];
 }
 
+const TRANSLATE_PROMPT =
+	`You are a professional translator. Now you are provided with some text and its context. All content are provided within specify XML tags:
+
++ <page>: The whole page context, including title, headings, etc.
++ <content>: The text to be translated.
++ <context>: The context before and after the content to be translated.
+
+Translate the text within <content> to "{{targetLang}}". You should conforming to the expression habits of "{{targetLang}}".
+Just directly translate content in <content> **WITHOUT ANY** information from <context></context>.
+
+<example>
++ Input:
+<page>Welcome to the homepage</page>
+<context before>This is a </context>
+<context after>: console.log("Hello World!")</context>
+<content>example</content>
+
++ Output:
+ONLY translation of "example" in "{{targetLang}}"
+</example>
+<example>
++ Input:
+<page>I love programming</page>
+<context before>[[LONG TEXT #1]]</context>
+<context after> [[LONG TEXT #2]]</context>
+<content>[[SHORT TEXT #1]]</content>
+
++ Output:
+ONLY translation of [[SHORT TEXT #1]] in "{{targetLang}}"
+</example>`.trim();
+
+const TRANSLATE_PROMPT_USER = `<page>{{page}}</page>
+<context before>{{contextBefore}}</context>
+<context after>{{contextAfter}}</context>
+<content>{{content}}</content>`.trim();
+
+const BATCH_TRANSLATE_PROMPT =
+	`You are a professional translator. Now you are provided with some texts and their context. The input will follow a specific format:
+
++ <page>: The whole page context, including title, headings, etc.
++ \`@@P<number>\`: Start notation of a new section, with an incremental number. All section notations start from the beginning of a new line.
+
+You should translate all texts in each section to "{{targetLang}}", and conform to the expression habits of "{{targetLang}}".
+Each parts of texts separated by \`@@P<number>\` are in the same context from <page>. They can be adjacent or separated.
+Preserve \`@@P<number>\` and all markdown notations in the output. Just directly translate the text in each section **WITHOUT ANY** information from <page></page>.
+
+<example>
++ Input:
+<page>Welcome to the homepage</page>
+@@P1
+This is an example.
+@@P2
+Another example here.
+
++ Output:
+@@P1
+ONLY translation of "This is an example." in "{{targetLang}}".
+@@P2
+ONLY translation of "Another example here." in "{{targetLang}}".
+</example>`.trim();
+const BATCH_TRANSLATE_PROMPT_USER = `<page>{{page}}</page>
+{{#for}}
+@@P{{index}}
+{{content}}
+{{/for}}
+`.trim();
+
+const EXPLAIN_PROMPT =
+	`You are a professional translator. Now you are provided with some text and its context. All content are provided within specify XML tags:
+
++ <page>: The whole page context, including title, headings, etc.
++ <content>: The text to be translated.
++ <context>: The context before and after the content to be translated.
+
+You should process the content in <content>, and enclose your output in the following XML tags:
+
++ <context-mean>: Explain the words/phrases in context with {{targetLang}}.
++ <mean>: Giving all meanings of the words/phrases in formal expression with {{targetLang}}.
++ <example id="number">: Create a sentence demonstrating the usage of the word in the current context and other contexts, while providing a translation to "{{targetLang}}", separated by line breaks, and bold the corresponding parts with \`**\`. Use incremental IDs for multiple examples.
+
+Markdown format is supported, and you should use it to format your output properly. Always add closing tag </TAG_NAME> for each opening tag <TAG_NAME>.`.trim();
+const EXPLAIN_PROMPT_USER = `<page>{{page}}</page>
+<context before>{{contextBefore}}</context>
+<context after>{{contextAfter}}</context>
+<content>{{content}}</content>`.trim();
+
+const INPUT_TRANSLATE_PROMPT =
+	`You are a professional translator. Now you are provided with some text in user's input. All content are provided within specify XML tags:
+
++ <page>: The whole page context, including title, headings, etc.
++ <content>: The text to be translated.
+
+Translate the text within <content> to "{{targetLang}}". You should conforming to the expression habits of "{{targetLang}}".
+Just directly translate content in <content> **WITHOUT ANY** information from <page></page>.
+
+<example>
++ Input:
+<page>Welcome to the homepage</page>
+<content>example</content>
+
++ Output:
+ONLY translation of "example" in "{{targetLang}}"
+</example>
+<example>
++ Input:
+<page>I love programming</page>
+<content>[[LONG TEXT #1]]</content>
+
++ Output:
+ONLY translation of [[LONG TEXT #1]] in "{{targetLang}}"
+</example>`.trim();
+const INPUT_TRANSLATE_PROMPT_USER = `<page>{{page}}</page>
+<content>{{content}}</content>`.trim();
+
+export function generatePromptSettings(): s.PromptsSettings {
+	return {
+		[PROMPT_ID.translate]: {
+			name: "翻译",
+			system: TRANSLATE_PROMPT,
+			user: TRANSLATE_PROMPT_USER,
+		},
+		[PROMPT_ID.batchTranslate]: {
+			name: "批量翻译",
+			system: BATCH_TRANSLATE_PROMPT,
+			user: BATCH_TRANSLATE_PROMPT_USER,
+			batch: {
+				delimiter: "@@P{{index}}",
+				trimWhitespace: true,
+			},
+		},
+		[PROMPT_ID.explain]: {
+			name: "解释",
+			system: EXPLAIN_PROMPT,
+			user: EXPLAIN_PROMPT_USER,
+		},
+		[PROMPT_ID.inputTranslate]: {
+			name: "输入翻译",
+			system: INPUT_TRANSLATE_PROMPT,
+			user: INPUT_TRANSLATE_PROMPT_USER,
+		},
+	};
+}
+
 /**
  * Generate complete default settings
  */
 export function generateDefaultSettings(): s.SettingsSchema {
 	return {
+		__v: 1,
 		basic: generateBasicSettings(),
 		translate: generateTranslateSettings(),
 		services: generateServicesSettings(),
 		websiteRules: generateWebsiteRuleSettings(),
+		prompts: generatePromptSettings(),
 	};
 }
 

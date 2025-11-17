@@ -1,5 +1,6 @@
 import type * as s from "./def";
 import { generateDefaultSettings } from "./default";
+import { migrateSettings } from "./migration";
 
 export function listenEnabled(callback: (enabled: boolean) => void) {
 	browser.storage.local.get([STORAGE_KEYS.settings], (res) => {
@@ -75,8 +76,9 @@ export async function initializeSettings(): Promise<void> {
 				`Invalid settings, please contact developer for support: ${result.error.message}, ${JSON.stringify(res[STORAGE_KEYS.settings], null, 2)}`,
 			);
 		}
+		const final = migrateSettings(result.data);
 		await browser.storage.local.set({
-			[STORAGE_KEYS.settings]: result.data,
+			[STORAGE_KEYS.settings]: final,
 		});
 	}
 }

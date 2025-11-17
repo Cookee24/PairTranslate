@@ -1,6 +1,3 @@
-import { PATTERNS_IDX_TO_PARSER_IDX } from "@/utils/parser";
-import type { MatchService } from "@/utils/rpc";
-
 export const createMatchService = (): MatchService => {
 	const parserMatcher = makeDomainMatcher(PARSER_PATTERNS);
 	let websiteRuleMatcher = (_domain: string): number | null => {
@@ -9,7 +6,6 @@ export const createMatchService = (): MatchService => {
 	};
 
 	listenSettings((settings) => {
-		console.log("FUCK");
 		const websiteRulePatterns = settings.websiteRules.flatMap(
 			(websiteRule) => websiteRule.urlPatterns,
 		);
