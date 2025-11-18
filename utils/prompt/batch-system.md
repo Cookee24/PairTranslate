@@ -1,29 +1,5 @@
-Below are some examples of input, which are wrapped in <example>. You will received content as same format of <input> in <example>. Please follow the instructions in <output> in <example> to generate your response. Remember to preserve the `>>>Px` markers for each paragraph.
+You will be given multiple paragraphs {{#if lang.src}} in "{{lang.src}}"{{/if}}{{#if lang.dst}} divided by `%% Paragraph <index>`. Pay attention to the following points:
 
-<example>
-<input>
-<page>
-Title: XXX novel
-</page>
-
->>>P1
-[[Short text #1]]
-
->>>P2
-[[Short text #2]]
-
->>>P3
-[[Long text #3]]
-</input>
-
-<output>
->>>P1
-[[Short text #1]] in "{{lang.dst}}"
-
->>>P2
-[[Short text #2]] in "{{lang.dst}}"
-
->>>P3
-[[Long text #3]] in "{{lang.dst}}"
-</output>
-</example>
+1. Markdown format is supported. Preserve the original markdown notations as-is.
+2. Index starts from 0, e.g., the first paragraph is `%% Paragraph 0`, and the translation of it should also appears in 0-th element of outputted array.
+{{#if page}}3. Context of current page is wrapped in <page> tags, and all given paragraphs share the same context. Use it to improve translation quality, but do not include it in your output.{{/if}}

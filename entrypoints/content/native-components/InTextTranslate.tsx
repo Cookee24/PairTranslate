@@ -9,30 +9,12 @@ interface SingleProps {
 export const SingleInTextTranslation = (props: SingleProps) => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
-	const [operation, setOperation] = createSignal<Operation>();
-	const [text, { loading, error, retry }] = useTranslation(operation, {
-		stream: false,
-		floating: false,
-	});
 
-	createEffect(() => {
-		const el = props.element;
-		const pageContext = getPageContext();
-		const textContext = extractTextContext(el);
-		setOperation({
-			type: "translate",
-			textContext,
-			pageContext,
-		});
-		onCleanup(() => setOperation(undefined));
-	});
+	const context = createMemo(() => extractTextContext(props.element));
+	const [data, retry] = createTranslation(() => context().content);
 
 	const handleRetry = () => {
-		if (error() && !loading()) {
-			retry({ cleanCache: false });
-		} else if (!error() && !loading()) {
-			retry({ cleanCache: true });
-		}
+		retry();
 	};
 
 	const hideOriginal = () =>
@@ -41,9 +23,10 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 
 	return (
 		<TranslationRender
-			text={text()}
-			loading={loading()}
-			error={error()}
+			text={data()}
+			loading={data.loading}
+			// TODO: improve error handling
+			error={String(data.error)}
 			element={props.element}
 			hideOriginal={hideOriginal()}
 			onRetry={handleRetry}
@@ -168,22 +151,23 @@ const BatchRender = (props: BatchRenderProps) => {
 	const texts = createMemo(() =>
 		props.elements.map((el) => extractMarkdownContent(el)),
 	);
-	const [store, retry] = useBatchTranslation(texts, getPageContext());
+	const [geter, retry] = createBatchTranslation(texts);
 
 	const hideOriginal = () =>
 		(websiteRule.translateMode ?? settings.translate.translationMode) ===
 		"replace";
 
 	return (
-		<For each={store}>
+		<For each={geter()}>
 			{(item, index) => (
 				<TranslationRender
-					text={item.result}
+					text={item()}
 					loading={item.loading}
-					error={item.error}
+					// TODO: improve error handling
+					error={String(item.error)}
 					element={props.elements[index()]}
 					hideOriginal={hideOriginal()}
-					onRetry={() => retry.single(index(), { cleanCache: true })}
+					onRetry={() => retry(index())}
 					onDelete={() => props.onDelete?.(props.elements[index()])}
 				/>
 			)}

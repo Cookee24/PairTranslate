@@ -15,7 +15,7 @@
 		"lint": "biome check",
 		"lint:fix": "biome check --write",
 		"lint:fix:unsafe": "biome check --write --unsafe",
-		"compile": "tsc --noEmit",
+		"compile": "wxt prepare && tsc --noEmit",
 		"postinstall": "wxt prepare"
 	},
 	"dependencies": {

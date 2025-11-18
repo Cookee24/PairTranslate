@@ -1,8 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import {
+	ExprSegmentType,
 	isEmpty,
 	type PromptContext,
 	TemplateParseError,
+	TokenType,
 	templateToTokens,
 	tokensToString,
 	toVariableContext,
@@ -161,40 +163,56 @@ describe("intoTokens", () => {
 		test("parses plain text", () => {
 			const tokens = templateToTokens("Hello World");
 			expect(tokens).toEqual([
-				{ type: "string", value: "Hello World", start: 0, end: 11 },
+				{
+					type: TokenType.String,
+					value: "Hello World",
+					start: 0,
+					end: 11,
+				} as any,
 			]);
 		});
 
 		test("parses simple variable", () => {
 			const tokens = templateToTokens("{{name}}");
 			expect(tokens).toHaveLength(1);
-			expect(tokens[0].type).toBe("variable");
-			if (tokens[0].type === "variable") {
-				expect(tokens[0].name).toBe("name");
+			expect(tokens[0].type).toBe(TokenType.Variable);
+			if (tokens[0].type === TokenType.Variable) {
+				expect(tokens[0].expr).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "name" },
+				]);
 			}
 		});
-
 		test("parses text with variables", () => {
 			const tokens = templateToTokens("Hello {{name}}!");
 			expect(tokens).toHaveLength(3);
-			expect(tokens[0]).toMatchObject({ type: "string", value: "Hello " });
-			expect(tokens[1]).toMatchObject({ type: "variable", name: "name" });
-			expect(tokens[2]).toMatchObject({ type: "string", value: "!" });
+			expect(tokens[0]).toMatchObject({
+				type: TokenType.String,
+				value: "Hello ",
+			});
+			expect(tokens[1]).toMatchObject({
+				type: TokenType.Variable,
+				expr: [{ type: ExprSegmentType.Identifier, name: "name" }],
+			});
+			expect(tokens[2]).toMatchObject({ type: TokenType.String, value: "!" });
 		});
-
 		test("parses nested property access", () => {
 			const tokens = templateToTokens("{{user.name}}");
 			expect(tokens[0]).toMatchObject({
-				type: "variable",
-				name: "user.name",
+				type: TokenType.Variable,
+				expr: [
+					{ type: ExprSegmentType.Identifier, name: "user" },
+					{ type: ExprSegmentType.Property, name: "name" },
+				],
 			});
 		});
-
 		test("parses array indexing", () => {
 			const tokens = templateToTokens("{{items[0]}}");
 			expect(tokens[0]).toMatchObject({
-				type: "variable",
-				name: "items[0]",
+				type: TokenType.Variable,
+				expr: [
+					{ type: ExprSegmentType.Identifier, name: "items" },
+					{ type: ExprSegmentType.Index, value: 0 },
+				],
 			});
 		});
 	});
@@ -203,9 +221,9 @@ describe("intoTokens", () => {
 		test("parses escaped opening braces", () => {
 			const tokens = templateToTokens("\\{{not a variable}}");
 			expect(tokens).toHaveLength(2);
-			expect(tokens[0]).toMatchObject({ type: "string", value: "{{" });
+			expect(tokens[0]).toMatchObject({ type: TokenType.String, value: "{{" });
 			expect(tokens[1]).toMatchObject({
-				type: "string",
+				type: TokenType.String,
 				value: "not a variable}}",
 			});
 		});
@@ -215,7 +233,7 @@ describe("intoTokens", () => {
 			// Note: escaped closing braces are not currently parsed separately
 			expect(tokens).toHaveLength(1);
 			expect(tokens[0]).toMatchObject({
-				type: "string",
+				type: TokenType.String,
 				value: "test \\}} end",
 			});
 		});
@@ -225,48 +243,57 @@ describe("intoTokens", () => {
 		test("parses simple if statement", () => {
 			const tokens = templateToTokens("{{#if condition}}true{{/if}}");
 			expect(tokens).toHaveLength(1);
-			expect(tokens[0].type).toBe("conditional");
-			if (tokens[0].type === "conditional") {
-				expect(tokens[0].condition).toBe("condition");
+			expect(tokens[0].type).toBe(TokenType.Conditional);
+			if (tokens[0].type === TokenType.Conditional) {
+				expect(tokens[0].condition).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "condition" },
+				]);
 				expect(tokens[0].trueBranch).toHaveLength(1);
 				expect(tokens[0].falseBranch).toBeUndefined();
 			}
 		});
-
 		test("parses if-else statement", () => {
-			const tokens = templateToTokens("{{#if condition}}true{{#else}}false{{/if}}");
-			if (tokens[0].type === "conditional") {
-				expect(tokens[0].condition).toBe("condition");
+			const tokens = templateToTokens(
+				"{{#if condition}}true{{#else}}false{{/if}}",
+			);
+			if (tokens[0].type === TokenType.Conditional) {
+				expect(tokens[0].condition).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "condition" },
+				]);
 				expect(tokens[0].trueBranch).toHaveLength(1);
 				expect(tokens[0].falseBranch).toHaveLength(1);
 			}
 		});
 
 		test("parses if-elif-else chain", () => {
-			const tokens = templateToTokens("{{#if a}}A{{#elif b}}B{{#else}}C{{/if}}");
-			if (tokens[0].type === "conditional") {
-				expect(tokens[0].condition).toBe("a");
-				if (tokens[0].trueBranch[0].type === "string") {
+			const tokens = templateToTokens(
+				"{{#if a}}A{{#elif b}}B{{#else}}C{{/if}}",
+			);
+			if (tokens[0].type === TokenType.Conditional) {
+				expect(tokens[0].condition).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "a" },
+				]);
+				if (tokens[0].trueBranch[0].type === TokenType.String) {
 					expect(tokens[0].trueBranch[0].value).toBe("A");
 				}
 				expect(tokens[0].falseBranch).toBeDefined();
 			}
 		});
-
 		test("parses nested conditionals", () => {
 			// Nested conditionals are now supported
 			const tokens = templateToTokens(
 				"{{#if outer}}{{#if inner}}nested{{/if}}{{/if}}",
 			);
 			expect(tokens).toHaveLength(1);
-			expect(tokens[0].type).toBe("conditional");
-			if (tokens[0].type === "conditional") {
-				expect(tokens[0].condition).toBe("outer");
+			expect(tokens[0].type).toBe(TokenType.Conditional);
+			if (tokens[0].type === TokenType.Conditional) {
+				expect(tokens[0].condition).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "outer" },
+				]);
 				expect(tokens[0].trueBranch).toHaveLength(1);
-				expect(tokens[0].trueBranch[0].type).toBe("conditional");
+				expect(tokens[0].trueBranch[0].type).toBe(TokenType.Conditional);
 			}
 		});
-
 		test("throws on unclosed if", () => {
 			expect(() => templateToTokens("{{#if condition}}true")).toThrow(
 				TemplateParseError,
@@ -276,17 +303,20 @@ describe("intoTokens", () => {
 		test("parses empty if block", () => {
 			const tokens = templateToTokens("{{#if condition}}{{/if}}");
 			expect(tokens).toHaveLength(1);
-			if (tokens[0].type === "conditional") {
-				expect(tokens[0].condition).toBe("condition");
+			if (tokens[0].type === TokenType.Conditional) {
+				expect(tokens[0].condition).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "condition" } as any,
+				]);
 				expect(tokens[0].trueBranch).toHaveLength(0);
 			}
 		});
-
 		test("handles whitespace in conditionals", () => {
 			const tokens = templateToTokens("{{ #if  condition  }}true{{/if}}");
 			expect(tokens).toHaveLength(1);
-			if (tokens[0].type === "conditional") {
-				expect(tokens[0].condition).toBe("condition");
+			if (tokens[0].type === TokenType.Conditional) {
+				expect(tokens[0].condition).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "condition" },
+				]);
 			}
 		});
 	});
@@ -295,19 +325,22 @@ describe("intoTokens", () => {
 		test("parses simple for loop", () => {
 			const tokens = templateToTokens("{{#for item:items}}{{item}}{{/for}}");
 			expect(tokens).toHaveLength(1);
-			expect(tokens[0].type).toBe("loop");
-			if (tokens[0].type === "loop") {
+			expect(tokens[0].type).toBe(TokenType.Loop);
+			if (tokens[0].type === TokenType.Loop) {
 				expect(tokens[0].item).toBe("item");
-				expect(tokens[0].collection).toBe("items");
+				expect(tokens[0].collection).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "items" },
+				]);
 				expect(tokens[0].body).toHaveLength(1);
 			}
 		});
-
 		test("parses loop with text", () => {
-			const tokens = templateToTokens("{{#for item:items}}Item: {{item}}{{/for}}");
-			if (tokens[0].type === "loop") {
+			const tokens = templateToTokens(
+				"{{#for item:items}}Item: {{item}}{{/for}}",
+			);
+			if (tokens[0].type === TokenType.Loop) {
 				expect(tokens[0].body).toHaveLength(2);
-				if (tokens[0].body[0].type === "string") {
+				if (tokens[0].body[0].type === TokenType.String) {
 					expect(tokens[0].body[0].value).toBe("Item: ");
 				}
 			}
@@ -328,19 +361,22 @@ describe("intoTokens", () => {
 		test("parses empty for loop", () => {
 			const tokens = templateToTokens("{{#for item:items}}{{/for}}");
 			expect(tokens).toHaveLength(1);
-			if (tokens[0].type === "loop") {
+			if (tokens[0].type === TokenType.Loop) {
 				expect(tokens[0].item).toBe("item");
-				expect(tokens[0].collection).toBe("items");
+				expect(tokens[0].collection).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "items" } as any,
+				]);
 				expect(tokens[0].body).toHaveLength(0);
 			}
 		});
-
 		test("handles whitespace in loop syntax", () => {
 			const tokens = templateToTokens("{{ #for  item : items  }}body{{/for}}");
 			expect(tokens).toHaveLength(1);
-			if (tokens[0].type === "loop") {
+			if (tokens[0].type === TokenType.Loop) {
 				expect(tokens[0].item).toBe("item");
-				expect(tokens[0].collection).toBe("items");
+				expect(tokens[0].collection).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "items" },
+				]);
 			}
 		});
 	});
@@ -350,9 +386,9 @@ describe("intoTokens", () => {
 			const template = "Hello {{name}}! {{#if age}}Age: {{age}}{{/if}}";
 			const tokens = templateToTokens(template);
 			expect(tokens.length).toBeGreaterThan(0);
-			expect(tokens.some((t) => t.type === "string")).toBe(true);
-			expect(tokens.some((t) => t.type === "variable")).toBe(true);
-			expect(tokens.some((t) => t.type === "conditional")).toBe(true);
+			expect(tokens.some((t) => t.type === TokenType.String)).toBe(true);
+			expect(tokens.some((t) => t.type === TokenType.Variable)).toBe(true);
+			expect(tokens.some((t) => t.type === TokenType.Conditional)).toBe(true);
 		});
 
 		test("parses nested structures", () => {
@@ -360,8 +396,8 @@ describe("intoTokens", () => {
 				"{{#for item:items}}{{#if item.active}}{{item.name}}{{/if}}{{/for}}";
 			const tokens = templateToTokens(template);
 			expect(tokens).toHaveLength(1);
-			if (tokens[0].type === "loop") {
-				expect(tokens[0].body[0].type).toBe("conditional");
+			if (tokens[0].type === TokenType.Loop) {
+				expect(tokens[0].body[0].type).toBe(TokenType.Conditional);
 			}
 		});
 	});
@@ -382,15 +418,16 @@ describe("intoTokens", () => {
 		test("handles whitespace in variable names", () => {
 			const tokens = templateToTokens("{{  variable  }}");
 			expect(tokens).toHaveLength(1);
-			if (tokens[0].type === "variable") {
-				expect(tokens[0].name).toBe("variable");
+			if (tokens[0].type === TokenType.Variable) {
+				expect(tokens[0].expr).toEqual([
+					{ type: ExprSegmentType.Identifier, name: "variable" },
+				]);
 			}
 		});
-
 		test("handles multiple consecutive variables", () => {
 			const tokens = templateToTokens("{{a}}{{b}}{{c}}");
 			expect(tokens).toHaveLength(3);
-			expect(tokens.every((t) => t.type === "variable")).toBe(true);
+			expect(tokens.every((t) => t.type === TokenType.Variable)).toBe(true);
 		});
 
 		test("handles empty template", () => {
@@ -521,7 +558,9 @@ describe("serializeToString", () => {
 		});
 
 		test("renders false branch when provided", () => {
-			const tokens = templateToTokens("{{#if show}}visible{{#else}}hidden{{/if}}");
+			const tokens = templateToTokens(
+				"{{#if show}}visible{{#else}}hidden{{/if}}",
+			);
 			// Note: boolean false is not considered empty, use undefined/null/empty string/array
 			const ctx = { show: undefined, lang: { dst: "English" } };
 			const result = tokensToString(ctx, tokens);
@@ -546,7 +585,9 @@ describe("serializeToString", () => {
 		});
 
 		test("handles elif chain", () => {
-			const tokens = templateToTokens("{{#if a}}A{{#elif b}}B{{#else}}C{{/if}}");
+			const tokens = templateToTokens(
+				"{{#if a}}A{{#elif b}}B{{#else}}C{{/if}}",
+			);
 
 			// Note: boolean false is not considered empty, use undefined/null/empty string/array
 			expect(
@@ -602,7 +643,9 @@ describe("serializeToString", () => {
 		});
 
 		test("iterates over object properties", () => {
-			const tokens = templateToTokens("{{#for val:obj}}{{@key}}={{val}} {{/for}}");
+			const tokens = templateToTokens(
+				"{{#for val:obj}}{{@key}}={{val}} {{/for}}",
+			);
 			const ctx = { obj: { x: 1, y: 2 }, lang: { dst: "English" } };
 			const result = tokensToString(ctx, tokens);
 			expect(result).toContain("x=1");
@@ -643,7 +686,9 @@ describe("serializeToString", () => {
 		});
 
 		test("handles loop with object properties", () => {
-			const tokens = templateToTokens("{{#for item:items}}{{item.id}} {{/for}}");
+			const tokens = templateToTokens(
+				"{{#for item:items}}{{item.id}} {{/for}}",
+			);
 			const ctx = {
 				items: [{ id: 1 }, { id: 2 }],
 				lang: { dst: "English" },
@@ -667,7 +712,9 @@ describe("serializeToString", () => {
 		});
 
 		test("handles nested array in loop", () => {
-			const tokens = templateToTokens("{{#for list:lists}}{{list[0]}} {{/for}}");
+			const tokens = templateToTokens(
+				"{{#for list:lists}}{{list[0]}} {{/for}}",
+			);
 			const ctx = {
 				lists: [
 					["a", "b"],
@@ -685,11 +732,11 @@ describe("serializeToString", () => {
 				"{{#for outer:outers}}{{#for inner:outer.inners}}{{inner}} {{/for}}{{/for}}",
 			);
 			expect(tokens).toHaveLength(1);
-			expect(tokens[0].type).toBe("loop");
-			if (tokens[0].type === "loop") {
+			expect(tokens[0].type).toBe(TokenType.Loop);
+			if (tokens[0].type === TokenType.Loop) {
 				expect(tokens[0].item).toBe("outer");
 				expect(tokens[0].body).toHaveLength(1);
-				expect(tokens[0].body[0].type).toBe("loop");
+				expect(tokens[0].body[0].type).toBe(TokenType.Loop);
 			}
 		});
 	});

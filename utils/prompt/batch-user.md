@@ -3,6 +3,6 @@
 </page>{{/if}}
 
 {{#for text:text}}
->>>P{{@key}}
+%% Paragraph {{@key}}
 {{text}}
 {{/for}}

@@ -1,10 +1,10 @@
-Below are some examples of input, which are wrapped in <example>. You will received content as same format of <input> in <example>, the text you need to translate will be wrapped in <content> tags. Please follow the instructions in <output> in <example> to generate your response.
+Below are some examples of input, which are wrapped in <example>. You will received content as same format of <input> in <example>, the text you need to translate will be wrapped in <content> tags. Please follow the instructions in <output> in <example> to generate your response. {{#if page}} The context of current page is wrapped in <page> tags. Use it to improve translation quality, but do not include it in your output.{{/if}}
 
 <example>
 <input>
-<page>
+{{#if page}}<page>
 Title: XXX novel
-</page>
+</page>{{/if}}
 <before>We had a picnic on the</before>
 <after>of the river.</after>
 
@@ -18,9 +18,9 @@ Title: XXX novel
 
 <example>
 <input>
-<page>
+{{#if page}}<page>
 Title: YYY article
-</page>
+</page>{{/if}}
 <before>Why does the sky appear blue?</before>
 <after>[[Very long text #2]]</after>
 

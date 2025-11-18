@@ -1,7 +1,7 @@
 {{#if page}}<page>
 {{#for item:page}}{{item.key}}: {{item.value}}{{/for}}
 </page>{{/if}}
-<before>{{#if text.before}}{{text.before}}{{/if}}{{text.text}}</before>
-<after>{{#if text.after}}{{text.after}}{{/if}}</after>
+<before>{{#if surr.before}}{{surr.before}}{{/if}}{{surr.text}}</before>
+<after>{{#if surr.after}}{{surr.after}}{{/if}}</after>
 
-<content>{{text.content}}</content>
+<content>{{content}}</content>

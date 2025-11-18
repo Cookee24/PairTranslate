@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noConstEnum: For performance */
 import { getNativeName } from "../constants";
 import type { PageContext } from "../types";
 
@@ -20,32 +21,55 @@ export interface Message {
 	content: string;
 }
 
+export const enum ExprSegmentType {
+	Identifier,
+	Property,
+	Index,
+}
+
+export const enum TokenType {
+	String,
+	Variable,
+	Conditional,
+	Loop,
+}
+
 type TokenBase = {
 	start: number;
 	end: number;
 };
 
+/**
+ * Represents a parsed expression that can access variables, properties, and array indices
+ */
+type ExprSegment =
+	| { type: ExprSegmentType.Identifier; name: string }
+	| { type: ExprSegmentType.Property; name: string }
+	| { type: ExprSegmentType.Index; value: number };
+
+type Expr = ExprSegment[];
+
 type StringToken = TokenBase & {
-	type: "string";
+	type: TokenType.String;
 	value: string;
 };
 
 type VariableToken = TokenBase & {
-	type: "variable";
-	name: string;
+	type: TokenType.Variable;
+	expr: Expr;
 };
 
 type ConditionalToken = TokenBase & {
-	type: "conditional";
-	condition: string;
+	type: TokenType.Conditional;
+	condition: Expr;
 	trueBranch: Token[];
 	falseBranch?: Token[];
 };
 
 type LoopToken = TokenBase & {
-	type: "loop";
+	type: TokenType.Loop;
 	item: string;
-	collection: string;
+	collection: Expr;
 	body: Token[];
 };
 
@@ -107,6 +131,77 @@ export const isEmpty = (value: unknown): boolean => {
 	return false;
 };
 
+/**
+ * Parse a string expression into an Expr type
+ * Examples:
+ * - "variable" -> [{type: "identifier", name: "variable"}]
+ * - "user.name" -> [{type: "identifier", name: "user"}, {type: "property", name: "name"}]
+ * - "items[0]" -> [{type: "identifier", name: "items"}, {type: "index", value: 0}]
+ * - "users[0].name" -> [{type: "identifier", name: "users"}, {type: "index", value: 0}, {type: "property", name: "name"}]
+ */
+export const parseExpr = (exprStr: string): Expr => {
+	const segments: ExprSegment[] = [];
+	let i = 0;
+
+	while (i < exprStr.length) {
+		// Skip whitespace
+		while (i < exprStr.length && /\s/.test(exprStr[i])) {
+			i++;
+		}
+
+		if (i >= exprStr.length) break;
+
+		// Check for property access
+		if (exprStr[i] === ".") {
+			i++; // skip the dot
+			let name = "";
+			while (i < exprStr.length && /[a-zA-Z0-9_]/.test(exprStr[i])) {
+				name += exprStr[i];
+				i++;
+			}
+			if (name) {
+				segments.push({ type: ExprSegmentType.Property, name });
+			}
+			continue;
+		}
+
+		// Check for array index
+		if (exprStr[i] === "[") {
+			i++; // skip the opening bracket
+			let indexStr = "";
+			while (i < exprStr.length && exprStr[i] !== "]") {
+				indexStr += exprStr[i];
+				i++;
+			}
+			if (i < exprStr.length && exprStr[i] === "]") {
+				i++; // skip the closing bracket
+				const index = Number.parseInt(indexStr.trim(), 10);
+				if (!Number.isNaN(index)) {
+					segments.push({ type: ExprSegmentType.Index, value: index });
+				}
+			}
+			continue;
+		}
+
+		// Parse identifier
+		let name = "";
+		while (
+			i < exprStr.length &&
+			/[a-zA-Z0-9_@]/.test(exprStr[i]) &&
+			exprStr[i] !== "[" &&
+			exprStr[i] !== "."
+		) {
+			name += exprStr[i];
+			i++;
+		}
+		if (name) {
+			segments.push({ type: ExprSegmentType.Identifier, name });
+		}
+	}
+
+	return segments;
+};
+
 export const templateToTokens = (template: string): Token[] => {
 	const tokens: Token[] = [];
 	let i = 0;
@@ -137,7 +232,7 @@ export const templateToTokens = (template: string): Token[] => {
 			template[i + 1] === "{" &&
 			template[i + 2] === "{"
 		) {
-			tokens.push({ type: "string", value: "{{", start, end: i + 3 });
+			tokens.push({ type: TokenType.String, value: "{{", start, end: i + 3 });
 			i += 3;
 			continue;
 		}
@@ -146,7 +241,7 @@ export const templateToTokens = (template: string): Token[] => {
 			template[i + 1] === "}" &&
 			template[i + 2] === "}"
 		) {
-			tokens.push({ type: "string", value: "}}", start, end: i + 3 });
+			tokens.push({ type: TokenType.String, value: "}}", start, end: i + 3 });
 			i += 3;
 			continue;
 		}
@@ -158,7 +253,8 @@ export const templateToTokens = (template: string): Token[] => {
 
 			// Conditional: {{#if CONDITION}}
 			if (expr.startsWith("#if ")) {
-				const condition = expr.slice(4).trim();
+				const conditionStr = expr.slice(4).trim();
+				const condition = parseExpr(conditionStr);
 
 				// Find matching {{/if}} with proper depth tracking
 				let ifEnd = -1;
@@ -215,7 +311,7 @@ export const templateToTokens = (template: string): Token[] => {
 
 				if (ifEnd === -1)
 					throw new TemplateParseError("Unclosed {{#if}}", {
-						type: "conditional",
+						type: TokenType.Conditional,
 						condition,
 						trueBranch: [],
 						start,
@@ -264,7 +360,7 @@ export const templateToTokens = (template: string): Token[] => {
 				}
 
 				tokens.push({
-					type: "conditional",
+					type: TokenType.Conditional,
 					condition,
 					trueBranch,
 					falseBranch,
@@ -277,7 +373,8 @@ export const templateToTokens = (template: string): Token[] => {
 
 			// Elif: {{#elif CONDITION}}
 			if (expr.startsWith("#elif ")) {
-				const condition = expr.slice(6).trim();
+				const conditionStr = expr.slice(6).trim();
+				const condition = parseExpr(conditionStr);
 
 				// Find matching {{/if}} with proper depth tracking
 				let ifEnd = -1;
@@ -304,7 +401,7 @@ export const templateToTokens = (template: string): Token[] => {
 
 				if (ifEnd === -1)
 					throw new TemplateParseError("Unclosed {{#elif}}", {
-						type: "conditional",
+						type: TokenType.Conditional,
 						condition,
 						trueBranch: [],
 						start,
@@ -353,7 +450,7 @@ export const templateToTokens = (template: string): Token[] => {
 				}
 
 				tokens.push({
-					type: "conditional",
+					type: TokenType.Conditional,
 					condition,
 					trueBranch,
 					falseBranch,
@@ -367,16 +464,17 @@ export const templateToTokens = (template: string): Token[] => {
 			// Loop: {{#for ITEM:COLLECTION}}
 			if (expr.startsWith("#for ")) {
 				const forExpr = expr.slice(5).trim();
-				const [item, collection] = forExpr.split(":").map((s) => s.trim());
-				if (!item || !collection)
+				const [item, collectionStr] = forExpr.split(":").map((s) => s.trim());
+				if (!item || !collectionStr)
 					throw new TemplateParseError("Invalid {{#for}} syntax", {
-						type: "loop",
+						type: TokenType.Loop,
 						item: "",
-						collection: "",
+						collection: [],
 						body: [],
 						start,
 						end,
 					});
+				const collection = parseExpr(collectionStr);
 
 				// Find matching {{/for}} with proper depth tracking
 				let forEnd = -1;
@@ -414,7 +512,7 @@ export const templateToTokens = (template: string): Token[] => {
 
 				if (forEnd === -1)
 					throw new TemplateParseError("Unclosed {{#for}}", {
-						type: "loop",
+						type: TokenType.Loop,
 						item,
 						collection,
 						body: [],
@@ -424,7 +522,7 @@ export const templateToTokens = (template: string): Token[] => {
 
 				const body = templateToTokens(template.slice(end, forEnd));
 				tokens.push({
-					type: "loop",
+					type: TokenType.Loop,
 					item,
 					collection,
 					body,
@@ -436,7 +534,12 @@ export const templateToTokens = (template: string): Token[] => {
 			}
 
 			// Variable: {{variable}}
-			tokens.push({ type: "variable", name: expr, start, end });
+			tokens.push({
+				type: TokenType.Variable,
+				expr: parseExpr(expr),
+				start,
+				end,
+			});
 			i = end;
 			continue;
 		}
@@ -452,7 +555,7 @@ export const templateToTokens = (template: string): Token[] => {
 			i++;
 		}
 		if (str) {
-			tokens.push({ type: "string", value: str, start, end: i });
+			tokens.push({ type: TokenType.String, value: str, start, end: i });
 		}
 	}
 
@@ -465,23 +568,28 @@ export const tokensToString = (
 ): string => {
 	let result = "";
 
-	const getValue = (path: string, token: Token): unknown => {
-		const parts = path.split(".");
+	const getValue = (expr: Expr, token: Token): unknown => {
 		let value: unknown = ctx;
 
-		for (const part of parts) {
-			// Handle array indexing: variable[N]
-			const arrayMatch = part.match(/^(\w+)\[(\d+)\]$/);
-			if (arrayMatch) {
-				const [, name, index] = arrayMatch;
-				value = (value as Record<string, unknown>)?.[name];
+		for (const segment of expr) {
+			if (segment.type === ExprSegmentType.Identifier) {
+				value = (value as Record<string, unknown>)?.[segment.name];
+			} else if (segment.type === ExprSegmentType.Property) {
+				value = (value as Record<string, unknown>)?.[segment.name];
+			} else if (segment.type === ExprSegmentType.Index) {
 				if (Array.isArray(value)) {
-					value = value[Number.parseInt(index, 10)];
+					value = value[segment.value];
 				} else {
-					throw new TemplateParseError(`'${name}' is not an array`, token);
+					const exprStr = expr
+						.map((s) =>
+							s.type === ExprSegmentType.Identifier ||
+							s.type === ExprSegmentType.Property
+								? s.name
+								: `[${s.value}]`,
+						)
+						.join(".");
+					throw new TemplateParseError(`'${exprStr}' is not an array`, token);
 				}
-			} else {
-				value = (value as Record<string, unknown>)?.[part];
 			}
 
 			if (value === undefined) return undefined;
@@ -490,7 +598,7 @@ export const tokensToString = (
 		return value;
 	};
 
-	const evaluateCondition = (condition: string, token: Token): boolean => {
+	const evaluateCondition = (condition: Expr, token: Token): boolean => {
 		const value = getValue(condition, token);
 		return !isEmpty(value);
 	};
@@ -500,12 +608,12 @@ export const tokensToString = (
 
 		for (const token of tokenList) {
 			switch (token.type) {
-				case "string":
+				case TokenType.String:
 					output += token.value;
 					break;
 
-				case "variable": {
-					const value = getValue(token.name, token);
+				case TokenType.Variable: {
+					const value = getValue(token.expr, token);
 					if (value !== undefined && value !== null) {
 						if (Array.isArray(value)) {
 							output += value.join(", ");
@@ -518,7 +626,7 @@ export const tokensToString = (
 					break;
 				}
 
-				case "conditional": {
+				case TokenType.Conditional: {
 					const conditionMet = evaluateCondition(token.condition, token);
 					if (conditionMet) {
 						output += processTokens(token.trueBranch);
@@ -528,7 +636,7 @@ export const tokensToString = (
 					break;
 				}
 
-				case "loop": {
+				case TokenType.Loop: {
 					const collection = getValue(token.collection, token);
 					if (Array.isArray(collection)) {
 						for (let idx = 0; idx < collection.length; idx++) {

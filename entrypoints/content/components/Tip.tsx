@@ -1,6 +1,5 @@
 import { Languages, Lightbulb } from "lucide-solid";
 import { createEffect, createSignal } from "solid-js";
-import { getPageContext } from "../context/page";
 import { extractContextFromSelection } from "../context/select";
 import type { Position, SelectEvent } from "../types";
 import FloatTranslation from "./FloatTranslation";

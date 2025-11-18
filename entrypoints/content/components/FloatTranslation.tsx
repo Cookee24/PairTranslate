@@ -10,6 +10,7 @@ export default (props: Props) => {
 	const [local, rest] = splitProps(props, ["operation", "class"]);
 	let contentRef: HTMLSpanElement | undefined;
 
+	// TODO: Structured output
 	const [text, { loading, error, len, retry }] = useTranslation(
 		() => props.operation,
 		{

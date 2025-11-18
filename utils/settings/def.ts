@@ -95,7 +95,6 @@ export const PromptSettings = z.object({
 	// Default to `step[N]`, where N is the last step index
 	outputAccessor: z.string().optional(),
 	// Optional schemas for structured output
-	tools: z.array(z.string().optional()).optional(),
 	steps: z.array(
 		// Define multi steps prompt. Every single step is added into the conversation history.
 		// Outputted content of previous steps can be referenced by {{step[N]}} or {{tool[N][T]}}
@@ -108,23 +107,20 @@ export const PromptSettings = z.object({
 					content: z.string().optional(),
 				}),
 			),
-			// Optional decoder which can parse plain text into structured data
-			// On the case of non-structured output
-			decoder: z
+			output: z
 				.union([
-					z.object({
-						// JSON decoder
-						type: z.literal("json"),
-					}),
+					z.literal("string"),
 					z.object({
 						type: z.literal("stringArray"),
-						// Regexp separator to split items
-						separator: z.string(),
-						trimWhiteSpace: z.boolean().default(true),
+						// Regexp
+						delimiter: z.string().default("\n"),
+					}),
+					z.object({
+						type: z.literal("structured"),
+						schema: z.any(),
 					}),
 				])
-				// When none, output is treated as string
-				.optional(),
+				.default("string"),
 		}),
 	),
 });
