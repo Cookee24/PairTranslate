@@ -58,10 +58,19 @@ export default (props: LLMModalProps) => {
 		setModelFetchError(null);
 
 		try {
-			const client = createLLMClient(config.apiSpec as LLMProvider, {
+			const clientConfig = {
 				apiKey: config.apiKey,
 				baseUrl: config.baseUrl,
-			});
+			};
+
+			// Create client based on API spec with proper type narrowing
+			const client =
+				config.apiSpec === "openai"
+					? createLLMClient("openai", clientConfig)
+					: config.apiSpec === "anthropic"
+						? createLLMClient("anthropic", clientConfig)
+						: createLLMClient("google", clientConfig);
+
 			const models = await client.listModels();
 
 			const modelIds = Array.isArray(models) ? models.map((m) => m.id) : [];
@@ -202,7 +211,7 @@ export default (props: LLMModalProps) => {
 						<option value="anthropic">
 							{t("settings.llmModal.apiSpecs.anthropic")}
 						</option>
-						<option value="gemini">
+						<option value="google">
 							{t("settings.llmModal.apiSpecs.gemini")}
 						</option>
 					</select>

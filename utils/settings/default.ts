@@ -95,7 +95,7 @@ export function generatePromptSettings(): s.PromptsSettings {
 		[PROMPT_ID.batchTranslate]: {
 			name: "批量翻译",
 			input: "stringArray",
-			output: "stringArray",
+			output: "structured",
 			steps: [
 				{
 					message: [
@@ -132,6 +132,29 @@ export function generatePromptSettings(): s.PromptsSettings {
 						},
 					],
 					output: "string",
+				},
+			],
+		},
+		[PROMPT_ID.explain]: {
+			name: "解释",
+			input: "string",
+			output: "structured",
+			steps: [
+				{
+					message: [
+						{
+							role: "system",
+							content: EXPLAIN.system,
+						},
+						{
+							role: "user",
+							content: EXPLAIN.user,
+						},
+					],
+					output: {
+						type: "structured",
+						schema: EXPLAIN_SCHEMA,
+					},
 				},
 			],
 		},
@@ -178,7 +201,7 @@ export const LLMServiceTemplates = [
 	{
 		name: t("templates.llm.googleGemini"),
 		baseUrl: "https://generativelanguage.googleapis.com",
-		apiSpec: "gemini" as const,
+		apiSpec: "google" as const,
 	},
 	{
 		name: t("templates.llm.lmStudio"),

@@ -4,7 +4,17 @@ export interface PageContext extends Record<string, string> {
 }
 
 export interface TextContext {
-	content: string;
-	before: string;
-	after: string;
+	text: string;
+	surr?: {
+		before?: string;
+		after?: string;
+	};
+}
+
+export interface TranslateContext extends Record<string, unknown> {
+	page?: PageContext;
+	surr?: {
+		before?: string;
+		after?: string;
+	};
 }

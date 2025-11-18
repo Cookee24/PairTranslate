@@ -1,16 +1,16 @@
-import type { PageContext, TextContext } from "./types";
-
 const encoder = new TextEncoder();
 export const generateCacheKey = async (
-	operation: string,
+	promptId: string,
 	modelId: string,
 	textContext: TextContext,
 	pageContext?: PageContext,
 ) => {
-	let str = `${operation}|${modelId}|`;
-	if (textContext.before) str += `${textContext.before}♇`;
-	str += `${textContext.content}♇`;
-	if (textContext.after) str += `${textContext.after}♇`;
+	const D = "\u200C"; // Zero-width non-joiner to separate fields
+	let str = `${promptId}${modelId}${D}${textContext.text}${D}`;
+	if (textContext.surr) {
+		if (textContext.surr.before) str += `${textContext.surr.before}${D}`;
+		if (textContext.surr.after) str += `${textContext.surr.after}${D}`;
+	}
 
 	if (pageContext) {
 		// For hit rate, we only hash the domain of the page context

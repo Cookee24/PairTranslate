@@ -90,7 +90,7 @@ export type WebsiteRulesSettings = z.infer<typeof WebsiteRulesSettings>;
 export const PromptSettings = z.object({
 	name: z.string().min(1),
 	input: z.enum(["string", "stringArray"]).default("string"),
-	output: z.enum(["string", "stringArray", "structured"]).default("string"),
+	output: z.enum(["string", "structured"]).default("string"),
 	// Accessor to get specific field from structured output
 	// Default to `step[N]`, where N is the last step index
 	outputAccessor: z.string().optional(),

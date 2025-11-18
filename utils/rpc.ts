@@ -12,7 +12,7 @@ export interface TranslateService extends RpcService {
 		options: TranslateOptions,
 	): Promise<any>;
 	stream(
-		text: string,
+		text: string | string[],
 		ctx: Record<string, any>,
 		options: TranslateOptions,
 	): AsyncGenerator<any, void, unknown>;

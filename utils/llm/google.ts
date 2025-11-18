@@ -1,158 +1,192 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+	type Content,
+	GoogleGenerativeAI,
+	type Part,
+} from "@google/generative-ai";
 import type {
+	ChatRequest,
 	ClientConfig,
+	EndResponse,
 	LLMClient,
-	UnifiedChatRequest,
-	UnifiedChatResponse,
-	UnifiedModel,
-	UnifiedStreamChunk,
+	Message,
+	StreamChunk,
 } from "./types";
-import { LLMError, LLMErrorType, type LLMProvider } from "./types";
+import { LLMError, LLMErrorType } from "./types";
 
 export function createGoogleClient(config: ClientConfig): LLMClient {
-	const client = new GoogleGenerativeAI(config.apiKey || "");
+	if (!config.apiKey) {
+		throw new LLMError(
+			LLMErrorType.VALIDATION_ERROR,
+			"API key is required for Google Gemini",
+			"google",
+		);
+	}
 
-	const formatMessages = (
-		messages: { role: string; content: string }[],
-	): {
-		systemInstruction?: string;
-		history: Array<{ role: string; parts: { text: string }[] }>;
-	} => {
-		let systemInstruction: string | undefined;
-		const history = messages
-			.map((msg) => {
-				if (msg.role === "system") {
-					systemInstruction = msg.content;
-					return null;
-				}
-				return {
-					role: msg.role === "assistant" ? "model" : "user",
-					parts: [{ text: msg.content }],
-				};
-			})
-			.filter(
-				(item): item is { role: string; parts: { text: string }[] } =>
-					item !== null,
-			);
+	const client = new GoogleGenerativeAI(config.apiKey);
 
-		return { systemInstruction, history };
+	const convertMessages = (
+		messages: Message[],
+	): readonly [systemInstruction: string | undefined, contents: Content[]] => {
+		const systemMessages = messages.filter((msg) => msg.role === "system");
+		const systemInstruction =
+			systemMessages.length > 0
+				? systemMessages.map((msg) => msg.content).join("\n\n")
+				: undefined;
+
+		const conversationMessages = messages.filter(
+			(msg) => msg.role !== "system",
+		);
+
+		const contents: Content[] = conversationMessages.map((msg) => {
+			const role = msg.role === "assistant" ? "model" : "user";
+			const parts: Part[] = [{ text: msg.content }];
+
+			return {
+				role,
+				parts,
+			};
+		});
+
+		return [systemInstruction, contents];
 	};
 
-	const handleError = (
-		error: unknown,
-		defaultType: LLMErrorType,
-		provider: LLMProvider = "google",
-	): LLMError => {
-		let errorType = defaultType;
-		let message = "Google Gemini API error";
+	const handleError = (error: unknown): LLMError => {
+		if (error instanceof Error) {
+			let type = LLMErrorType.API_ERROR;
+			const message = error.message;
 
-		if (error && typeof error === "object" && "status" in error) {
-			if ("status" in error) {
-				switch (error.status) {
-					case 400:
-						errorType = LLMErrorType.VALIDATION_ERROR;
-						message = "Invalid request parameters";
-						break;
-					case 401:
-						errorType = LLMErrorType.AUTHENTICATION_ERROR;
-						message = "Invalid API key provided";
-						break;
-					case 429:
-						errorType = LLMErrorType.RATE_LIMIT_ERROR;
-						message = "Rate limit exceeded";
-						break;
-					case 500:
-					case 502:
-					case 503:
-						errorType = LLMErrorType.NETWORK_ERROR;
-						message = "Google server error";
-						break;
-				}
+			// Check for common Google API error patterns
+			if (message.includes("API key") || message.includes("401")) {
+				type = LLMErrorType.AUTHENTICATION_ERROR;
+			} else if (message.includes("quota") || message.includes("429")) {
+				type = LLMErrorType.RATE_LIMIT_ERROR;
+			} else if (message.includes("400") || message.includes("invalid")) {
+				type = LLMErrorType.VALIDATION_ERROR;
+			} else if (message.includes("fetch") || message.includes("network")) {
+				type = LLMErrorType.NETWORK_ERROR;
 			}
 
-			if ("message" in error && typeof error.message === "string") {
-				message = error.message;
-			}
-		} else if (error instanceof Error) {
-			message = error.message;
+			return new LLMError(type, message, "google", error);
 		}
 
-		return new LLMError(errorType, message, provider, error);
+		return new LLMError(
+			LLMErrorType.UNKNOWN_ERROR,
+			"Unknown error occurred",
+			"google",
+			error,
+		);
 	};
 
 	return {
-		async listModels(): Promise<UnifiedModel[]> {
-			try {
-				// Google Gemini API doesn't have a dynamic model listing endpoint.
-				return [];
-			} catch (error) {
-				throw handleError(error, LLMErrorType.API_ERROR);
-			}
+		async listModels() {
+			throw new LLMError(
+				LLMErrorType.MODEL_LIST_NOT_SUPPORTED,
+				"Google Gemini does not support listing models via API. Please manually specify the model name.",
+				"google",
+			);
 		},
 
-		async chat(request: UnifiedChatRequest): Promise<UnifiedChatResponse> {
+		async chat<S, O extends S extends undefined ? string : object>(
+			request: ChatRequest,
+			schema?: S,
+		) {
 			try {
-				const { systemInstruction, history } = formatMessages(request.messages);
+				const [systemInstruction, contents] = convertMessages(request.messages);
+
 				const model = client.getGenerativeModel({
 					model: request.model,
 					systemInstruction,
+					generationConfig: {
+						temperature: request.temperature,
+						maxOutputTokens: request.maxTokens,
+						topP: request.topP,
+						topK: request.topK,
+						...(schema && {
+							responseMimeType: "application/json",
+							// biome-ignore lint/suspicious/noExplicitAny: Bypass type check for SDK compatibility
+							responseSchema: schema as any,
+						}),
+					},
 				});
 
-				const chat = model.startChat({ history });
-				const lastMessage = history.pop()?.parts[0]?.text as string;
+				const result = await model.generateContent({
+					contents,
+				});
 
-				const result = await chat.sendMessage(lastMessage || "");
 				const response = result.response;
-
-				// Count tokens for usage statistics
-				const tokenResult = await model.countTokens({
-					contents: [
-						...history,
-						{ role: "user", parts: [{ text: lastMessage || "" }] },
-					],
-				});
-				const completionTokenResult = await model.countTokens({
-					contents: [{ role: "model", parts: [{ text: response.text() }] }],
-				});
+				const content = response.text();
+				const output = (schema ? JSON.parse(content) : content) as O;
 
 				return {
-					content: response.text(),
-					usage: {
-						promptTokens: tokenResult.totalTokens,
-						completionTokens: completionTokenResult.totalTokens,
-						totalTokens:
-							tokenResult.totalTokens + completionTokenResult.totalTokens,
-					},
+					output,
+					...(response.usageMetadata && {
+						usage: {
+							promptTokens: response.usageMetadata.promptTokenCount || 0,
+							completionTokens:
+								response.usageMetadata.candidatesTokenCount || 0,
+							totalTokens: response.usageMetadata.totalTokenCount || 0,
+						},
+					}),
 					providerResponse: response,
 				};
 			} catch (error) {
-				throw handleError(error, LLMErrorType.API_ERROR);
+				throw handleError(error);
 			}
 		},
 
-		async *chatStream(
-			request: UnifiedChatRequest,
-		): AsyncIterable<UnifiedStreamChunk> {
+		async *chatStream<S>(
+			request: ChatRequest,
+			schema?: S,
+		): AsyncGenerator<StreamChunk, EndResponse> {
 			try {
-				const { systemInstruction, history } = formatMessages(request.messages);
+				const [systemInstruction, contents] = convertMessages(request.messages);
 				const model = client.getGenerativeModel({
 					model: request.model,
 					systemInstruction,
+					generationConfig: {
+						temperature: request.temperature,
+						maxOutputTokens: request.maxTokens,
+						topP: request.topP,
+						topK: request.topK,
+						...(schema && {
+							responseMimeType: "application/json",
+							// biome-ignore lint/suspicious/noExplicitAny: Bypass type check for SDK compatibility
+							responseSchema: schema as any,
+						}),
+					},
 				});
 
-				const chat = model.startChat({ history });
-				const lastMessage = history.pop()?.parts[0]?.text as string;
+				const result = await model.generateContentStream({
+					contents,
+				});
 
-				const result = await chat.sendMessageStream(lastMessage || "");
+				let usage = {
+					promptTokens: 0,
+					completionTokens: 0,
+					totalTokens: 0,
+				};
 
 				for await (const chunk of result.stream) {
-					const text = chunk.text();
-					if (text) {
-						yield { content: text };
+					const content = chunk.text();
+					if (content) {
+						yield { content };
+					}
+
+					// Update usage from each chunk
+					if (chunk.usageMetadata) {
+						usage = {
+							promptTokens: chunk.usageMetadata.promptTokenCount,
+							completionTokens: chunk.usageMetadata.candidatesTokenCount,
+							totalTokens: chunk.usageMetadata.totalTokenCount,
+						};
 					}
 				}
+
+				return {
+					usage,
+				};
 			} catch (error) {
-				throw handleError(error, LLMErrorType.API_ERROR);
+				throw handleError(error);
 			}
 		},
 	};

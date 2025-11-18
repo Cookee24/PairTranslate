@@ -161,16 +161,6 @@ export const STORAGE_KEYS = {
 
 export const WXT_TRANSPORTATION_NAME = "wxt-transport";
 
-export const TAGS = {
-	think: "think",
-	page: "page",
-	content: "content",
-	context: "context",
-	contextMean: "context-mean",
-	mean: "mean",
-	example: "example",
-};
-
 export const MS_TRANSLATOR_ID = "a404995f-8bf9-4e3c-86aa-bbc4698bc050"; // Fixed ID for Microsoft Translator
 export const PROMPT_ID = {
 	translate: "00000000-0000-0000-0000-000000000001",

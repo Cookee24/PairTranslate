@@ -1,5 +1,3 @@
-import type { TextContext } from "@/utils/types";
-
 export const extractContextFromSelection = (
 	selection: Selection,
 ): TextContext | null => {
@@ -25,8 +23,10 @@ export const extractContextFromSelection = (
 	const afterText = postSelectionRange.toString();
 
 	return {
-		before: beforeText,
-		content: selectedText,
-		after: afterText,
+		text: selectedText,
+		surr: {
+			before: beforeText || undefined,
+			after: afterText || undefined,
+		},
 	};
 };

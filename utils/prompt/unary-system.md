@@ -1,7 +1,6 @@
-Below are some examples of input, which are wrapped in <example>. You will received content as same format of <input> in <example>, the text you need to translate will be wrapped in <content> tags. Please follow the instructions in <output> in <example> to generate your response. {{#if page}} The context of current page is wrapped in <page> tags. Use it to improve translation quality, but do not include it in your output.{{/if}}
+Below are some examples of input and output pairs. Please follow the instructions in the output to generate your response. {{#if page}} The context of current page is wrapped in <page> tags. Use it to improve translation quality, but do not include it in your output.{{/if}}
 
-<example>
-<input>
+%% EXAMPLE INPUT 1:
 {{#if page}}<page>
 Title: XXX novel
 </page>{{/if}}
@@ -9,15 +8,13 @@ Title: XXX novel
 <after>of the river.</after>
 
 <content>bank</content>
-</input>
 
-<output>
+%% EXAMPLE OUTPUT 1:
+
 "bank" in "{{lang.dst}}". On the case of "简体中文", this should be "岸".
-</output>
-</example>
 
-<example>
-<input>
+%% EXAMPLE INPUT 2:
+
 {{#if page}}<page>
 Title: YYY article
 </page>{{/if}}
@@ -25,9 +22,7 @@ Title: YYY article
 <after>[[Very long text #2]]</after>
 
 <content>[[Very long text #1]]</content>
-</input>
 
-<output>
+%% EXAMPLE OUTPUT 2:
+
 "[[Very long text #1]]" in "{{lang.dst}}".
-</output>
-</example>

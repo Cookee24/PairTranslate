@@ -154,11 +154,7 @@ const RenderNode = (props: import("mdast").RootContent) => {
 
 					case "html": {
 						// For security reasons, raw HTML is not rendered
-						return (
-							<Native.pre>
-								<Native.code>{node.value}</Native.code>
-							</Native.pre>
-						);
+						return <Native.code>{node.value}</Native.code>;
 					}
 
 					case "table": {

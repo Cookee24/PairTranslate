@@ -47,15 +47,14 @@ const useTranslationContext = (modelIdOverride?: () => string | undefined) => {
 export function createBatchTranslation(
 	text: () => string[],
 	options: {
-		modelId?: () => string | undefined;
 		promptId?: string;
-		ctx: Record<string, unknown>;
-	} = {
-		ctx: { page: getPageContext() },
-	},
+		modelId?: () => string | undefined;
+		ctx?: () => Record<string, unknown>;
+	} = {},
 ): BatchReturn {
 	const [modelId, srcLang, dstLang] = useTranslationContext(options.modelId);
 	const promptId = options.promptId || PROMPT_ID.batchTranslate;
+	const ctx = options.ctx || (() => ({ page: getPageContext() }));
 
 	const [textResult, setTextResult] = createStore<(string | undefined)[]>([]);
 	const [error, setError] = createStore<(TranslateError | undefined)[]>([]);
@@ -87,7 +86,7 @@ export function createBatchTranslation(
 
 		setAllLoading(texts.length);
 		try {
-			const resp = await window.rpc.unary(texts, options.ctx, {
+			const resp = await window.rpc.unary(texts, ctx(), {
 				modelId: modelId_,
 				promptId,
 				srcLang: srcLang(),
@@ -116,7 +115,7 @@ export function createBatchTranslation(
 		});
 
 		try {
-			const resp = await window.rpc.unary([text_], options.ctx, {
+			const resp = await window.rpc.unary([text_], ctx(), {
 				modelId: modelId_,
 				promptId,
 				srcLang: srcLang(),
@@ -194,37 +193,38 @@ type SingleStreamReturn<T> = readonly [
 	retry: () => void,
 ];
 
-export function createTranslation<T extends string>(
+export function createTranslation<T>(
 	text: () => string,
 	options?: {
 		stream: true;
-		modelId?: () => string | undefined;
 		promptId?: string;
-		ctx: Record<string, unknown>;
+		modelId?: () => string | undefined;
+		ctx?: () => Record<string, unknown>;
 	},
 ): SingleStreamReturn<T>;
 export function createTranslation<T>(
 	text: () => string,
 	options?: {
-		stream: false;
+		stream?: false;
 		modelId?: () => string | undefined;
 		promptId?: string;
-		ctx: Record<string, unknown>;
+		ctx?: () => Record<string, unknown>;
 	},
 ): SingleReturn<T>;
-export function createTranslation<T>(
+export function createTranslation<T = string>(
 	text: () => string,
 	options: {
 		stream?: boolean;
-		modelId?: () => string | undefined;
 		promptId?: string;
-		ctx: Record<string, unknown>;
+		modelId?: () => string | undefined;
+		ctx?: () => Record<string, unknown>;
 	} = {
-		ctx: { page: getPageContext() },
+		stream: false,
 	},
 ): SingleReturn<T> | SingleStreamReturn<T> {
 	const [modelId, srcLang, dstLang] = useTranslationContext(options.modelId);
 	const promptId = options.promptId || PROMPT_ID.translate;
+	const ctx = options.ctx || (() => ({ page: getPageContext() }));
 
 	const [result, setResult] = createSignal<T>();
 	const [error, setError] = createSignal<TranslateError>();
@@ -256,7 +256,7 @@ export function createTranslation<T>(
 		}
 
 		setLoading();
-		const listener = window.rpc.stream(text_, options.ctx, {
+		const listener = window.rpc.stream(text_, ctx(), {
 			modelId: modelId_,
 			promptId,
 			srcLang: srcLang(),
@@ -288,7 +288,7 @@ export function createTranslation<T>(
 
 		setLoading();
 		try {
-			const resp = await window.rpc.unary([text_], options.ctx, {
+			const resp = await window.rpc.unary([text_], ctx(), {
 				modelId: modelId_,
 				promptId,
 				srcLang: srcLang(),

@@ -1,13 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type {
+	ChatRequest,
 	ClientConfig,
+	EndResponse,
+	JSONSchema,
 	LLMClient,
-	UnifiedChatRequest,
-	UnifiedChatResponse,
-	UnifiedModel,
-	UnifiedStreamChunk,
+	Message,
+	StreamChunk,
 } from "./types";
-import { LLMError, LLMErrorType, type LLMProvider } from "./types";
+import { LLMError, LLMErrorType } from "./types";
 
 export function createAnthropicClient(config: ClientConfig): LLMClient {
 	const client = new Anthropic({
@@ -16,92 +17,99 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 		dangerouslyAllowBrowser: true,
 	});
 
-	const separateSystemPrompt = (
-		messages: { role: string; content: string }[],
-	): { systemPrompt?: string; messages: Anthropic.MessageParam[] } => {
-		let systemPrompt: string | undefined;
-		const filteredMessages = messages.filter((msg) => {
-			if (msg.role === "system") {
-				systemPrompt = msg.content;
-				return false;
-			}
-			return true;
-		});
+	const convertMessages = (
+		messages: Message[],
+	): readonly [
+		systemMessage: Anthropic.MessageCreateParams["system"],
+		messages: { role: "user" | "assistant"; content: string }[],
+	] => {
+		const systemMessages = messages.filter((msg) => msg.role === "system");
+		const systemMessage =
+			systemMessages.length > 0
+				? systemMessages.map((msg) => msg.content).join("\n\n")
+				: undefined;
 
-		return {
-			systemPrompt,
-			messages: filteredMessages as Anthropic.MessageParam[],
-		};
+		const conversationMessages = messages
+			.filter((msg) => msg.role !== "system")
+			.map((msg) => ({
+				role: msg.role as "user" | "assistant",
+				content: msg.content,
+			}));
+
+		return [systemMessage, conversationMessages];
 	};
 
-	const handleError = (
-		error: unknown,
-		defaultType: LLMErrorType,
-		provider: LLMProvider = "anthropic",
-	): LLMError => {
-		let errorType = defaultType;
-		let message = t("errors.anthropic.apiError");
-
+	const handleError = (error: unknown): LLMError => {
 		if (error instanceof Anthropic.APIError) {
-			switch (error.status) {
-				case 401:
-					errorType = LLMErrorType.AUTHENTICATION_ERROR;
-					message = t("errors.anthropic.invalidApiKey");
-					break;
-				case 429:
-					errorType = LLMErrorType.RATE_LIMIT_ERROR;
-					message = t("errors.anthropic.rateLimitExceeded");
-					break;
-				case 500:
-				case 502:
-				case 503:
-					errorType = LLMErrorType.NETWORK_ERROR;
-					message = t("errors.anthropic.serverError");
-					break;
-				default:
-					message = error.message || t("errors.anthropic.apiError");
+			let type = LLMErrorType.API_ERROR;
+
+			if (error.status === 401) {
+				type = LLMErrorType.AUTHENTICATION_ERROR;
+			} else if (error.status === 429) {
+				type = LLMErrorType.RATE_LIMIT_ERROR;
+			} else if (error.status === 400) {
+				type = LLMErrorType.VALIDATION_ERROR;
 			}
-		} else if (error instanceof Error) {
-			message = error.message;
+
+			return new LLMError(type, error.message, "anthropic", error);
 		}
 
-		return new LLMError(errorType, message, provider, error);
+		if (
+			error instanceof Error &&
+			(error.message.includes("fetch") || error.message.includes("network"))
+		) {
+			return new LLMError(
+				LLMErrorType.NETWORK_ERROR,
+				error.message,
+				"anthropic",
+				error,
+			);
+		}
+
+		return new LLMError(
+			LLMErrorType.UNKNOWN_ERROR,
+			error instanceof Error ? error.message : "Unknown error occurred",
+			"anthropic",
+			error,
+		);
 	};
 
 	return {
-		async listModels(): Promise<UnifiedModel[]> {
-			try {
-				// Anthropic does not provide a public API for listing models.
-				return [];
-			} catch (error) {
-				throw handleError(error, LLMErrorType.API_ERROR);
-			}
+		async listModels() {
+			throw new LLMError(
+				LLMErrorType.MODEL_LIST_NOT_SUPPORTED,
+				"Anthropic does not support listing models via API. Please manually specify the model name.",
+				"anthropic",
+			);
 		},
 
-		async chat(request: UnifiedChatRequest): Promise<UnifiedChatResponse> {
+		async chat<
+			S extends JSONSchema,
+			O extends S extends undefined ? string : object,
+		>(request: ChatRequest, schema?: S) {
 			try {
-				const { systemPrompt, messages } = separateSystemPrompt(
-					request.messages,
-				);
+				const [systemMessage, messages] = convertMessages(request.messages);
 
-				const response = await client.messages.create({
+				const response = await client.beta.messages.create({
 					model: request.model,
-					system: systemPrompt,
-					messages: messages,
-					max_tokens: request.maxTokens ?? 1024,
-					temperature: request.temperature,
-					top_p: request.topP,
-					top_k: request.topK,
+					messages,
+					system: systemMessage,
+					max_tokens: request.maxTokens || 2 ** 16,
+					...(schema && {
+						betas: ["structured-outputs-2025-11-13"],
+						output_format: {
+							type: "json_schema",
+							schema: schema,
+						},
+					}),
 				});
 
+				const content =
+					response.content[0]?.type === "text" ? response.content[0].text : "";
+				const output = (schema ? JSON.parse(content) : content) as O;
+
 				return {
-					content: response.content
-						.filter(
-							(block): block is { type: "text"; text: string } =>
-								block.type === "text",
-						)
-						.map((block) => block.text)
-						.join(""),
+					output,
 					usage: {
 						promptTokens: response.usage.input_tokens,
 						completionTokens: response.usage.output_tokens,
@@ -111,38 +119,62 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 					providerResponse: response,
 				};
 			} catch (error) {
-				throw handleError(error, LLMErrorType.API_ERROR);
+				throw handleError(error);
 			}
 		},
 
-		async *chatStream(
-			request: UnifiedChatRequest,
-		): AsyncIterable<UnifiedStreamChunk> {
+		async *chatStream<S>(
+			request: ChatRequest,
+			schema?: S,
+		): AsyncGenerator<StreamChunk, EndResponse> {
 			try {
-				const { systemPrompt, messages } = separateSystemPrompt(
-					request.messages,
-				);
+				const [systemMessage, messages] = convertMessages(request.messages);
 
-				const stream = client.messages.stream({
+				const responseStream = await client.beta.messages.create({
 					model: request.model,
-					system: systemPrompt,
-					messages: messages,
-					max_tokens: request.maxTokens ?? 1024,
-					temperature: request.temperature,
-					top_p: request.topP,
-					top_k: request.topK,
+					messages,
+					system: systemMessage,
+					max_tokens: request.maxTokens || 2 ** 16,
+					stream: true,
+					...(schema && {
+						betas: ["structured-outputs-2025-11-13"],
+						output_format: {
+							type: "json_schema",
+							schema: schema,
+						},
+					}),
 				});
 
-				for await (const event of stream) {
-					if (
-						event.type === "content_block_delta" &&
-						event.delta.type === "text_delta"
-					) {
-						yield { content: event.delta.text };
+				const usage = {
+					promptTokens: 0,
+					completionTokens: 0,
+					totalTokens: 0,
+				};
+
+				for await (const chunk of responseStream) {
+					switch (chunk.type) {
+						case "content_block_delta":
+							if (chunk.delta.type === "text_delta") {
+								yield { content: chunk.delta.text };
+							}
+							break;
+						case "message_start":
+							usage.promptTokens = chunk.message.usage.input_tokens;
+							break;
+						case "message_delta":
+							usage.completionTokens = chunk.usage.output_tokens;
+							usage.totalTokens = usage.promptTokens + usage.completionTokens;
+							break;
+						case "message_stop":
+							break;
 					}
 				}
+
+				return {
+					usage,
+				};
 			} catch (error) {
-				throw handleError(error, LLMErrorType.API_ERROR);
+				throw handleError(error);
 			}
 		},
 	};
