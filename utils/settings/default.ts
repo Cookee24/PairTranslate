@@ -1,4 +1,5 @@
 import type * as s from "./def";
+import { SETTINGS_VERSION } from "./def";
 
 /**
  * Generate default basic settings
@@ -48,22 +49,24 @@ export function generateTranslateSettings(): s.TranslateSettings {
 export function generateServicesSettings(): s.ServicesSettings {
 	const supportBrowserTranslator =
 		"Translator" in globalThis && "LanguageDetector" in globalThis;
-	return {
-		llmServices: {},
-		traditionalServices: {
-			[MS_TRANSLATOR_ID]: {
-				name: t("services.microsoftTranslatorDefault"),
-				apiSpec: "microsoft",
-				apiKey: "edge",
-			},
-			...(supportBrowserTranslator && {
-				"5b02ae2c-9a84-491c-830d-53a99227e03d": {
-					name: t("settings.browserTranslator.serviceName"),
-					apiSpec: "browser",
-				},
-			}),
+	const services: s.ServicesSettings = {
+		[MS_TRANSLATOR_ID]: {
+			name: t("services.microsoftTranslatorDefault"),
+			type: "traditional",
+			apiSpec: "microsoft",
+			apiKey: "edge",
 		},
 	};
+
+	if (supportBrowserTranslator) {
+		services["5b02ae2c-9a84-491c-830d-53a99227e03d"] = {
+			name: t("settings.browserTranslator.serviceName"),
+			type: "traditional",
+			apiSpec: "browser",
+		};
+	}
+
+	return services;
 }
 
 export function generateWebsiteRuleSettings(): s.WebsiteRulesSettings {
@@ -166,7 +169,7 @@ export function generatePromptSettings(): s.PromptsSettings {
  */
 export function generateDefaultSettings(): s.SettingsSchema {
 	return {
-		__v: 1,
+		__v: SETTINGS_VERSION,
 		basic: generateBasicSettings(),
 		translate: generateTranslateSettings(),
 		services: generateServicesSettings(),
@@ -184,88 +187,105 @@ export function getBrowserTargetLanguage(): string {
 
 export const LLMServiceTemplates = [
 	{
+		type: "llm" as const,
 		name: t("templates.llm.openai"),
 		baseUrl: "https://api.openai.com/v1",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.azureOpenai"),
 		baseUrl: "https://{your-resource-name}.openai.azure.com",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.anthropic"),
 		baseUrl: "https://api.anthropic.com",
 		apiSpec: "anthropic" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.googleGemini"),
 		baseUrl: "https://generativelanguage.googleapis.com",
 		apiSpec: "google" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.lmStudio"),
 		baseUrl: "http://localhost:1234/v1",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.ollama"),
 		baseUrl: "http://localhost:11434",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.openRouter"),
 		baseUrl: "https://openrouter.ai/api/v1",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.cohere"),
 		baseUrl: "https://api.cohere.com",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.huggingFaceInference"),
 		baseUrl: "https://api-inference.huggingface.co",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.ai21Labs"),
 		baseUrl: "https://api.ai21.com/studio/v1",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.mistral"),
 		baseUrl: "https://api.mistral.ai",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.stabilityAI"),
 		baseUrl: "https://api.stability.ai",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.replicate"),
 		baseUrl: "https://api.replicate.com",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.alephAlpha"),
 		baseUrl: "https://api.aleph-alpha.com",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.glm"),
 		baseUrl: "https://open.bigmodel.cn/api/paas/v4",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.deepseek"),
 		baseUrl: "https://api.deepseek.com",
 		apiSpec: "openai" as const,
 	},
 	{
+		type: "llm" as const,
 		name: t("templates.llm.other"),
 		baseUrl: "",
 		apiSpec: "openai" as const,
 	},
-] as s.ModelConfig[];
+] as s.ServiceSettings[];

@@ -68,15 +68,7 @@ export async function initializeSettings(): Promise<void> {
 			[STORAGE_KEYS.settings]: defaultSettings,
 		});
 	} else {
-		const result = (
-			await import("~/utils/settings/def")
-		).SettingsSchema.safeParse(res[STORAGE_KEYS.settings]);
-		if (!result.success) {
-			throw new Error(
-				`Invalid settings, please contact developer for support: ${result.error.message}, ${JSON.stringify(res[STORAGE_KEYS.settings], null, 2)}`,
-			);
-		}
-		const final = migrateSettings(result.data);
+		const final = migrateSettings(res[STORAGE_KEYS.settings]);
 		await browser.storage.local.set({
 			[STORAGE_KEYS.settings]: final,
 		});

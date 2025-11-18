@@ -1,5 +1,7 @@
 import z from "zod";
 
+export const SETTINGS_VERSION = 1;
+
 export const FloatingBallPosition = z.object({
 	side: z.enum(["left", "right"]).default("right"),
 	top: z.number().min(0).max(100).default(20), // Percentage of viewport height
@@ -23,29 +25,37 @@ export const BasicSettings = z.object({
 });
 export type BasicSettings = z.infer<typeof BasicSettings>;
 
-export const ModelConfig = z.object({
+const BaseServiceSettings = z.object({
 	name: z.string().min(1),
-	baseUrl: z.string().url(),
-	apiSpec: z.enum(["openai", "anthropic", "google"]).default("openai"),
+	baseUrl: z.string().url().optional(),
 	apiKey: z.string().optional(),
-	model: z.string(),
+});
+
+const LLMServiceSettings = BaseServiceSettings.extend({
+	type: z.literal("llm"),
+	apiSpec: z.enum(["openai", "anthropic", "google"]),
+	model: z.string().optional(),
 	temperature: z.number().optional(),
 	maxOutputTokens: z.number().optional(),
 });
-export type ModelConfig = z.infer<typeof ModelConfig>;
 
-export const TraditionalTranslationConfig = z.object({
-	name: z.string().min(1),
-	baseUrl: z.string().url().optional(),
-	apiSpec: z
-		.enum(["microsoft", "google", "deepl", "deeplx", "browser"])
-		.default("microsoft"),
-	apiKey: z.string().optional(),
+const TraditionalServiceSettings = BaseServiceSettings.extend({
+	type: z.literal("traditional"),
+	apiSpec: z.enum(["microsoft", "google", "deepl", "deeplx", "browser"]),
 	region: z.string().optional(),
 });
-export type TraditionalTranslationConfig = z.infer<
-	typeof TraditionalTranslationConfig
->;
+
+export const ServiceSettings = z.union([
+	LLMServiceSettings,
+	TraditionalServiceSettings,
+]);
+export type ServiceSettings = z.infer<typeof ServiceSettings>;
+
+export const ModelSettings = ServiceSettings;
+export type ModelSettings = ServiceSettings;
+
+export const ServicesSettings = z.record(z.uuid(), ModelSettings).default({});
+export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
 export const TranslateSettings = z.object({
 	concurrentRequests: z.number().min(1).default(8),
@@ -63,14 +73,6 @@ export const TranslateSettings = z.object({
 	inputTranslateLang: z.string().default("en"), // Target language for input translation
 });
 export type TranslateSettings = z.infer<typeof TranslateSettings>;
-
-export const ServicesSettings = z.object({
-	llmServices: z.record(z.uuid(), ModelConfig).default({}),
-	traditionalServices: z
-		.record(z.uuid(), TraditionalTranslationConfig)
-		.default({}),
-});
-export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
 export const WebsiteRuleSettings = z.object({
 	urlPatterns: z.array(z.string()),
@@ -129,7 +131,7 @@ export const PromptsSettings = z.record(z.uuid(), PromptSettings);
 export type PromptsSettings = z.infer<typeof PromptsSettings>;
 
 export const SettingsSchema = z.object({
-	__v: z.number().default(0),
+	__v: z.number().default(SETTINGS_VERSION),
 	basic: BasicSettings,
 	translate: TranslateSettings,
 	services: ServicesSettings,
