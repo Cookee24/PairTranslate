@@ -1,15 +1,19 @@
 import type z from "zod";
-import { ModelConfig } from "~/utils/settings/def";
+import { LLMServiceSettings } from "~/utils/settings/def";
+import { LLMServiceTemplates } from "~/utils/settings/default";
+
+type LLMService = z.infer<typeof LLMServiceSettings>;
 
 interface LLMModalProps {
-	modelInfo?: z.infer<typeof ModelConfig>;
-	onSave: (config: z.infer<typeof ModelConfig>) => void;
+	modelInfo?: LLMService;
+	onSave: (config: LLMService) => void;
 	onClose: () => void;
 	open?: boolean;
 }
 
 export default (props: LLMModalProps) => {
-	const DEFAULT: ModelConfig = {
+	const DEFAULT: LLMService = {
+		type: "llm",
 		name: "",
 		baseUrl: "",
 		apiSpec: "openai",
@@ -37,9 +41,10 @@ export default (props: LLMModalProps) => {
 	const handleTemplateChange = (templateName: string) => {
 		setSelectedTemplate(templateName);
 		const template = LLMServiceTemplates.find((t) => t.name === templateName);
-		if (template) {
+		if (template && template.type === "llm") {
 			setFormData({
 				...formData(),
+				type: "llm",
 				name: template.name,
 				baseUrl: template.baseUrl,
 				apiSpec: template.apiSpec,
@@ -88,7 +93,7 @@ export default (props: LLMModalProps) => {
 
 	const handleSave = (e: Event) => {
 		e.preventDefault();
-		const result = ModelConfig.safeParse(formData());
+		const result = LLMServiceSettings.safeParse(formData());
 		if (result.success) {
 			props.onSave(result.data);
 			props.onClose();

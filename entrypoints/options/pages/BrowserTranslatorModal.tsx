@@ -6,12 +6,14 @@ import {
 } from "~/utils/browser-translator";
 import { SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { t } from "~/utils/i18n";
-import type { TraditionalTranslationConfig } from "~/utils/settings/def";
+import type { ServiceSettings } from "~/utils/settings";
 
 interface BrowserTranslatorModalProps {
 	open?: boolean;
 	onClose: () => void;
-	onAddService?: (config: TraditionalTranslationConfig) => void;
+	onAddService?: (
+		config: Extract<ServiceSettings, { type: "traditional" }>,
+	) => void;
 }
 
 interface LanguagePair {
@@ -61,8 +63,8 @@ export default (props: BrowserTranslatorModalProps) => {
 
 	// Check if browser translator service already exists
 	const hasBrowserService = createMemo(() =>
-		Object.values(settings.services.traditionalServices).some(
-			(service) => service.apiSpec === "browser",
+		Object.values(settings.services).some(
+			(service) => service.type === "traditional" && service.apiSpec === "browser",
 		),
 	);
 
@@ -102,7 +104,8 @@ export default (props: BrowserTranslatorModalProps) => {
 	const handleAddBrowserService = () => {
 		if (!props.onAddService) return;
 
-		const config: TraditionalTranslationConfig = {
+		const config: Extract<ServiceSettings, { type: "traditional" }> = {
+			type: "traditional",
 			name: t("settings.browserTranslator.serviceName"),
 			apiSpec: "browser",
 		};

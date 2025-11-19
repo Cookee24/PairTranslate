@@ -1,5 +1,3 @@
-import { getPageContext } from "@/utils/page-context";
-
 type Pending = {
 	(): undefined;
 	loading: true;
@@ -86,13 +84,17 @@ export function createBatchTranslation(
 
 		setAllLoading(texts.length);
 		try {
-			const resp = await window.rpc.unary(texts, ctx(), {
-				modelId: modelId_,
-				promptId,
-				srcLang: srcLang(),
-				dstLang: dstLang(),
-				cleanCache,
-			});
+			const resp = await window.rpc.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang(),
+					dstLang: dstLang(),
+					cleanCache,
+				},
+				texts,
+			);
 			setResultTexts(resp);
 		} catch (e) {
 			setAllError(convertGenericError(e), texts.length);
@@ -115,13 +117,17 @@ export function createBatchTranslation(
 		});
 
 		try {
-			const resp = await window.rpc.unary([text_], ctx(), {
-				modelId: modelId_,
-				promptId,
-				srcLang: srcLang(),
-				dstLang: dstLang(),
-				cleanCache: true,
-			});
+			const resp = await window.rpc.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang(),
+					dstLang: dstLang(),
+					cleanCache: true,
+				},
+				text_,
+			);
 			batch(() => {
 				setError(index, undefined);
 				setTextResult(index, resp);
@@ -256,13 +262,17 @@ export function createTranslation<T = string>(
 		}
 
 		setLoading();
-		const listener = window.rpc.stream(text_, ctx(), {
-			modelId: modelId_,
-			promptId,
-			srcLang: srcLang(),
-			dstLang: dstLang(),
-			cleanCache,
-		});
+		const listener = window.rpc.stream(
+			ctx(),
+			{
+				modelId: modelId_,
+				promptId,
+				srcLang: srcLang(),
+				dstLang: dstLang(),
+				cleanCache,
+			},
+			text_,
+		);
 		onCleanup(listener.return);
 
 		try {
@@ -288,13 +298,17 @@ export function createTranslation<T = string>(
 
 		setLoading();
 		try {
-			const resp = await window.rpc.unary([text_], ctx(), {
-				modelId: modelId_,
-				promptId,
-				srcLang: srcLang(),
-				dstLang: dstLang(),
-				cleanCache,
-			});
+			const resp = await window.rpc.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang(),
+					dstLang: dstLang(),
+					cleanCache,
+				},
+				text_,
+			);
 			setResultVal(resp);
 		} catch (e) {
 			setErrorVal(convertGenericError(e));

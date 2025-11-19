@@ -7,14 +7,14 @@ export interface CoreService extends RpcService {
 
 export interface TranslateService extends RpcService {
 	unary(
-		text: string | string[],
 		ctx: Record<string, any>,
 		options: TranslateOptions,
+		text?: string | string[],
 	): Promise<any>;
 	stream(
-		text: string | string[],
 		ctx: Record<string, any>,
 		options: TranslateOptions,
+		text?: string | string[],
 	): AsyncGenerator<any, void, unknown>;
 	clearCache(): Promise<void>;
 }

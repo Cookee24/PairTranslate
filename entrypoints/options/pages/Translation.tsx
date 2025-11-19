@@ -11,6 +11,7 @@ import {
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { SettingsCheckbox } from "~/components/settings/SettingsCheckbox";
 import * as s from "~/utils/settings/def";
+import { selectServicesByType } from "~/utils/settings/services";
 
 export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
@@ -40,8 +41,9 @@ export default (props: { navId: string }) => {
 
 	createEffect(() => {
 		trackStore(settings.services);
-		const llmServices = unwrap(settings.services.llmServices);
-		const traditionalServices = unwrap(settings.services.traditionalServices);
+		const services = unwrap(settings.services);
+		const llmServices = selectServicesByType(services, "llm");
+		const traditionalServices = selectServicesByType(services, "traditional");
 
 		const options: SelectOption[] = [
 			{ value: "", label: t("settings.translation.noModel"), disabled: false },

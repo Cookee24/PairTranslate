@@ -3,13 +3,9 @@ import type { Accessor } from "solid-js";
 import { createEffect, createSignal } from "solid-js";
 import { unwrap } from "solid-js/store";
 import { v4 as uuidv4 } from "uuid";
+import type { ServiceSettings } from "~/utils/settings";
 
-export interface ServiceConfig {
-	name: string;
-	[key: string]: string | number | boolean | undefined;
-}
-
-export interface UseServiceManagementReturn<T extends ServiceConfig> {
+export interface UseServiceManagementReturn<T extends ServiceSettings> {
 	services: Accessor<[string, T][]>;
 	showModal: Accessor<boolean>;
 	editingService: Accessor<[string, T] | undefined>;
@@ -20,7 +16,7 @@ export interface UseServiceManagementReturn<T extends ServiceConfig> {
 	handleCloseModal: () => void;
 }
 
-export function useServiceManagement<T extends ServiceConfig>(
+export function useServiceManagement<T extends ServiceSettings>(
 	getServices: () => Record<string, T>,
 	setServices: (
 		updater: (data: Record<string, T>) => Record<string, T>,
@@ -88,3 +84,4 @@ export function useServiceManagement<T extends ServiceConfig>(
 		handleCloseModal,
 	};
 }
+

@@ -6,6 +6,7 @@ import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormField } from "~/components/settings/FormField";
 import type { SelectOption } from "~/components/settings/OptionSelect";
 import type { WebsiteRuleSettings } from "~/utils/settings";
+import { selectServicesByType } from "~/utils/settings/services";
 
 export interface WebsiteRuleEditorRef {
 	getConfig: () => WebsiteRuleSettings;
@@ -62,12 +63,16 @@ export const WebsiteRuleEditor = (props: Props) => {
 	);
 
 	const modelOptions = createMemo<SelectOption[]>(() => {
+		trackStore(settings.services);
 		const options: SelectOption[] = [
 			{ value: "default", label: t("common.globalDefault") },
 		];
 
-		const llmServices = settings.services.llmServices;
-		const traditionalServices = settings.services.traditionalServices;
+		const llmServices = selectServicesByType(settings.services, "llm");
+		const traditionalServices = selectServicesByType(
+			settings.services,
+			"traditional",
+		);
 
 		for (const [uuid, service] of Object.entries(llmServices)) {
 			options.push({

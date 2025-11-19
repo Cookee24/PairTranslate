@@ -1,6 +1,5 @@
 import { createMatchService } from "./services/match";
 import { createStyleService } from "./services/style";
-// TODO: implement this
 import { createTranslateService } from "./services/translate";
 
 export const setRpc = async () => {

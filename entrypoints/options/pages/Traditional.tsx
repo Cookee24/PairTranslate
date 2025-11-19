@@ -1,8 +1,10 @@
 import { TestTube2 } from "lucide-solid";
+import { ServiceManager } from "~/components/settings/ServiceManager";
 import {
-	type ServiceConfig,
-	ServiceManager,
-} from "~/components/settings/ServiceManager";
+	replaceServicesOfType,
+	type ServiceByType,
+	selectServicesByType,
+} from "~/utils/settings/services";
 import { useServiceManagement } from "../hooks/useServiceManagement";
 import BrowserTranslatorModal from "./BrowserTranslatorModal";
 import TraditionalModal from "./TraditionalModal";
@@ -11,6 +13,22 @@ export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
 	const [showBrowserTranslatorModal, setShowBrowserTranslatorModal] =
 		createSignal(false);
+
+	type TraditionalService = ServiceByType<"traditional">;
+
+	const getTraditionalServices = () =>
+		selectServicesByType(settings.services, "traditional");
+
+	const setTraditionalServices = (
+		updater: (
+			data: Record<string, TraditionalService>,
+		) => Record<string, TraditionalService>,
+	) =>
+		setSettings("services", (services) => {
+			const subset = selectServicesByType(services, "traditional");
+			const updatedSubset = updater({ ...subset });
+			return replaceServicesOfType(services, "traditional", updatedSubset);
+		});
 
 	const {
 		services,
@@ -21,12 +39,12 @@ export default (props: { navId: string }) => {
 		handleDeleteService,
 		handleSaveService,
 		handleCloseModal,
-	} = useServiceManagement(
-		() => settings.services.traditionalServices,
-		(updater) => setSettings("services", "traditionalServices", updater),
+	} = useServiceManagement<TraditionalService>(
+		getTraditionalServices,
+		setTraditionalServices,
 	);
 
-	const renderTraditionalServiceDetails = (service: ServiceConfig) => (
+	const renderTraditionalServiceDetails = (service: TraditionalService) => (
 		<div class="space-y-1 text-sm text-base-content/70 overflow-ellipsis">
 			<p>
 				<strong>{t("settings.traditionalServices.serviceDetails.api")}:</strong>{" "}

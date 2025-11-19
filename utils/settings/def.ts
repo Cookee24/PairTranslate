@@ -25,13 +25,13 @@ export const BasicSettings = z.object({
 });
 export type BasicSettings = z.infer<typeof BasicSettings>;
 
-const BaseServiceSettings = z.object({
+export const BaseServiceSettings = z.object({
 	name: z.string().min(1),
 	baseUrl: z.string().url().optional(),
 	apiKey: z.string().optional(),
 });
 
-const LLMServiceSettings = BaseServiceSettings.extend({
+export const LLMServiceSettings = BaseServiceSettings.extend({
 	type: z.literal("llm"),
 	apiSpec: z.enum(["openai", "anthropic", "google"]),
 	model: z.string().optional(),
@@ -39,7 +39,7 @@ const LLMServiceSettings = BaseServiceSettings.extend({
 	maxOutputTokens: z.number().optional(),
 });
 
-const TraditionalServiceSettings = BaseServiceSettings.extend({
+export const TraditionalServiceSettings = BaseServiceSettings.extend({
 	type: z.literal("traditional"),
 	apiSpec: z.enum(["microsoft", "google", "deepl", "deeplx", "browser"]),
 	region: z.string().optional(),

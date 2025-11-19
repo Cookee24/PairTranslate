@@ -1,7 +1,8 @@
 import { trackStore } from "@solid-primitives/deep";
 import { Link, Power, PowerOff, Trash2 } from "lucide-solid";
 import { unwrap } from "solid-js/store";
-import { ButtonGroup } from "@/components/settings/ButtonGroup";
+import { ButtonGroup } from "~/components/settings/ButtonGroup";
+import { selectServicesByType } from "~/utils/settings/services";
 import { getCurrentDomain } from "../get-current";
 
 export default () => {
@@ -28,8 +29,9 @@ export default () => {
 
 	const modelList = createMemo(() => {
 		trackStore(settings.services);
-		const llmServices = unwrap(settings.services.llmServices);
-		const traditionalServices = unwrap(settings.services.traditionalServices);
+		const services = unwrap(settings.services);
+		const llmServices = selectServicesByType(services, "llm");
+		const traditionalServices = selectServicesByType(services, "traditional");
 
 		const options = [
 			{ value: "", label: t("settings.translation.noModel"), disabled: false },

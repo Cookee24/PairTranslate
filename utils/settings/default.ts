@@ -288,4 +288,4 @@ export const LLMServiceTemplates = [
 		baseUrl: "",
 		apiSpec: "openai" as const,
 	},
-] as s.ServiceSettings[];
+] satisfies Array<Extract<s.ServiceSettings, { type: "llm" }>>;
