@@ -38,6 +38,14 @@ const SINGLE_TEXT_SERVICES = new Set(["deeplx"]);
 
 type TranslatePayload = string | string[];
 
+type ThinCacheKey = Awaited<ReturnType<typeof computeCacheKey>>;
+
+type ThinCacheState = {
+	keys: ThinCacheKey[];
+	values: unknown[];
+	missing: number[];
+};
+
 const estimateLLMTokens = (payload: TranslatePayload): number => {
 	if (Array.isArray(payload)) {
 		return payload.reduce((total, part) => total + estimateLLMTokens(part), 0);
@@ -69,6 +77,8 @@ type CompiledPrompt = {
 	input: PromptSettings["input"];
 	steps: CompiledStep[];
 };
+
+type PromptContext = ReturnType<typeof buildContextWithTranslateParams>;
 
 const buildLLMClient = (
 	provider: LLMProvider,
@@ -129,6 +139,54 @@ const normalizePromptInput = (
 
 const toTextArray = (text: TranslatePayload): string[] =>
 	Array.isArray(text) ? text : text ? [text] : [];
+
+const buildStepMessages = (
+	step: CompiledStep,
+	ctx: PromptContext,
+): ChatRequest["messages"] =>
+	step.messages.map((message) => ({
+		role: message.role,
+		content: tokensToString(ctx, message.tokens),
+	}));
+
+const normalizeLLMStepOutput = (
+	step: CompiledStep,
+	output: unknown,
+): unknown => {
+	if (isStringArrayOutput(step.output) && typeof output === "string") {
+		const delimiter = step.output.delimiter ?? "\n";
+		return output
+			.split(delimiter)
+			.map((entry) => entry.trim())
+			.filter(Boolean);
+	}
+	return output;
+};
+
+const ensureServiceModel = (
+	service: Extract<ServiceSettings, { type: "llm" }>,
+): string => {
+	const model = service.model;
+	if (model) {
+		return model;
+	}
+	throw createTranslateError(
+		TranslateErrorType.VALIDATION_ERROR,
+		`Model not configured for ${service.name}`,
+	);
+};
+
+const createChatRequest = (
+	service: Extract<ServiceSettings, { type: "llm" }>,
+	messages: ChatRequest["messages"],
+	overrides?: Partial<Pick<ChatRequest, "stream">>,
+): ChatRequest => ({
+	model: ensureServiceModel(service),
+	messages,
+	temperature: service.temperature,
+	maxTokens: service.maxOutputTokens,
+	...overrides,
+});
 
 const toStreamChunk = (value: unknown): string => {
 	if (typeof value === "string") {
@@ -334,22 +392,8 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		let totalTokens = 0;
 		for (const step of prompt.steps) {
 			throwIfAborted(signal);
-			const messages = step.messages.map((message) => ({
-				role: message.role,
-				content: tokensToString(promptCtx, message.tokens),
-			}));
-			const request: ChatRequest = {
-				model: service.model ?? "",
-				messages,
-				temperature: service.temperature,
-				maxTokens: service.maxOutputTokens,
-			};
-			if (!request.model) {
-				throw createTranslateError(
-					TranslateErrorType.VALIDATION_ERROR,
-					`Model not configured for ${service.name}`,
-				);
-			}
+			const messages = buildStepMessages(step, promptCtx);
+			const request = createChatRequest(service, messages);
 			try {
 				const schema = isStructuredOutput(step.output)
 					? (step.output.schema as JSONSchema)
@@ -357,16 +401,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				const response = await client.chat(request, schema);
 				totalTokens +=
 					response.usage?.totalTokens ?? response.usage?.promptTokens ?? 0;
-				let output: unknown = response.output;
-				if (isStringArrayOutput(step.output)) {
-					const delimiter = step.output.delimiter ?? "\n";
-					if (typeof output === "string") {
-						output = output
-							.split(delimiter)
-							.map((entry) => entry.trim())
-							.filter(Boolean);
-					}
-				}
+				const output = normalizeLLMStepOutput(step, response.output);
 				outputs.push(output);
 			} catch (error) {
 				throw convertFromLLMError(error);
@@ -399,22 +434,8 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			promptCtx.output = outputs;
 			const preSteps = prompt.steps.slice(0, -1);
 			for (const step of preSteps) {
-				const messages = step.messages.map((message) => ({
-					role: message.role,
-					content: tokensToString(promptCtx, message.tokens),
-				}));
-				const request: ChatRequest = {
-					model: service.model ?? "",
-					messages,
-					temperature: service.temperature,
-					maxTokens: service.maxOutputTokens,
-				};
-				if (!request.model) {
-					throw createTranslateError(
-						TranslateErrorType.VALIDATION_ERROR,
-						`Model not configured for ${service.name}`,
-					);
-				}
+				const messages = buildStepMessages(step, promptCtx);
+				const request = createChatRequest(service, messages);
 				try {
 					const schema = isStructuredOutput(step.output)
 						? (step.output.schema as JSONSchema)
@@ -432,23 +453,8 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					"No steps available in the prompt. This should not happen.",
 				);
 			}
-			const messages = finalStep.messages.map((message) => ({
-				role: message.role,
-				content: tokensToString(promptCtx, message.tokens),
-			}));
-			const request: ChatRequest = {
-				model: service.model ?? "",
-				messages,
-				temperature: service.temperature,
-				maxTokens: service.maxOutputTokens,
-				stream: true,
-			};
-			if (!request.model) {
-				throw createTranslateError(
-					TranslateErrorType.VALIDATION_ERROR,
-					`Model not configured for ${service.name}`,
-				);
-			}
+			const messages = buildStepMessages(finalStep, promptCtx);
+			const request = createChatRequest(service, messages, { stream: true });
 
 			const { promise: completion, resolve: resolveCompletion } =
 				Promise.withResolvers<number>();
@@ -491,18 +497,59 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			);
 		}
 		const service = resolveService(modelId);
-		const originalText = text ?? "";
-		const payload = originalText;
-		const compiled = service.type === "llm" ? getPrompt(promptId) : undefined;
-		const normalizedPayload =
-			service.type === "llm" && compiled
-				? normalizePromptInput(compiled, payload)
-				: Array.isArray(payload)
-					? payload
-					: payload;
+		const payload = text ?? "";
 		const expectsArray = Array.isArray(payload);
+		const compiled = service.type === "llm" ? getPrompt(promptId) : undefined;
+		const payloadArray = Array.isArray(payload) ? payload : undefined;
+		const supportsThinCache =
+			Boolean(options.thinCache) &&
+			!!payloadArray &&
+			(service.type === "traditional" ||
+				(service.type === "llm" && compiled?.input === "stringArray"));
+
 		const cacheKey = await computeCacheKey(promptId, modelId, text, ctx);
-		if (!options.cleanCache) {
+		let thinCacheState: ThinCacheState | undefined;
+
+		if (options.cleanCache) {
+			await resultCache.del(cacheKey);
+		}
+
+		if (supportsThinCache && payloadArray) {
+			const entryKeys = await Promise.all(
+				payloadArray.map((entry) =>
+					computeCacheKey(promptId, modelId, entry, ctx),
+				),
+			);
+			const cacheState: ThinCacheState = {
+				keys: entryKeys,
+				values: new Array(payloadArray.length),
+				missing: [],
+			};
+			thinCacheState = cacheState;
+			if (options.cleanCache) {
+				await Promise.all(entryKeys.map((key) => resultCache.del(key)));
+				cacheState.missing = payloadArray.map((_, index) => index);
+			} else {
+				const cachedEntries = await Promise.all(
+					entryKeys.map((key) => resultCache.get(key)),
+				);
+				cachedEntries.forEach((value, index) => {
+					if (value !== undefined) {
+						cacheState.values[index] = value;
+					} else {
+						cacheState.missing.push(index);
+					}
+				});
+				if (cacheState.missing.length === 0) {
+					const cachedValue = cacheState.values.slice();
+					await resultCache.set(cacheKey, cachedValue);
+					return {
+						value: cachedValue,
+						completionTokens: 0,
+					};
+				}
+			}
+		} else if (!options.cleanCache) {
 			const cached = await resultCache.get(cacheKey);
 			if (cached !== undefined) {
 				return {
@@ -510,9 +557,20 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					completionTokens: 0,
 				};
 			}
-		} else {
-			await resultCache.del(cacheKey);
 		}
+
+		const executionPayload =
+			thinCacheState && payloadArray
+				? thinCacheState.missing.map((index) => payloadArray[index])
+				: payload;
+		const normalizedPayload =
+			service.type === "llm" && compiled
+				? normalizePromptInput(compiled, executionPayload)
+				: Array.isArray(executionPayload)
+					? executionPayload
+					: executionPayload;
+		let translationResult: unknown;
+		let completionTokens = 0;
 
 		if (service.type === "traditional") {
 			const texts = toTextArray(
@@ -523,28 +581,57 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			if (texts.length === 0) {
 				return { value: expectsArray ? [] : "", completionTokens: 0 };
 			}
-			const { result, tokens } = await runTraditional(
+			const traditionalResult = await runTraditional(
 				service,
 				texts,
 				options.srcLang,
 				options.dstLang,
 			);
-			await resultCache.set(cacheKey, result);
-			return { value: result, completionTokens: tokens };
+			translationResult = traditionalResult.result;
+			completionTokens = traditionalResult.tokens;
+		} else {
+			const compiledPrompt = compiled ?? getPrompt(promptId);
+			const llmResult = await runLLMSteps(
+				modelId,
+				service,
+				compiledPrompt,
+				normalizedPayload,
+				ctx,
+				options.srcLang,
+				options.dstLang,
+			);
+			translationResult = llmResult.result;
+			completionTokens = llmResult.tokens;
 		}
 
-		const compiledPrompt = compiled ?? getPrompt(promptId);
-		const { result, tokens } = await runLLMSteps(
-			modelId,
-			service,
-			compiledPrompt,
-			normalizedPayload,
-			ctx,
-			options.srcLang,
-			options.dstLang,
-		);
-		await resultCache.set(cacheKey, result);
-		return { value: result, completionTokens: tokens };
+		let finalValue = translationResult;
+		if (thinCacheState && payloadArray) {
+			if (!Array.isArray(translationResult)) {
+				throw createTranslateError(
+					TranslateErrorType.VALIDATION_ERROR,
+					"Thin cache requires translation results to be arrays.",
+				);
+			}
+			if (translationResult.length !== thinCacheState.missing.length) {
+				throw createTranslateError(
+					TranslateErrorType.VALIDATION_ERROR,
+					`Expected ${thinCacheState.missing.length} translations, but got ${translationResult.length}`,
+				);
+			}
+			const merged = thinCacheState.values.slice();
+			thinCacheState.missing.forEach((index, idx) => {
+				merged[index] = translationResult[idx];
+			});
+			finalValue = merged;
+			await Promise.all(
+				thinCacheState.missing.map((index) =>
+					resultCache.set(thinCacheState.keys[index], merged[index]),
+				),
+			);
+		}
+
+		await resultCache.set(cacheKey, finalValue);
+		return { value: finalValue, completionTokens };
 	};
 
 	return {

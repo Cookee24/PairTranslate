@@ -27,6 +27,7 @@ export interface TranslateOptions {
 	modelId: string;
 	promptId: string;
 	cleanCache?: boolean;
+	thinCache?: boolean;
 	srcLang: string;
 	dstLang: string;
 }

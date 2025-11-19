@@ -52,12 +52,14 @@ export function createBatchTranslation(
 	options: {
 		promptId?: string;
 		modelId?: () => string | undefined;
+		thinCache?: boolean;
 		ctx?: () => Record<string, unknown>;
 	} = {},
 ): BatchReturn {
 	const [modelId, srcLang, dstLang] = useTranslationContext(options.modelId);
 	const promptId = options.promptId || PROMPT_ID.batchTranslate;
 	const ctx = options.ctx || (() => ({ page: getPageContext() }));
+	const thinCache = options.thinCache ?? true;
 
 	const [textResult, setTextResult] = createStore<(string | undefined)[]>([]);
 	const [error, setError] = createStore<(TranslateError | undefined)[]>([]);
@@ -138,6 +140,7 @@ export function createBatchTranslation(
 					srcLang: srcLang(),
 					dstLang: dstLang(),
 					cleanCache: true,
+					thinCache,
 				},
 				text_,
 			);
