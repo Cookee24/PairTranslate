@@ -3,7 +3,6 @@ import { unwrap } from "solid-js/store";
 import type z from "zod";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormGrid } from "~/components/settings/FormGrid";
-import { NumberInput } from "~/components/settings/NumberInput";
 import {
 	OptionSelect,
 	type SelectOption,
@@ -98,44 +97,6 @@ export default (props: { navId: string }) => {
 
 	return (
 		<SettingsCard title={t("settings.translation.title")} navId={props.navId}>
-			<FormGrid gap="lg">
-				<NumberInput
-					label={t("settings.translation.concurrentRequests")}
-					helperText={t("settings.translation.concurrentRequestsDesc")}
-					error={getFieldError(["concurrentRequests"])?.message}
-					min={1}
-					max={32}
-					value={localSettings.concurrentRequests}
-					onChange={(e) =>
-						setLocalSettings("concurrentRequests", Number(e.target.value))
-					}
-				/>
-
-				<NumberInput
-					label={t("settings.translation.cacheSize")}
-					helperText={t("settings.translation.cacheSizeDesc")}
-					error={getFieldError(["cacheSize"])?.message}
-					min={0}
-					max={10000}
-					value={localSettings.cacheSize}
-					onChange={(e) =>
-						setLocalSettings("cacheSize", Number(e.target.value))
-					}
-				/>
-
-				<NumberInput
-					label={t("settings.translation.maxBatchSize")}
-					helperText={t("settings.translation.maxBatchSizeDesc")}
-					error={getFieldError(["maxBatchSize"])?.message}
-					min={1}
-					max={100}
-					value={localSettings.maxBatchSize}
-					onChange={(e) =>
-						setLocalSettings("maxBatchSize", Number(e.target.value))
-					}
-				/>
-			</FormGrid>
-			<div class="divider m-0" />
 			<FormGrid gap="lg">
 				<OptionSelect
 					label={t("settings.translation.sourceLanguage")}

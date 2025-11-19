@@ -84,4 +84,3 @@ export function useServiceManagement<T extends ServiceSettings>(
 		handleCloseModal,
 	};
 }
-

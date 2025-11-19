@@ -7,6 +7,7 @@ description = "ウェブページのサイドバイサイド翻訳用ブラウ�
 [nav]
 basic = "基本設定"
 translation = "翻訳サービス"
+flowControl = "フロー制御"
 llmServices = "LLMサービス"
 traditionalServices = "従来の翻訳"
 websiteRules = "ウェブサイトルール"
@@ -130,6 +131,24 @@ filterInteractive = "インタラクティブ要素をフィルター"
 filterInteractiveDesc = "ボタン、ヘッダー、ナビゲーション、フッターなどのインタラクティブ要素をスキップして、不要な翻訳を避けます"
 translateFullPage = "翻訳範囲"
 translateFullPageDesc = "チェックするとページ全体のコンテンツを翻訳します。チェックしないと、表示されているコンテンツのみを翻訳します"
+
+[settings.flowControl]
+title = "フロー制御"
+description = "翻訳キュー全体のスループットやキャッシュポリシーを調整します。"
+requestConcurrency = "同時リクエスト数"
+requestConcurrencyDesc = "すべてのモデルで同時に実行できる翻訳リクエストの上限です。"
+tokensPerMinute = "1分あたりのトークン数"
+tokensPerMinuteDesc = "LLMモデルが1分間に消費できるトークン数の上限です。"
+maxBatchSize = "最大バッチサイズ"
+maxBatchSizeDesc = "1つのバッチでまとめて処理するテキスト数の上限です。"
+cacheSize = "キャッシュサイズ"
+cacheSizeDesc = "再利用のために保持する翻訳結果の総数です。"
+
+[settings.services.flowControl]
+title = "フロー制御設定"
+description = "このサービス専用のフロー制御上限を設定します。空欄のままにするとグローバル設定を引き継ぎます。"
+usingGlobal = "グローバル設定を使用"
+reset = "設定をリセット"
 
 [settings.llmServices]
 title = "LLMサービス"

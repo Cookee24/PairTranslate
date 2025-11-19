@@ -1,20 +1,4 @@
 /** biome-ignore-all lint/suspicious/noConstEnum: For performance */
-import { getNativeName } from "../constants";
-import type { PageContext } from "../types";
-
-export interface PromptContext {
-	sourceLang?: string;
-	targetLang: string;
-	text: string | string[];
-	ctx?: {
-		page?: PageContext;
-		surr?: {
-			before?: string;
-			after?: string;
-		};
-		[key: string]: unknown;
-	};
-}
 
 export interface Message {
 	role: "system" | "user" | "assistant";
@@ -88,7 +72,7 @@ export class TemplateParseError extends Error {
 /**
  * Template variable replacement context
  */
-interface VariableContext {
+interface PromptContext {
 	page?: Record<string, string>;
 	text?: string | string[];
 	surr?: {
@@ -99,27 +83,23 @@ interface VariableContext {
 		src?: string; // undefined if auto
 		dst: string;
 	};
-	output?: string[];
+	output?: unknown[];
 	[key: string]: unknown;
 }
 
-export const toVariableContext = (
-	promptCtx: PromptContext,
-): VariableContext => {
-	const varCtx: VariableContext = {
-		page: promptCtx.ctx?.page,
-		text: promptCtx.text,
-		surr: promptCtx.ctx?.surr,
-		lang: {
-			src:
-				promptCtx.sourceLang && promptCtx.sourceLang !== "auto"
-					? getNativeName(promptCtx.sourceLang)
-					: undefined,
-			dst: getNativeName(promptCtx.targetLang),
-		},
-		...promptCtx.ctx,
+export const buildContextWithTranslateParams = (
+	ctx: PromptContext,
+	lang?: { src?: string; dst: string },
+	text?: string | string[],
+): PromptContext => {
+	const src = lang?.src && getNativeName(lang.src);
+	const dst = lang?.dst && getNativeName(lang.dst);
+	const merged: PromptContext = {
+		...ctx,
+		...(dst && { lang: { src, dst } }),
+		text,
 	};
-	return varCtx;
+	return merged;
 };
 
 export const isEmpty = (value: unknown): boolean => {
@@ -261,53 +241,28 @@ export const templateToTokens = (template: string): Token[] => {
 				let ifDepth = 0;
 				let ifSearchPos = end;
 
-				const ifDebug = false;
-				if (ifDebug) {
-					console.log("\\n=== IF DEPTH TRACKING ===");
-					console.log("Condition:", condition);
-					console.log("Template:", template);
-					console.log("Starting from position:", ifSearchPos);
-				}
-
 				while (ifSearchPos < template.length) {
-					if (ifDebug && [9, 16, 26, 27, 28, 39, 54].includes(ifSearchPos)) {
-						console.log(
-							"  checking pos",
-							ifSearchPos,
-							":",
-							template.slice(ifSearchPos, ifSearchPos + 7),
-						);
-					}
 					if (template.slice(ifSearchPos, ifSearchPos + 6) === "{{#if ") {
 						ifDepth++;
-						if (ifDebug)
-							console.log("  pos", ifSearchPos, "{{#if}} depth++", ifDepth);
 						ifSearchPos += 6;
 					} else if (
 						template.slice(ifSearchPos, ifSearchPos + 8) === "{{#elif "
 					) {
 						// elif doesn't affect depth, just skip it
-						if (ifDebug) console.log("  pos", ifSearchPos, "{{#elif}}");
 						ifSearchPos += 8;
 					} else if (
 						template.slice(ifSearchPos, ifSearchPos + 7) === "{{/if}}"
 					) {
-						if (ifDebug)
-							console.log("  pos", ifSearchPos, "{{/if}} depth=", ifDepth);
 						if (ifDepth === 0) {
-							if (ifDebug) console.log("  -> MATCH!");
 							ifEnd = ifSearchPos;
 							break;
 						}
 						ifDepth--;
-						if (ifDebug) console.log("  -> depth--", ifDepth);
 						ifSearchPos += 7;
 					} else {
 						ifSearchPos++;
 					}
 				}
-
-				if (ifDebug) console.log("Final ifEnd:", ifEnd, "\\n");
 
 				if (ifEnd === -1)
 					throw new TemplateParseError("Unclosed {{#if}}", {
@@ -481,22 +436,11 @@ export const templateToTokens = (template: string): Token[] => {
 				let depth = 0;
 				let searchPos = end;
 
-				// Debug logging
-				const isDebug = false;
-				if (isDebug) {
-					console.log("Searching for {{/for}} in template:", template);
-					console.log("Starting from position:", searchPos);
-					console.log("Template length:", template.length);
-				}
-
 				while (searchPos < template.length) {
 					if (template.slice(searchPos, searchPos + 7) === "{{#for ") {
 						depth++;
-						if (isDebug) console.log("Found nested {{#for}} at", searchPos);
 						searchPos += 7;
 					} else if (template.slice(searchPos, searchPos + 8) === "{{/for}}") {
-						if (isDebug)
-							console.log("Found {{/for}} at", searchPos, "depth=", depth);
 						if (depth === 0) {
 							forEnd = searchPos;
 							break;
@@ -507,8 +451,6 @@ export const templateToTokens = (template: string): Token[] => {
 						searchPos++;
 					}
 				}
-
-				if (isDebug) console.log("Final forEnd:", forEnd);
 
 				if (forEnd === -1)
 					throw new TemplateParseError("Unclosed {{#for}}", {
@@ -562,10 +504,7 @@ export const templateToTokens = (template: string): Token[] => {
 	return tokens;
 };
 
-export const tokensToString = (
-	ctx: VariableContext,
-	tokens: Token[],
-): string => {
+export const tokensToString = (ctx: PromptContext, tokens: Token[]): string => {
 	let result = "";
 
 	const getValue = (expr: Expr, token: Token): unknown => {
@@ -640,25 +579,25 @@ export const tokensToString = (
 					const collection = getValue(token.collection, token);
 					if (Array.isArray(collection)) {
 						for (let idx = 0; idx < collection.length; idx++) {
-							const loopCtx: VariableContext = {
+							const loopCtx: PromptContext = {
 								...ctx,
 								[token.item]: collection[idx],
 								"@key": idx,
 							};
-							const savedValue = ctx[token.item as keyof VariableContext];
-							const savedKey = ctx["@key" as keyof VariableContext];
+							const savedValue = ctx[token.item as keyof PromptContext];
+							const savedKey = ctx["@key" as keyof PromptContext];
 							Object.assign(ctx, loopCtx);
 							output += processTokens(token.body);
 							// Restore original values
 							if (savedValue === undefined) {
-								delete ctx[token.item as keyof VariableContext];
+								delete ctx[token.item as keyof PromptContext];
 							} else {
-								ctx[token.item as keyof VariableContext] = savedValue;
+								ctx[token.item as keyof PromptContext] = savedValue;
 							}
 							if (savedKey === undefined) {
-								delete ctx["@key" as keyof VariableContext];
+								delete ctx["@key" as keyof PromptContext];
 							} else {
-								ctx["@key" as keyof VariableContext] = savedKey;
+								ctx["@key" as keyof PromptContext] = savedKey;
 							}
 						}
 					} else if (typeof collection === "object" && collection !== null) {
@@ -666,25 +605,25 @@ export const tokensToString = (
 							collection as Record<string, unknown>,
 						);
 						for (const [key, value] of entries) {
-							const loopCtx: VariableContext = {
+							const loopCtx: PromptContext = {
 								...ctx,
 								[token.item]: value,
 								"@key": key,
 							};
-							const savedValue = ctx[token.item as keyof VariableContext];
-							const savedKey = ctx["@key" as keyof VariableContext];
+							const savedValue = ctx[token.item as keyof PromptContext];
+							const savedKey = ctx["@key" as keyof PromptContext];
 							Object.assign(ctx, loopCtx);
 							output += processTokens(token.body);
 							// Restore original values
 							if (savedValue === undefined) {
-								delete ctx[token.item as keyof VariableContext];
+								delete ctx[token.item as keyof PromptContext];
 							} else {
-								ctx[token.item as keyof VariableContext] = savedValue;
+								ctx[token.item as keyof PromptContext] = savedValue;
 							}
 							if (savedKey === undefined) {
-								delete ctx["@key" as keyof VariableContext];
+								delete ctx["@key" as keyof PromptContext];
 							} else {
-								ctx["@key" as keyof VariableContext] = savedKey;
+								ctx["@key" as keyof PromptContext] = savedKey;
 							}
 						}
 					} else if (collection !== undefined && collection !== null) {

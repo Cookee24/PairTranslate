@@ -1,4 +1,5 @@
 import {
+	Activity,
 	BrainCircuit,
 	Cog,
 	FileText,
@@ -11,6 +12,7 @@ import Nav from "./components/Nav";
 import About from "./pages/About";
 import Advanced from "./pages/Advanced";
 import Basic from "./pages/Basic";
+import FlowControl from "./pages/FlowControl";
 import LLM from "./pages/LLM";
 import Traditional from "./pages/Traditional";
 import Translation from "./pages/Translation";
@@ -62,6 +64,10 @@ const Content = () => {
 					<Globe size={16} />
 					{t("nav.traditionalServices")}
 				</Nav.Item>
+				<Nav.Item navId="flowControl">
+					<Activity size={16} />
+					{t("nav.flowControl")}
+				</Nav.Item>
 				<Nav.Item navId="websiteRules">
 					<FileText size={16} />
 					{t("nav.websiteRules")}
@@ -85,6 +91,7 @@ const Content = () => {
 				<Translation navId="translate" />
 				<LLM navId="llm" />
 				<Traditional navId="traditional" />
+				<FlowControl navId="flowControl" />
 				<WebsiteRules navId="websiteRules" />
 				<Advanced navId="advanced" />
 				<About navId="about" />

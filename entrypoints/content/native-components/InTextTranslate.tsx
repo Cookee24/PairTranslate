@@ -11,7 +11,7 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 	const websiteRule = useWebsiteRule();
 
 	const context = createMemo(() => extractTextContext(props.element));
-	const [data, retry] = createTranslation(() => context().content);
+	const [data, retry] = createTranslation(() => context().text);
 
 	const handleRetry = () => {
 		retry();
@@ -26,7 +26,7 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 			text={data()}
 			loading={data.loading}
 			// TODO: improve error handling
-			error={String(data.error)}
+			error={data.error ? String(data.error) : undefined}
 			element={props.element}
 			hideOriginal={hideOriginal()}
 			onRetry={handleRetry}
@@ -82,7 +82,7 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 			[() => props.elements],
 			([currentElements]) => {
 				throttle(() => {
-					const maxBatchSize = settings.translate.maxBatchSize;
+					const maxBatchSize = settings.queue.maxBatchSize;
 
 					if (currentElements.size === 0) clear();
 
@@ -164,7 +164,7 @@ const BatchRender = (props: BatchRenderProps) => {
 					text={item()}
 					loading={item.loading}
 					// TODO: improve error handling
-					error={String(item.error)}
+					error={item.error ? String(item.error) : undefined}
 					element={props.elements[index()]}
 					hideOriginal={hideOriginal()}
 					onRetry={() => retry(index())}
@@ -206,8 +206,8 @@ const TranslationRender = (props: TranslationRenderProps) => {
 			x = e.clientX;
 			y = e.clientY;
 		} else {
-			x = e.touches[0].clientX;
-			y = e.touches[0].clientY;
+			x = e.changedTouches[0].clientX;
+			y = e.changedTouches[0].clientY;
 		}
 		setTooltipPos({
 			x,
@@ -246,15 +246,15 @@ const TranslationRender = (props: TranslationRenderProps) => {
 				{!props.loading && !props.error && !props.hideOriginal && <br />}
 				<span
 					on:mouseenter={createTooltip}
-					on:touchstart={createTooltip}
+					on:touchend={createTooltip}
 					style={{ display: "inline-block" }}
 				>
 					{props.loading ? (
 						<NativeLoading />
-					) : !props.loading && !props.error ? (
-						<Languages style={ICON_STYLE} size="12px" />
-					) : (
+					) : props.error ? (
 						<CircleX style={ERROR_ICON_STYLE} size="12px" />
+					) : (
+						<Languages style={ICON_STYLE} size="12px" />
 					)}
 				</span>
 				{!props.loading && !props.error && <Md text={props.text || ""} />}

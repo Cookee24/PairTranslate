@@ -1,6 +1,10 @@
 import type z from "zod";
-import { LLMServiceSettings } from "~/utils/settings/def";
+import {
+	LLMServiceSettings,
+	type QueueControlSettings,
+} from "~/utils/settings/def";
 import { LLMServiceTemplates } from "~/utils/settings/default";
+import { QueueOverrideFields } from "../components/QueueOverrideFields";
 
 type LLMService = z.infer<typeof LLMServiceSettings>;
 
@@ -9,6 +13,7 @@ interface LLMModalProps {
 	onSave: (config: LLMService) => void;
 	onClose: () => void;
 	open?: boolean;
+	queueDefaults: QueueControlSettings;
 }
 
 export default (props: LLMModalProps) => {
@@ -342,6 +347,18 @@ export default (props: LLMModalProps) => {
 						/>
 					</div>
 				</div>
+
+				<div class="divider" />
+				<QueueOverrideFields
+					value={formData().queue}
+					defaults={props.queueDefaults}
+					onChange={(queue) =>
+						setFormData((prev) => ({
+							...prev,
+							queue,
+						}))
+					}
+				/>
 			</div>
 		</Modal>
 	);

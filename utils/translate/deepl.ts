@@ -9,7 +9,7 @@ export const deepLTranslate = async (
 	config: TranslationConfig,
 	params: TranslationParams,
 ): Promise<TranslationResult> => {
-	const apiUrl = config.apiUrl || "https://api-free.deepl.com/v2/translate";
+	const apiUrl = config.baseUrl || "https://api-free.deepl.com/v2/translate";
 
 	let sourceLang: string | undefined = params.sourceLang.toUpperCase();
 	if (sourceLang === "AUTO") {

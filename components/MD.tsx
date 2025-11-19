@@ -1,1 +1,1 @@
-export { default } from "./MD/Md";
+export { Md, MdStyled } from "./MD/Md";

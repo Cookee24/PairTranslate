@@ -18,9 +18,7 @@ export function selectServicesByType<TType extends ServiceSettings["type"]>(
 	return subset;
 }
 
-export function replaceServicesOfType<
-	TType extends ServiceSettings["type"],
->(
+export function replaceServicesOfType<TType extends ServiceSettings["type"]>(
 	services: Record<string, ServiceSettings>,
 	type: TType,
 	replacements: Record<string, ServiceByType<TType>>,

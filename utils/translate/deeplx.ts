@@ -10,7 +10,7 @@ export const deeplxTranslate = async (
 	config: TranslationConfig,
 	params: TranslationParams,
 ): Promise<TranslationResult> => {
-	const apiUrl = config.apiUrl || "https://deeplx.owo.network/translate";
+	const apiUrl = config.baseUrl || "https://deeplx.owo.network/translate";
 
 	let sourceLang: string | undefined = params.sourceLang.toUpperCase();
 	if (sourceLang === "AUTO") {

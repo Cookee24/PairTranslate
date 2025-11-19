@@ -1,5 +1,9 @@
 import type z from "zod";
-import { TraditionalServiceSettings } from "~/utils/settings/def";
+import {
+	type QueueControlSettings,
+	TraditionalServiceSettings,
+} from "~/utils/settings/def";
+import { QueueOverrideFields } from "../components/QueueOverrideFields";
 
 type TraditionalService = z.infer<typeof TraditionalServiceSettings>;
 type TraditionalApiSpec = TraditionalService["apiSpec"];
@@ -9,6 +13,7 @@ interface TraditionalModalProps {
 	onSave: (config: TraditionalService) => void;
 	onClose: () => void;
 	open?: boolean;
+	queueDefaults: QueueControlSettings;
 }
 
 export default (props: TraditionalModalProps) => {
@@ -203,6 +208,18 @@ export default (props: TraditionalModalProps) => {
 						</span>
 					</label>
 				</div>
+
+				<div class="divider" />
+				<QueueOverrideFields
+					value={formData().queue}
+					defaults={props.queueDefaults}
+					onChange={(queue) =>
+						setFormData((prev) => ({
+							...prev,
+							queue,
+						}))
+					}
+				/>
 			</div>
 		</Modal>
 	);

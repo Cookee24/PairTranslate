@@ -163,8 +163,8 @@ export const WXT_TRANSPORTATION_NAME = "wxt-transport";
 
 export const MS_TRANSLATOR_ID = "a404995f-8bf9-4e3c-86aa-bbc4698bc050"; // Fixed ID for Microsoft Translator
 export const PROMPT_ID = {
-	translate: "00000000-0000-0000-0000-000000000001",
-	batchTranslate: "00000000-0000-0000-0000-000000000002",
-	explain: "00000000-0000-0000-0000-000000000003",
-	inputTranslate: "00000000-0000-0000-0000-000000000004",
+	translate: "8e6da19e-808e-4696-810c-e1c1fe2cd1fd",
+	batchTranslate: "99337c6e-3cc2-4b57-a8ce-aed530ecd97f",
+	explain: "c39b8ab4-5656-4887-8b48-d5eb86fa0b8f",
+	inputTranslate: "4a87e959-cab4-4b8d-bc8f-1079dc2c4c86",
 };

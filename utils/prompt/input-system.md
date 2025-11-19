@@ -12,4 +12,6 @@ I hope this email finds you well. ...
 
 %% EXAMPLE OUTPUT 1:
 
-Translation of the email content starting from "Hello Sam," in "{{lang.dst}}".
+サムさんへ
+
+ご無沙汰しております。...

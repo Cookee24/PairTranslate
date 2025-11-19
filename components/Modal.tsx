@@ -13,7 +13,7 @@ const modalVariants = tv({
 });
 
 const modalBoxVariants = tv({
-	base: "modal-box max-h-[90vh]",
+	base: "modal-box max-h-[90vh] flex flex-col overflow-hidden",
 });
 
 export interface ModalProps
@@ -73,12 +73,16 @@ export const Modal: Component<ModalProps> = (props) => {
 						</button>
 					</form>
 				)}
-				{local.title && <h3 class="font-bold text-lg mb-4">{local.title}</h3>}
+				{local.title && (
+					<div class="px-6 pt-6 pb-2">
+						<h3 class="font-bold text-lg">{local.title}</h3>
+					</div>
+				)}
 
-				<div class="py-4">{local.children}</div>
+				<div class="flex-1 overflow-y-auto px-6 py-4">{local.children}</div>
 
 				{local.actions && (
-					<div class="modal-action">
+					<div class="modal-action sticky bottom-0 border-t border-base-200 bg-base-100 px-6 py-4">
 						<form method="dialog">{local.actions}</form>
 					</div>
 				)}

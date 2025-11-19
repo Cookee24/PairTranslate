@@ -13,7 +13,7 @@ export const microsoftTranslate = async (
 	params: TranslationParams,
 ): Promise<TranslationResult> => {
 	const apiUrl =
-		config.apiUrl || "https://api.cognitive.microsofttranslator.com/translate";
+		config.baseUrl || "https://api.cognitive.microsofttranslator.com/translate";
 	const urlParams = new URLSearchParams({
 		"api-version": "3.0",
 		to: params.targetLang,
@@ -53,7 +53,7 @@ export const microsoftTranslate = async (
 			}
 		}
 		headers.Authorization = `Bearer ${apiKey}`;
-	} else {
+	} else if (apiKey) {
 		headers["Ocp-Apim-Subscription-Key"] = apiKey;
 	}
 

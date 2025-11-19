@@ -1,8 +1,9 @@
+<instruction>Output an array of length {{text.length}}</instruction>
 {{#if page}}<page>
-{{#for item:page}}{{item.key}}: {{item.value}}{{/for}}
+{{#for item:page}}{{@key}}: {{item}}{{/for}}
 </page>{{/if}}
 
-{{#for text:text}}
+{{#for item:text}}
 %% Paragraph {{@key}}
-{{text}}
+{{item}}
 {{/for}}

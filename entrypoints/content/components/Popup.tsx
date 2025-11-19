@@ -79,7 +79,7 @@ export const PopupRenderer = () => {
 				<PopupImpl
 					onDelete={() => {
 						const index_ = index();
-						setPopups((p) => p.filter((_, i) => i !== index_));
+						// setPopups((p) => p.filter((_, i) => i !== index_));
 					}}
 					onBringToFront={() => {
 						setPopups(index(), "zIndex", ++cnt);
@@ -351,7 +351,7 @@ const PopupImpl = (props: ImplProps) => {
 						<X size={16} />
 					</Button>
 				</div>
-				<div class="overflow-y-auto">{untrack(props.content)}</div>
+				<div class="overflow-y-auto">{props.content()}</div>
 				<button
 					type="button"
 					class="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize touch-none"

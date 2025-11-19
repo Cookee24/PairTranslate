@@ -17,13 +17,14 @@ const TranslateElement = (props: {
 		if (!el) return "";
 		return el.value || el.innerText || "";
 	};
-	const [text, { error, loading, retry }] = useInputTranslation(
-		getText,
-		targetLang,
-	);
+	const [data, retry] = createTranslation(getText, {
+		promptId: PROMPT_ID.inputTranslate,
+		modelId: () => settings.translate.inputTranslateModel,
+		stream: true,
+	});
 
 	const handleRetry = () => {
-		if (loading()) return;
+		if (data.loading) return;
 		retry();
 	};
 	const handleClose = () => {
@@ -33,8 +34,8 @@ const TranslateElement = (props: {
 		const el = props.element;
 		if (!el) return;
 
-		el.value = text();
-		el.innerText = text();
+		el.value = data() || "";
+		el.innerText = data() || "";
 
 		const inputEvent = new Event("input", { bubbles: true });
 		el.dispatchEvent(inputEvent);
@@ -89,14 +90,14 @@ const TranslateElement = (props: {
 	return (
 		<div class="p-4 w-full h-full flex flex-col" ref={ref}>
 			<pre
-				class="p-4 rounded-md flex-grow whitespace-pre-wrap break-words overflow-auto"
+				class="p-4 rounded-md grow whitespace-pre-wrap wrap-break-word overflow-auto"
 				classList={{
-					"bg-error/10": !!error(),
-					"text-error-content": !!error(),
-					"bg-base-300": !error(),
+					"bg-error/10": !!data.error,
+					"text-error-content": !!data.error,
+					"bg-base-300": !data.error,
 				}}
 			>
-				{error() ? error() : text()}
+				{data.error ? data.error.message : data()}
 			</pre>
 			<div class="mt-4 flex justify-end gap-2">
 				<Select size="xs" value={targetLang()} onChange={handleLanguageChange}>
@@ -104,9 +105,9 @@ const TranslateElement = (props: {
 						{(lang) => <option value={lang.code}>{lang.nativeName}</option>}
 					</For>
 				</Select>
-				<div class="flex-grow" />
-				<Button size="xs" onClick={handleRetry} disabled={loading()}>
-					{loading() ? (
+				<div class="grow" />
+				<Button size="xs" onClick={handleRetry} disabled={data.loading}>
+					{data.loading ? (
 						<>
 							<Loading size="xs" />
 							{t("common.loading")}

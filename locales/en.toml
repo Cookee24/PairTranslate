@@ -7,6 +7,7 @@ description = "A browser extension for side-by-side translation of web pages"
 [nav]
 basic = "Basic Settings"
 translation = "Translation Services"
+flowControl = "Flow Control"
 llmServices = "LLM Services"
 traditionalServices = "Traditional Translation"
 websiteRules = "Website Rules"
@@ -130,6 +131,24 @@ filterInteractive = "Filter Interactive Elements"
 filterInteractiveDesc = "Skip interactive elements like buttons, headers, navigation, and footers to avoid unwanted translations"
 translateFullPage = "Translation Scope"
 translateFullPageDesc = "When checked, translate entire page content; when unchecked, only translate visible content"
+
+[settings.flowControl]
+title = "Flow Control"
+description = "Tune global queue throughput, rate limits, and caching for every translation model."
+requestConcurrency = "Concurrent Requests"
+requestConcurrencyDesc = "Maximum number of translation requests that can run at the same time across all models."
+tokensPerMinute = "Tokens per Minute"
+tokensPerMinuteDesc = "Upper limit of tokens LLM models can consume per minute before throttling starts."
+maxBatchSize = "Max Batch Size"
+maxBatchSizeDesc = "Largest number of texts grouped into a single request batch before queuing the rest."
+cacheSize = "Cache Size"
+cacheSizeDesc = "Total translation results kept in cache to speed up repeated lookups."
+
+[settings.services.flowControl]
+title = "Flow Control Settings"
+description = "Customize this service's flow control limits. Leave fields empty to inherit the global defaults."
+usingGlobal = "Using global defaults"
+reset = "Reset fields"
 
 [settings.llmServices]
 title = "LLM Services"

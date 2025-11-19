@@ -7,6 +7,7 @@ description = "웹 페이지의 나란히 번역을 위한 브라우저 확장 �
 [nav]
 basic = "기본 설정"
 translation = "번역 서비스"
+flowControl = "플로우 제어"
 llmServices = "LLM 서비스"
 traditionalServices = "전통 번역"
 websiteRules = "웹사이트 규칙"
@@ -130,6 +131,24 @@ filterInteractive = "인터랙티브 요소 필터링"
 filterInteractiveDesc = "버튼, 헤더, 내비게이션, 푸터 등 인터랙티브 요소를 건너뛰어 원치 않는 번역을 방지합니다"
 translateFullPage = "번역 범위"
 translateFullPageDesc = "체크하면 전체 페이지 콘텐츠를 번역하고, 체크하지 않으면 보이는 콘텐츠만 번역합니다"
+
+[settings.flowControl]
+title = "플로우 제어"
+description = "번역 큐 전체의 처리량과 캐시 한도를 조정합니다."
+requestConcurrency = "동시 요청 수"
+requestConcurrencyDesc = "모든 모델이 동시에 보낼 수 있는 번역 요청의 최대값입니다."
+tokensPerMinute = "분당 토큰 수"
+tokensPerMinuteDesc = "LLM 모델이 1분 동안 소비할 수 있는 토큰 상한입니다."
+maxBatchSize = "최대 배치 크기"
+maxBatchSizeDesc = "한 번의 배치에서 처리할 수 있는 텍스트 수의 상한입니다."
+cacheSize = "캐시 크기"
+cacheSizeDesc = "전역적으로 보관할 번역 결과의 개수입니다."
+
+[settings.services.flowControl]
+title = "플로우 제어 설정"
+description = "이 서비스만의 플로우 제어 한도를 조정합니다. 값을 비워 두면 글로벌 기본값을 따릅니다."
+usingGlobal = "글로벌 기본값 사용"
+reset = "설정 초기화"
 
 [settings.llmServices]
 title = "LLM 서비스"

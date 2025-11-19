@@ -30,9 +30,6 @@ export function generateTranslateSettings(): s.TranslateSettings {
 	const targetLang = getTargetLanguage();
 
 	return {
-		concurrentRequests: 8,
-		cacheSize: 4096,
-		maxBatchSize: 4,
 		sourceLang: "auto",
 		targetLang: targetLang,
 		filterInteractive: true,
@@ -71,6 +68,15 @@ export function generateServicesSettings(): s.ServicesSettings {
 
 export function generateWebsiteRuleSettings(): s.WebsiteRulesSettings {
 	return [];
+}
+
+export function generateQueueControlSettings(): s.QueueControlSettings {
+	return {
+		requestConcurrency: 8,
+		tokensPerMinute: 60000,
+		maxBatchSize: 4,
+		cacheSize: 1000,
+	};
 }
 
 export function generatePromptSettings(): s.PromptsSettings {
@@ -174,6 +180,7 @@ export function generateDefaultSettings(): s.SettingsSchema {
 		translate: generateTranslateSettings(),
 		services: generateServicesSettings(),
 		websiteRules: generateWebsiteRuleSettings(),
+		queue: generateQueueControlSettings(),
 		prompts: generatePromptSettings(),
 	};
 }

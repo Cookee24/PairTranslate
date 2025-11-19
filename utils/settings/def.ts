@@ -25,10 +25,19 @@ export const BasicSettings = z.object({
 });
 export type BasicSettings = z.infer<typeof BasicSettings>;
 
+const QueueOverrideShape = z.object({
+	requestConcurrency: z.number().min(1).optional(),
+	tokensPerMinute: z.number().min(1).optional(),
+	maxBatchSize: z.number().min(1).max(100).optional(),
+});
+export type QueueOverride = z.infer<typeof QueueOverrideShape>;
+export const QueueOverrideSettings = QueueOverrideShape.optional();
+
 export const BaseServiceSettings = z.object({
 	name: z.string().min(1),
 	baseUrl: z.string().url().optional(),
 	apiKey: z.string().optional(),
+	queue: QueueOverrideSettings,
 });
 
 export const LLMServiceSettings = BaseServiceSettings.extend({
@@ -57,10 +66,15 @@ export type ModelSettings = ServiceSettings;
 export const ServicesSettings = z.record(z.uuid(), ModelSettings).default({});
 export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
-export const TranslateSettings = z.object({
-	concurrentRequests: z.number().min(1).default(8),
-	cacheSize: z.number().min(0).default(4096), // Number of entries in LRU cache
+export const QueueControlSettings = z.object({
+	requestConcurrency: z.number().min(1).default(8),
+	tokensPerMinute: z.number().min(1).default(80000),
 	maxBatchSize: z.number().min(1).max(100).default(4),
+	cacheSize: z.number().min(0),
+});
+export type QueueControlSettings = z.infer<typeof QueueControlSettings>;
+
+export const TranslateSettings = z.object({
 	sourceLang: z.string().default("auto"),
 	targetLang: z.string().default("en"), // Default fallback, will be overridden by browser detection
 	filterInteractive: z.boolean().default(true), // Skip interactive elements like buttons, headers, navigation
@@ -94,12 +108,12 @@ export const PromptSettings = z.object({
 	input: z.enum(["string", "stringArray"]).default("string"),
 	output: z.enum(["string", "structured"]).default("string"),
 	// Accessor to get specific field from structured output
-	// Default to `step[N]`, where N is the last step index
+	// Default to `output[N]`, where N is the last step index
 	outputAccessor: z.string().optional(),
 	// Optional schemas for structured output
 	steps: z.array(
 		// Define multi steps prompt. Every single step is added into the conversation history.
-		// Outputted content of previous steps can be referenced by {{step[N]}} or {{tool[N][T]}}
+		// Outputted content of previous steps can be referenced by {{output[N]}}
 		// where N is the step index starting from 0, T is the tool call index that llm responded with
 		z.object({
 			message: z.array(
@@ -135,7 +149,8 @@ export const SettingsSchema = z.object({
 	basic: BasicSettings,
 	translate: TranslateSettings,
 	services: ServicesSettings,
-	websiteRules: WebsiteRulesSettings,
+	queue: QueueControlSettings,
 	prompts: PromptsSettings,
+	websiteRules: WebsiteRulesSettings,
 });
 export type SettingsSchema = z.infer<typeof SettingsSchema>;

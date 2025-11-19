@@ -1,3 +1,4 @@
+import { QueueSummary } from "~/components/settings/QueueSummary";
 import { ServiceManager } from "~/components/settings/ServiceManager";
 import {
 	replaceServicesOfType,
@@ -55,6 +56,7 @@ export default (props: { navId: string }) => {
 					{service.temperature}
 				</p>
 			)}
+			<QueueSummary queue={service.queue} defaults={settings.queue} />
 		</div>
 	);
 
@@ -78,6 +80,7 @@ export default (props: { navId: string }) => {
 				modelInfo={editingService()?.[1]}
 				onSave={handleSaveService}
 				onClose={handleCloseModal}
+				queueDefaults={settings.queue}
 			/>
 		</>
 	);

@@ -18,8 +18,6 @@ export default (props: Props) => {
 		() => settings.basic.floatingBallPosition.side === "left",
 	);
 
-	const { runningTasks } = useTaskList();
-
 	const exitedState = () => (isLeft() ? "-50%" : "50%");
 	const enter = (element: Element) =>
 		animate(
@@ -155,7 +153,8 @@ export default (props: Props) => {
 				size="sm"
 			>
 				<Show when={props.translateEnabled}>
-					{runningTasks() === 0 ? (
+					{/* TODO: replace with progress indicator */}
+					{(() => 1)() === 1 ? (
 						<Check
 							class="p-1 bg-success text-success-content rounded-full"
 							style={{

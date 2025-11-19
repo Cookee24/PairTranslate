@@ -64,7 +64,8 @@ export default (props: BrowserTranslatorModalProps) => {
 	// Check if browser translator service already exists
 	const hasBrowserService = createMemo(() =>
 		Object.values(settings.services).some(
-			(service) => service.type === "traditional" && service.apiSpec === "browser",
+			(service) =>
+				service.type === "traditional" && service.apiSpec === "browser",
 		),
 	);
 

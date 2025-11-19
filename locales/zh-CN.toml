@@ -7,6 +7,7 @@ description = "一个用于网页对照翻译的浏览器扩展"
 [nav]
 basic = "基本设置"
 translation = "翻译服务"
+flowControl = "流控设置"
 llmServices = "LLM 服务"
 traditionalServices = "传统翻译"
 websiteRules = "网站规则"
@@ -130,6 +131,24 @@ filterInteractive = "过滤交互元素"
 filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素，以避免不必要的翻译"
 translateFullPage = "翻译范围"
 translateFullPageDesc = "勾选后翻译全部页面内容；不勾选则仅翻译可见内容"
+
+[settings.flowControl]
+title = "流控设置"
+description = "配置全局翻译队列的速率限制与缓存策略。"
+requestConcurrency = "并发请求数"
+requestConcurrencyDesc = "限制所有模型可同时发起的翻译请求数量。"
+tokensPerMinute = "每分钟令牌数"
+tokensPerMinuteDesc = "限制 LLM 模型每分钟可消耗的最大令牌数。"
+maxBatchSize = "最大批量大小"
+maxBatchSizeDesc = "单个批处理中允许的最大文本数量，超出部分会排队。"
+cacheSize = "缓存大小"
+cacheSizeDesc = "全局缓存的翻译结果数量。"
+
+[settings.services.flowControl]
+title = "流控设置"
+description = "仅对当前服务修改流控限制，留空则沿用全局默认。"
+usingGlobal = "使用全局默认值"
+reset = "重置设置"
 
 [settings.llmServices]
 title = "LLM 服务"

@@ -1,14 +1,651 @@
+import type { TranslateService } from "@/utils/rpc";
+import { createQueueHub } from "~/utils/async/queue-hub";
+import {
+	convertFromLLMError,
+	convertFromTranslationError,
+	createTranslateError,
+	TranslateErrorType,
+} from "~/utils/errors";
+import type {
+	StreamRunner,
+	UnaryResult,
+} from "~/utils/flow-control/model-queue";
+import { computeCacheKey } from "~/utils/hasher";
+import type {
+	ChatRequest,
+	ClientConfig,
+	JSONSchema,
+	LLMClient,
+	LLMProvider,
+} from "~/utils/llm";
+import { createLLMClient } from "~/utils/llm";
+import type { Message } from "~/utils/prompt/parser";
+import {
+	buildContextWithTranslateParams,
+	templateToTokens,
+	tokensToString,
+} from "~/utils/prompt/parser";
+import type { PromptSettings, ServiceSettings } from "~/utils/settings";
+import { getSettings, listenSettings } from "~/utils/settings/helper";
+import { createLRUStorage } from "~/utils/storage";
+import {
+	translate as runTraditionalService,
+	type TranslationConfig,
+} from "~/utils/translate";
+import type { TranslateContext } from "~/utils/types";
+
+const SINGLE_TEXT_SERVICES = new Set(["deeplx"]);
+
+type TranslatePayload = string | string[];
+
+const estimateLLMTokens = (payload: TranslatePayload): number => {
+	if (Array.isArray(payload)) {
+		return payload.reduce((total, part) => total + estimateLLMTokens(part), 0);
+	}
+	return Math.max(1, Math.ceil(payload.length / 4));
+};
+
+const estimateTraditionalTokens = (payload: TranslatePayload): number => {
+	if (Array.isArray(payload)) {
+		return payload.reduce(
+			(total, part) => total + estimateTraditionalTokens(part),
+			0,
+		);
+	}
+	return Math.max(1, Math.ceil(payload.length / 2));
+};
+
+type MessageTemplate = {
+	role: Message["role"];
+	tokens: ReturnType<typeof templateToTokens>;
+};
+
+type CompiledStep = {
+	messages: MessageTemplate[];
+	output: PromptSettings["steps"][number]["output"];
+};
+
+type CompiledPrompt = {
+	input: PromptSettings["input"];
+	steps: CompiledStep[];
+};
+
+const buildLLMClient = (
+	provider: LLMProvider,
+	config: ClientConfig,
+): LLMClient => {
+	switch (provider) {
+		case "openai":
+			return createLLMClient("openai", config);
+		case "anthropic":
+			return createLLMClient("anthropic", config);
+		case "google":
+			return createLLMClient("google", config);
+		default:
+			throw new Error(`Unsupported LLM provider: ${provider}`);
+	}
+};
+
+const isStructuredOutput = (
+	output: PromptSettings["steps"][number]["output"],
+): output is { type: "structured"; schema: object } =>
+	typeof output === "object" &&
+	output !== null &&
+	"type" in output &&
+	output.type === "structured";
+
+const isStringArrayOutput = (
+	output: PromptSettings["steps"][number]["output"],
+): output is { type: "stringArray"; delimiter: string } =>
+	typeof output === "object" &&
+	output !== null &&
+	"type" in output &&
+	output.type === "stringArray";
+
+const compilePrompt = (prompt: PromptSettings): CompiledPrompt => ({
+	input: prompt.input,
+	steps: prompt.steps.map((step) => ({
+		output: step.output,
+		messages: step.message.map((message) => ({
+			role: message.role,
+			tokens: templateToTokens(message.content ?? ""),
+		})),
+	})),
+});
+
+const normalizePromptInput = (
+	prompt: CompiledPrompt,
+	text: TranslatePayload,
+): TranslatePayload => {
+	if (prompt.input === "stringArray") {
+		if (Array.isArray(text)) return text;
+		return text ? [text] : [];
+	}
+	if (Array.isArray(text)) {
+		return text.join("\n\n");
+	}
+	return text;
+};
+
+const toTextArray = (text: TranslatePayload): string[] =>
+	Array.isArray(text) ? text : text ? [text] : [];
+
+const toStreamChunk = (value: unknown): string => {
+	if (typeof value === "string") {
+		return value;
+	}
+	if (value === undefined || value === null) {
+		return "";
+	}
+	try {
+		return JSON.stringify(value);
+	} catch {
+		return String(value);
+	}
+};
+
+const throwIfAborted = (signal?: AbortSignal) => {
+	if (signal?.aborted) {
+		throw new DOMException("Aborted", "AbortError");
+	}
+};
+
+const estimateTokensForService = (
+	service: ServiceSettings,
+	payload: TranslatePayload,
+): number =>
+	service.type === "llm"
+		? estimateLLMTokens(payload)
+		: estimateTraditionalTokens(payload);
+
 export const createTranslateService = async (): Promise<TranslateService> => {
+	let settings = await getSettings();
+	if (!settings) {
+		throw new Error("Settings not initialized");
+	}
+
+	const promptCache = new Map<string, CompiledPrompt>();
+	const clientCache = new Map<string, LLMClient>();
+	const resultCache = createLRUStorage(
+		"translate-cache",
+		STORAGE_KEYS.cache,
+		settings.queue.cacheSize,
+	);
+
+	const resolveService = (modelId: string): ServiceSettings => {
+		const service = settings.services[modelId];
+		if (!service) {
+			throw createTranslateError(
+				TranslateErrorType.MODEL_NOT_FOUND,
+				`Model ${modelId} not found. Please check your settings.`,
+			);
+		}
+		return service;
+	};
+
+	const getPrompt = (promptId: string): CompiledPrompt => {
+		const cached = promptCache.get(promptId);
+		if (cached) return cached;
+		const prompt = settings.prompts[promptId];
+		if (!prompt) {
+			throw createTranslateError(
+				TranslateErrorType.INVALID_PROMPT,
+				`Prompt ${promptId} not found. Please check your settings.`,
+			);
+		}
+		const compiled = compilePrompt(prompt);
+		promptCache.set(promptId, compiled);
+		return compiled;
+	};
+
+	const getQueueConfig = (modelId: string) => {
+		const base = settings.queue;
+		const override = settings.services[modelId]?.queue;
+		return {
+			requestConcurrency:
+				override?.requestConcurrency ?? base.requestConcurrency,
+			tokensPerMinute: override?.tokensPerMinute ?? base.tokensPerMinute,
+		};
+	};
+
+	const ensureLLMClient = (
+		modelId: string,
+		service: Extract<ServiceSettings, { type: "llm" }>,
+	): LLMClient => {
+		const cached = clientCache.get(modelId);
+		if (cached) return cached;
+		const baseUrl = service.baseUrl;
+		const client = buildLLMClient(service.apiSpec, {
+			apiKey: service.apiKey,
+			baseUrl,
+		});
+		clientCache.set(modelId, client);
+		return client;
+	};
+
+	const queueHub = createQueueHub((modelId: string) => {
+		const config = getQueueConfig(modelId);
+		return {
+			requestConcurrency: config.requestConcurrency,
+			tokensPerMinute: config.tokensPerMinute,
+		};
+	});
+
+	listenSettings((next) => {
+		promptCache.clear();
+		clientCache.clear();
+		queueHub.refresh();
+		resultCache.resize(next.queue.cacheSize);
+		settings = next;
+	});
+
+	const runTraditional = async (
+		service: Extract<ServiceSettings, { type: "traditional" }>,
+		texts: string[],
+		srcLang: string,
+		dstLang: string,
+	): Promise<{ result: string[]; tokens: number }> => {
+		const runOnce = async (texts: string[]) => {
+			try {
+				const response = await runTraditionalService(
+					service.apiSpec,
+					service as TranslationConfig,
+					{
+						text: texts,
+						sourceLang: srcLang,
+						targetLang: dstLang,
+					},
+				);
+				return response;
+			} catch (error) {
+				throw convertFromTranslationError(error);
+			}
+		};
+
+		if (SINGLE_TEXT_SERVICES.has(service.apiSpec)) {
+			const translated: string[] = [];
+			for (const text of texts) {
+				const response = await runOnce([text]);
+				translated.push(response.translatedText[0]);
+			}
+			return { result: translated, tokens: estimateTraditionalTokens(texts) };
+		}
+
+		const response = await runOnce(texts);
+		return {
+			result: response.translatedText,
+			tokens: estimateTraditionalTokens(texts),
+		};
+	};
+
+	const runTraditionalStream = (
+		service: Extract<ServiceSettings, { type: "traditional" }>,
+		payload: TranslatePayload,
+		srcLang: string,
+		dstLang: string,
+		onResult: (value: string[]) => void,
+	): StreamRunner => {
+		return async () => {
+			const texts = toTextArray(payload);
+			if (texts.length === 0) {
+				onResult([]);
+				return {
+					iterator: (async function* () {
+						yield "";
+					})(),
+					completion: Promise.resolve(0),
+				};
+			}
+			const { result, tokens } = await runTraditional(
+				service,
+				texts,
+				srcLang,
+				dstLang,
+			);
+			onResult(result);
+			const combined = result.join("\n");
+			return {
+				iterator: (async function* () {
+					yield combined;
+				})(),
+				completion: Promise.resolve(tokens),
+			};
+		};
+	};
+
+	const runLLMSteps = async (
+		modelId: string,
+		service: Extract<ServiceSettings, { type: "llm" }>,
+		prompt: CompiledPrompt,
+		textPayload: TranslatePayload,
+		ctx: TranslateContext,
+		srcLang: string,
+		dstLang: string,
+		signal?: AbortSignal,
+	): Promise<{ result: unknown; tokens: number }> => {
+		const client = ensureLLMClient(modelId, service);
+		const promptCtx = buildContextWithTranslateParams(
+			ctx,
+			{ src: srcLang, dst: dstLang },
+			textPayload,
+		);
+		const outputs: unknown[] = [];
+		promptCtx.output = outputs;
+		let totalTokens = 0;
+		for (const step of prompt.steps) {
+			throwIfAborted(signal);
+			const messages = step.messages.map((message) => ({
+				role: message.role,
+				content: tokensToString(promptCtx, message.tokens),
+			}));
+			const request: ChatRequest = {
+				model: service.model ?? "",
+				messages,
+				temperature: service.temperature,
+				maxTokens: service.maxOutputTokens,
+			};
+			if (!request.model) {
+				throw createTranslateError(
+					TranslateErrorType.VALIDATION_ERROR,
+					`Model not configured for ${service.name}`,
+				);
+			}
+			try {
+				const schema = isStructuredOutput(step.output)
+					? (step.output.schema as JSONSchema)
+					: undefined;
+				const response = await client.chat(request, schema);
+				totalTokens +=
+					response.usage?.totalTokens ?? response.usage?.promptTokens ?? 0;
+				let output: unknown = response.output;
+				if (isStringArrayOutput(step.output)) {
+					const delimiter = step.output.delimiter ?? "\n";
+					if (typeof output === "string") {
+						output = output
+							.split(delimiter)
+							.map((entry) => entry.trim())
+							.filter(Boolean);
+					}
+				}
+				outputs.push(output);
+			} catch (error) {
+				throw convertFromLLMError(error);
+			}
+		}
+		return {
+			result: outputs.at(-1),
+			tokens: totalTokens,
+		};
+	};
+
+	const runLLMStream = (
+		modelId: string,
+		service: Extract<ServiceSettings, { type: "llm" }>,
+		prompt: CompiledPrompt,
+		textPayload: TranslatePayload,
+		ctx: TranslateContext,
+		srcLang: string,
+		dstLang: string,
+		signal?: AbortSignal,
+	): StreamRunner => {
+		return async () => {
+			const client = ensureLLMClient(modelId, service);
+			const promptCtx = buildContextWithTranslateParams(
+				ctx,
+				{ src: srcLang, dst: dstLang },
+				textPayload,
+			);
+			const outputs: unknown[] = [];
+			promptCtx.output = outputs;
+			const preSteps = prompt.steps.slice(0, -1);
+			for (const step of preSteps) {
+				const messages = step.messages.map((message) => ({
+					role: message.role,
+					content: tokensToString(promptCtx, message.tokens),
+				}));
+				const request: ChatRequest = {
+					model: service.model ?? "",
+					messages,
+					temperature: service.temperature,
+					maxTokens: service.maxOutputTokens,
+				};
+				if (!request.model) {
+					throw createTranslateError(
+						TranslateErrorType.VALIDATION_ERROR,
+						`Model not configured for ${service.name}`,
+					);
+				}
+				try {
+					const schema = isStructuredOutput(step.output)
+						? (step.output.schema as JSONSchema)
+						: undefined;
+					const response = await client.chat(request, schema);
+					outputs.push(response.output);
+				} catch (error) {
+					throw convertFromLLMError(error);
+				}
+			}
+			const finalStep = prompt.steps.at(-1);
+			if (!finalStep) {
+				throw createTranslateError(
+					TranslateErrorType.VALIDATION_ERROR,
+					"No steps available in the prompt. This should not happen.",
+				);
+			}
+			const messages = finalStep.messages.map((message) => ({
+				role: message.role,
+				content: tokensToString(promptCtx, message.tokens),
+			}));
+			const request: ChatRequest = {
+				model: service.model ?? "",
+				messages,
+				temperature: service.temperature,
+				maxTokens: service.maxOutputTokens,
+				stream: true,
+			};
+			if (!request.model) {
+				throw createTranslateError(
+					TranslateErrorType.VALIDATION_ERROR,
+					`Model not configured for ${service.name}`,
+				);
+			}
+
+			const { promise: completion, resolve: resolveCompletion } =
+				Promise.withResolvers<number>();
+			const source = client.chatStream(request);
+			return {
+				iterator: (async function* () {
+					try {
+						while (true) {
+							throwIfAborted(signal);
+							const { done, value } = await source.next();
+							if (done) {
+								resolveCompletion(value.usage?.completionTokens ?? 0);
+								return;
+							}
+							yield value.content;
+						}
+					} finally {
+						// @ts-expect-error This is fine, since no one is using the value.
+						await source.return();
+						resolveCompletion(0);
+					}
+				})(),
+				completion,
+			};
+		};
+	};
+
+	const executeUnary = async (
+		ctx: TranslateContext,
+		options: TranslateOptions,
+		text: string | string[] | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: result can be any type
+	): Promise<UnaryResult<any>> => {
+		const modelId = options.modelId;
+		const promptId = options.promptId;
+		if (!promptId) {
+			throw createTranslateError(
+				TranslateErrorType.INVALID_PROMPT,
+				"Prompt ID is required",
+			);
+		}
+		const service = resolveService(modelId);
+		const originalText = text ?? "";
+		const payload = originalText;
+		const compiled = service.type === "llm" ? getPrompt(promptId) : undefined;
+		const normalizedPayload =
+			service.type === "llm" && compiled
+				? normalizePromptInput(compiled, payload)
+				: Array.isArray(payload)
+					? payload
+					: payload;
+		const expectsArray = Array.isArray(payload);
+		const cacheKey = await computeCacheKey(promptId, modelId, text, ctx);
+		if (!options.cleanCache) {
+			const cached = await resultCache.get(cacheKey);
+			if (cached !== undefined) {
+				return {
+					value: cached,
+					completionTokens: 0,
+				};
+			}
+		} else {
+			await resultCache.del(cacheKey);
+		}
+
+		if (service.type === "traditional") {
+			const texts = toTextArray(
+				Array.isArray(normalizedPayload)
+					? normalizedPayload
+					: [normalizedPayload],
+			);
+			if (texts.length === 0) {
+				return { value: expectsArray ? [] : "", completionTokens: 0 };
+			}
+			const { result, tokens } = await runTraditional(
+				service,
+				texts,
+				options.srcLang,
+				options.dstLang,
+			);
+			await resultCache.set(cacheKey, result);
+			return { value: result, completionTokens: tokens };
+		}
+
+		const compiledPrompt = compiled ?? getPrompt(promptId);
+		const { result, tokens } = await runLLMSteps(
+			modelId,
+			service,
+			compiledPrompt,
+			normalizedPayload,
+			ctx,
+			options.srcLang,
+			options.dstLang,
+		);
+		await resultCache.set(cacheKey, result);
+		return { value: result, completionTokens: tokens };
+	};
+
 	return {
-		unary: async (ctx, options, text) => {
-			throw "Not implemented";
+		async unary(
+			ctx: TranslateContext,
+			options: TranslateOptions,
+			text?: string | string[],
+		) {
+			const payload = text ?? "";
+			const service = resolveService(options.modelId);
+			const prompt =
+				service.type === "llm" ? getPrompt(options.promptId) : undefined;
+			const normalized = prompt
+				? normalizePromptInput(prompt, payload)
+				: (payload ?? "");
+			const estimated = estimateTokensForService(service, normalized);
+			const queue = queueHub.queue(options.modelId);
+			return queue.enqueueUnary(
+				() => executeUnary(ctx, options, payload),
+				estimated,
+			);
 		},
-		stream: async function* (ctx, options, text) {
-			yield "";
-			throw "Not implemented";
+		stream(
+			ctx: TranslateContext,
+			options: TranslateOptions,
+			text?: string | string[],
+			_meta?: unknown,
+			signal?: AbortSignal,
+		) {
+			const modelId = options.modelId;
+			const promptId = options.promptId;
+			const service = resolveService(modelId);
+			const payload = text ?? "";
+			const compiledPrompt =
+				service.type === "llm" ? getPrompt(promptId) : undefined;
+			const normalized =
+				service.type === "llm" && compiledPrompt
+					? normalizePromptInput(compiledPrompt, payload)
+					: payload;
+
+			return (async function* () {
+				const cacheKey = await computeCacheKey(modelId, promptId, text, ctx);
+				if (options.cleanCache) {
+					await resultCache.del(cacheKey);
+				} else {
+					const cached = await resultCache.get(cacheKey);
+					if (cached) {
+						yield toStreamChunk(cached);
+						return;
+					}
+				}
+				const queue = queueHub.queue(modelId);
+				const estimated = estimateTokensForService(service, normalized);
+				let traditionalResult: string[] | undefined;
+				const streamRunner =
+					service.type === "llm"
+						? runLLMStream(
+								modelId,
+								service,
+								compiledPrompt ?? getPrompt(promptId),
+								normalized,
+								ctx,
+								options.srcLang,
+								options.dstLang,
+								signal,
+							)
+						: runTraditionalStream(
+								service,
+								normalized,
+								options.srcLang,
+								options.dstLang,
+								(result) => {
+									traditionalResult = result;
+								},
+							);
+				const iterator = await queue.enqueueStream(streamRunner, estimated);
+				let aggregate = "";
+				try {
+					for await (const chunk of iterator) {
+						aggregate += chunk;
+						yield chunk;
+					}
+					if (service.type === "llm") {
+						await resultCache.set(cacheKey, aggregate);
+					} else if (traditionalResult) {
+						await resultCache.set(cacheKey, traditionalResult);
+					}
+				} finally {
+					if (signal?.aborted) {
+						// @ts-expect-error This is fine, since no one is using the value.
+						await iterator.return();
+					}
+				}
+			})();
 		},
-		clearCache: async () => {
-			throw "Not implemented";
+		async clearCache() {
+			await resultCache.clear();
+		},
+		queueStatus(modelId: string) {
+			resolveService(modelId);
+			return queueHub.subscribe(modelId);
 		},
 	};
 };

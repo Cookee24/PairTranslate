@@ -1,5 +1,4 @@
 import { PopupProvider, PopupRenderer } from "./components/Popup";
-import Task from "./components/Task";
 import TipRenderer from "./components/TipRenderer";
 import TranslatorHost from "./components/TranslatorHost";
 
@@ -14,7 +13,6 @@ const Content = () => {
 			<TranslatorHost />
 			<PopupRenderer />
 			<TipRenderer />
-			<Task />
 		</div>
 	);
 };
@@ -23,11 +21,9 @@ export default () => {
 	return (
 		<SettingsProvider>
 			<PopupProvider>
-				<TaskListProvider>
-					<WebsiteRuleProvider>
-						<Content />
-					</WebsiteRuleProvider>
-				</TaskListProvider>
+				<WebsiteRuleProvider>
+					<Content />
+				</WebsiteRuleProvider>
 			</PopupProvider>
 		</SettingsProvider>
 	);

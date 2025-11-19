@@ -25,9 +25,19 @@ type LegacyServices = {
 	traditionalServices?: Record<string, LegacyTraditionalService>;
 };
 
+type LegacyTranslateSettings = {
+	sourceLang: string;
+	targetLang: string;
+	filterInteractive: boolean;
+	concurrentRequests: number;
+	maxBatchSize: number;
+	cacheSize: number;
+};
+
 type LegacySettingsV0 = Omit<SettingsSchema, "services" | "prompts" | "__v"> & {
 	services?: LegacyServices;
 	prompts?: SettingsSchema["prompts"];
+	translate?: LegacyTranslateSettings;
 	__v?: number;
 };
 
@@ -59,10 +69,22 @@ export const migrateSettings = (raw: unknown): SettingsSchema => {
 
 function migrateV0ToV1(oldSettings: LegacySettingsV0): SettingsSchema {
 	const services = convertLegacyServices(oldSettings.services);
+	const translate = {
+		...oldSettings.translate,
+		concurrentRequests: undefined,
+		maxBatchSize: undefined,
+		cacheSize: undefined,
+	};
 	return {
 		basic: oldSettings.basic,
-		translate: oldSettings.translate,
+		translate: translate,
 		websiteRules: oldSettings.websiteRules ?? [],
+		queue: {
+			requestConcurrency: oldSettings.translate?.concurrentRequests,
+			tokensPerMinute: 80000,
+			maxBatchSize: oldSettings.translate?.maxBatchSize,
+			cacheSize: oldSettings.translate?.cacheSize,
+		},
 		services,
 		prompts: oldSettings.prompts ?? generatePromptSettings(),
 		__v: 1,

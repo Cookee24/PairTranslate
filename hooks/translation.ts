@@ -25,6 +25,11 @@ const noModelError = () =>
 		TranslateErrorType.MODEL_NOT_FOUND,
 		"In-text model not configured",
 	);
+const batchMismatchError = (exp: number, got: number) =>
+	createTranslateError(
+		TranslateErrorType.VALIDATION_ERROR,
+		`Expected ${exp} translations, but got ${got}`,
+	);
 
 // Helper to get translation context
 const useTranslationContext = (modelIdOverride?: () => string | undefined) => {
@@ -96,6 +101,14 @@ export function createBatchTranslation(
 				texts,
 			);
 			setResultTexts(resp);
+			resp.length < texts.length &&
+				batch(() => {
+					setError(
+						{ from: resp.length, to: texts.length - 1 },
+						batchMismatchError(resp.length, texts.length),
+					);
+					setTextResult({ from: resp.length, to: texts.length - 1 }, undefined);
+				});
 		} catch (e) {
 			setAllError(convertGenericError(e), texts.length);
 		}
@@ -199,13 +212,13 @@ type SingleStreamReturn<T> = readonly [
 	retry: () => void,
 ];
 
-export function createTranslation<T>(
+export function createTranslation<T = string>(
 	text: () => string,
 	options?: {
 		stream: true;
 		promptId?: string;
 		modelId?: () => string | undefined;
-		ctx?: () => Record<string, unknown>;
+		ctx?: () => TranslateContext;
 	},
 ): SingleStreamReturn<T>;
 export function createTranslation<T>(
@@ -214,16 +227,16 @@ export function createTranslation<T>(
 		stream?: false;
 		modelId?: () => string | undefined;
 		promptId?: string;
-		ctx?: () => Record<string, unknown>;
+		ctx?: () => TranslateContext;
 	},
 ): SingleReturn<T>;
-export function createTranslation<T = string>(
+export function createTranslation<T>(
 	text: () => string,
 	options: {
 		stream?: boolean;
 		promptId?: string;
 		modelId?: () => string | undefined;
-		ctx?: () => Record<string, unknown>;
+		ctx?: () => TranslateContext;
 	} = {
 		stream: false,
 	},
@@ -250,7 +263,7 @@ export function createTranslation<T = string>(
 
 	const setErrorVal = (e: TranslateError) =>
 		batch(() => {
-			setError(() => e);
+			setError(e);
 			setResult(undefined);
 		});
 

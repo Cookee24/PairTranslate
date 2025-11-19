@@ -18,3 +18,12 @@ export interface TranslateContext extends Record<string, unknown> {
 		after?: string;
 	};
 }
+
+export interface TranslateQueueStatus {
+	modelId: string;
+	queued: number;
+	running: number;
+	tokensAvailable: number;
+	tokensPerMinute: number;
+	requestConcurrency: number;
+}

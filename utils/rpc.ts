@@ -1,5 +1,8 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: any type can be returned */
+
+import type { DictionaryResponse } from "./dictionary";
 import type { RpcService } from "./rpc/factory";
+import type { TranslateContext, TranslateQueueStatus } from "./types";
 
 export interface CoreService extends RpcService {
 	ping(): Promise<string>;
@@ -7,15 +10,16 @@ export interface CoreService extends RpcService {
 
 export interface TranslateService extends RpcService {
 	unary(
-		ctx: Record<string, any>,
+		ctx: TranslateContext,
 		options: TranslateOptions,
 		text?: string | string[],
 	): Promise<any>;
 	stream(
-		ctx: Record<string, any>,
+		ctx: TranslateContext,
 		options: TranslateOptions,
 		text?: string | string[],
 	): AsyncGenerator<any, void, unknown>;
+	queueStatus(modelId: string): AsyncGenerator<TranslateQueueStatus>;
 	clearCache(): Promise<void>;
 }
 
@@ -36,11 +40,16 @@ export interface MatchService extends RpcService {
 	matchWebsiteRule(domain: string): Promise<number | null>;
 }
 
+export interface DictionaryService extends RpcService {
+	lookup(word: string): Promise<DictionaryResponse | null>;
+}
+
 export interface AllServices
 	extends CoreService,
 		TranslateService,
 		StyleService,
-		MatchService {}
+		MatchService,
+		DictionaryService {}
 
 export * from "./rpc/core";
 export * from "./rpc/factory";

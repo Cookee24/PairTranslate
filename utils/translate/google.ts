@@ -10,7 +10,8 @@ export const googleTranslate = async (
 	params: TranslationParams,
 ): Promise<TranslationResult> => {
 	const apiUrl =
-		config.apiUrl || "https://translation.googleapis.com/language/translate/v2";
+		config.baseUrl ||
+		"https://translation.googleapis.com/language/translate/v2";
 
 	try {
 		const response = await fetch(`${apiUrl}?key=${config.apiKey}`, {

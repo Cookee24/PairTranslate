@@ -38,16 +38,13 @@ export default (props: Props) => {
 
 		const selection = props.event.selection;
 		const textContext = extractContextFromSelection(selection);
-		if (!textContext || !textContext.content) return;
-		const pageContext = getPageContext();
+		if (!textContext || !textContext.text) return;
 
 		addPopup({
 			...pos,
 			pinned: settings.basic.autoPin,
 			content: () => (
-				<FloatTranslation
-					operation={{ type: action, textContext, pageContext }}
-				/>
+				<FloatTranslation mode={action} textContext={textContext} />
 			),
 		});
 	};

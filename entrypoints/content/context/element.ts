@@ -19,8 +19,10 @@ export const extractTextContext = (element: HTMLElement): TextContext => {
 	}
 
 	return {
-		before,
-		after,
-		content: extractMarkdownContent(element),
+		text: extractMarkdownContent(element),
+		surr: {
+			before: before || undefined,
+			after: after || undefined,
+		},
 	};
 };
