@@ -96,7 +96,7 @@ export const Alert: Component<AlertProps> = (props) => {
 			}, local.ref)}
 		>
 			<Show when={variantIcon()}>
-				<div class="flex-shrink-0">{variantIcon()}</div>
+				<div class="shrink-0">{variantIcon()}</div>
 			</Show>
 			<div class="flex-1">
 				<Show when={local.title}>

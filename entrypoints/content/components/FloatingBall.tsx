@@ -5,6 +5,7 @@ import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { browser } from "#imports";
 import { Button } from "~/components/Button";
 import { animatedHover } from "~/hooks/animation";
+import { useProgressIndicator } from "~/hooks/progress-indicator";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
 
@@ -23,6 +24,9 @@ export default (props: Props) => {
 	const isLeft = createMemo(
 		() => settings.basic.floatingBallPosition.side === "left",
 	);
+
+	const { counter } = useProgressIndicator();
+	const progressing = createMemo(() => counter() > 0);
 
 	const exitedState = () => (isLeft() ? "-50%" : "50%");
 	const enter = (element: Element) =>
@@ -159,10 +163,9 @@ export default (props: Props) => {
 				size="sm"
 			>
 				<Show when={props.translateEnabled}>
-					{/* TODO: replace with progress indicator */}
-					{(() => 1)() === 1 ? (
-						<Check
-							class="p-1 bg-success text-success-content rounded-full"
+					{progressing() ? (
+						<Loader
+							class="p-1 bg-accent text-accent-content rounded-full animate-spin"
 							style={{
 								position: "absolute",
 								[isLeft() ? "right" : "left"]: "0",
@@ -171,8 +174,8 @@ export default (props: Props) => {
 							size={12}
 						/>
 					) : (
-						<Loader
-							class="p-1 bg-accent text-accent-content rounded-full animate-spin"
+						<Check
+							class="p-1 bg-success text-success-content rounded-full"
 							style={{
 								position: "absolute",
 								[isLeft() ? "right" : "left"]: "0",

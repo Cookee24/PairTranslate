@@ -93,7 +93,7 @@ export const SettingsRecoveryBanner: Component<SettingsRecoveryBannerProps> = (
 						{t("migrationError.description")}
 					</p>
 					<Show when={errorInfo()?.message}>
-						<p class="text-xs text-error-content/70 break-words">
+						<p class="text-xs text-error-content/70 wrap-break-word">
 							{t("migrationError.detailsLabel")}: {errorInfo()?.message}
 						</p>
 					</Show>

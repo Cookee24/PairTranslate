@@ -12,7 +12,7 @@ export default function ProgressIndicator() {
 	const progress = useProgressIndicator();
 	const [ref, setRef] = createSignal<HTMLDivElement>();
 
-	const queueStatus = createMemo(() => progress.status());
+	const queueStatus = progress.status;
 	const activeService = createMemo(() => {
 		const status = queueStatus();
 		const modelId = status?.modelId ?? progress.modelId();
@@ -48,12 +48,10 @@ export default function ProgressIndicator() {
 		return status.queued.toString();
 	});
 
-	const visible = createMemo(
-		() =>
-			settings.basic.progressIndicationEnabled &&
-			progress.counter() > 0 &&
-			Boolean(modelLabel()),
-	);
+	const visible = () =>
+		settings.basic.progressIndicationEnabled &&
+		progress.counter() > 0 &&
+		Boolean(modelLabel());
 	const shouldRender = createAnimatedAppearance(ref, visible);
 
 	return (
