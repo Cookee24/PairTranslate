@@ -32,7 +32,9 @@ export const deepLTranslate = async (
 
 		if (!response.ok) {
 			const errorData = await response.text();
-			let errorMessage = `DeepL API error: ${response.statusText}`;
+			let errorMessage = t("errors.additional.deeplApiError", [
+				response.statusText,
+			]);
 
 			try {
 				const parsedError = JSON.parse(errorData);
@@ -71,7 +73,7 @@ export const deepLTranslate = async (
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
 			const networkError: TranslationError = {
 				type: "NETWORK_ERROR",
-				message: "Network error: Failed to connect to DeepL API",
+				message: t("errors.additional.deeplNetworkError"),
 				service: "deepl",
 			};
 			throw networkError;

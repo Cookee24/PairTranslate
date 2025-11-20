@@ -15,6 +15,9 @@ advanced = "고급 설정"
 about = "정보"
 website = "웹사이트"
 
+[popup.navigation]
+openOptions = "추가 설정"
+
 # Common UI Elements
 
 [common]
@@ -49,6 +52,17 @@ featureInDevelopment = "기능 개발 중"
 globalDefault = "기본값"
 yes = "예"
 no = "아니요"
+
+[popup.domainTimer]
+keepUntil = "번역 유지 시간"
+selectPlaceholder = "시간 선택"
+remainingSeconds = "$1초 후 종료"
+remainingMinutes = "$1분 후 종료"
+remainingHours = "$1시간 후 종료"
+untilClose = "브라우저를 닫을 때까지"
+closeBrowser = "브라우저 닫기"
+afterMinutes = "$1분 후"
+afterHours = "$1시간 후"
 
 [migrationError]
 title = "설정을 초기화해야 합니다"
@@ -331,6 +345,12 @@ mean = "의미"
 fetchModels = "모델 가져오기"
 copyAsMarkdown = "Markdown으로 복사"
 
+[prompts.defaultNames]
+translate = "번역"
+batchTranslate = "일괄 번역"
+inputTranslate = "입력창 번역"
+explain = "설명"
+
 # Error Messages
 
 [errors]
@@ -471,11 +491,19 @@ googleServerError = "Google 서버 오류"
 microsoftFetchFailed = "Edge에서 API 키 가져오기에 실패했습니다"
 microsoftInvalidResponse = "Microsoft Translator API에서 잘못된 응답 형식입니다"
 microsoftNetworkError = "네트워크 오류: Microsoft Translator API 연결에 실패했습니다"
+googleApiError = "Google Translate API 오류: $1"
+microsoftApiError = "Microsoft Translator API 오류: $1"
+deeplApiError = "DeepL API 오류: $1"
 googleTranslateInvalidResponse = "Google Translate API에서 잘못된 응답 형식입니다"
 googleTranslateNetworkError = "네트워크 오류: Google Translate API 연결에 실패했습니다"
 deeplInvalidResponse = "DeepL API에서 잘못된 응답 형식입니다"
 deeplNetworkError = "네트워크 오류: DeepL API 연결에 실패했습니다"
 taskTerminated = "작업이 종료되었습니다"
+browserTranslatorUnavailable = "이 브라우저에서는 Translator API를 사용할 수 없습니다"
+browserLanguageDetectorUnavailable = "이 브라우저에서는 Language Detector API를 사용할 수 없습니다"
+browserLanguageDetectionFailed = "언어 감지에 실패했습니다"
+browserApiError = "브라우저 번역 API 오류"
+unknownError = "알 수 없는 오류"
 
 # Website Rules
 

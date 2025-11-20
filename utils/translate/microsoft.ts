@@ -42,7 +42,7 @@ export const microsoftTranslate = async (
 			try {
 				const result = await fetch("https://edge.microsoft.com/translate/auth");
 				if (!result.ok) {
-					throw new Error("Failed to fetch API key from Edge");
+					throw new Error(t("errors.additional.microsoftFetchFailed"));
 				}
 				apiKey = await result.text();
 				cachedApiKey = apiKey;
@@ -70,7 +70,9 @@ export const microsoftTranslate = async (
 
 		if (!response.ok) {
 			const errorData = await response.text();
-			let errorMessage = `Microsoft Translator API error: ${response.statusText}`;
+			let errorMessage = t("errors.additional.microsoftApiError", [
+				response.statusText,
+			]);
 
 			try {
 				const parsedError = JSON.parse(errorData);
@@ -99,7 +101,7 @@ export const microsoftTranslate = async (
 		const data = await response.json();
 
 		if (!Array.isArray(data)) {
-			throw new Error("Invalid response format from Microsoft Translator API");
+			throw new Error(t("errors.additional.microsoftInvalidResponse"));
 		}
 
 		const translatedText = data.map(
@@ -111,7 +113,7 @@ export const microsoftTranslate = async (
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
 			const networkError: TranslationError = {
 				type: "NETWORK_ERROR",
-				message: "Network error: Failed to connect to Microsoft Translator API",
+				message: t("errors.additional.microsoftNetworkError"),
 				service: "microsoft",
 			};
 			throw networkError;

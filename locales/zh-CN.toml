@@ -15,6 +15,9 @@ advanced = "高级设置"
 about = "关于"
 website = "网站"
 
+[popup.navigation]
+openOptions = "更多设置"
+
 # Common UI Elements
 
 [common]
@@ -49,6 +52,17 @@ featureInDevelopment = "功能开发中"
 globalDefault = "全局默认"
 yes = "是"
 no = "否"
+
+[popup.domainTimer]
+keepUntil = "保持翻译，直到"
+selectPlaceholder = "选择时间"
+remainingSeconds = "$1 秒后结束"
+remainingMinutes = "$1 分钟后结束"
+remainingHours = "$1 小时后结束"
+untilClose = "关闭浏览器时结束"
+closeBrowser = "关闭浏览器"
+afterMinutes = "$1 分钟后"
+afterHours = "$1 小时后"
 
 [migrationError]
 title = "需要重置设置"
@@ -331,6 +345,12 @@ mean = "含义"
 fetchModels = "获取模型"
 copyAsMarkdown = "复制为 Markdown"
 
+[prompts.defaultNames]
+translate = "翻译"
+batchTranslate = "批量翻译"
+inputTranslate = "输入框翻译"
+explain = "解释"
+
 # Error Messages
 
 [errors]
@@ -471,11 +491,19 @@ googleServerError = "Google 服务器错误"
 microsoftFetchFailed = "从 Edge 获取 API 密钥失败"
 microsoftInvalidResponse = "Microsoft Translator API 响应格式无效"
 microsoftNetworkError = "网络错误：无法连接到 Microsoft Translator API"
+googleApiError = "Google Translate API 错误：$1"
+microsoftApiError = "Microsoft Translator API 错误：$1"
+deeplApiError = "DeepL API 错误：$1"
 googleTranslateInvalidResponse = "Google Translate API 响应格式无效"
 googleTranslateNetworkError = "网络错误：无法连接到 Google Translate API"
 deeplInvalidResponse = "DeepL API 响应格式无效"
 deeplNetworkError = "网络错误：无法连接到 DeepL API"
 taskTerminated = "任务已终止"
+browserTranslatorUnavailable = "此浏览器不支持 Translator API"
+browserLanguageDetectorUnavailable = "此浏览器不支持 Language Detector API"
+browserLanguageDetectionFailed = "语言检测失败"
+browserApiError = "浏览器翻译 API 错误"
+unknownError = "未知错误"
 
 # Website Rules
 

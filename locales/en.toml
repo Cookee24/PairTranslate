@@ -15,6 +15,9 @@ advanced = "Advanced Settings"
 about = "About"
 website = "Website"
 
+[popup.navigation]
+openOptions = "More settings"
+
 # Common UI Elements
 
 [common]
@@ -49,6 +52,17 @@ featureInDevelopment = "Feature in development"
 globalDefault = "Global Default"
 yes = "Yes"
 no = "No"
+
+[popup.domainTimer]
+keepUntil = "Keep translation enabled until"
+selectPlaceholder = "Select duration"
+remainingSeconds = "Ends in $1 sec"
+remainingMinutes = "Ends in $1 min"
+remainingHours = "Ends in $1 hr"
+untilClose = "Until the browser closes"
+closeBrowser = "Close the browser"
+afterMinutes = "In $1 min"
+afterHours = "In $1 hr"
 
 [migrationError]
 title = "Settings need to be reset"
@@ -331,6 +345,12 @@ mean = "Meaning"
 fetchModels = "Fetch Models"
 copyAsMarkdown = "Copy as Markdown"
 
+[prompts.defaultNames]
+translate = "Translate"
+batchTranslate = "Batch Translate"
+inputTranslate = "Input Translate"
+explain = "Explain"
+
 # Error Messages
 
 [errors]
@@ -471,11 +491,19 @@ googleServerError = "Google server error"
 microsoftFetchFailed = "Failed to fetch API key from Edge"
 microsoftInvalidResponse = "Invalid response format from Microsoft Translator API"
 microsoftNetworkError = "Network error: Failed to connect to Microsoft Translator API"
+googleApiError = "Google Translate API error: $1"
+microsoftApiError = "Microsoft Translator API error: $1"
+deeplApiError = "DeepL API error: $1"
 googleTranslateInvalidResponse = "Invalid response format from Google Translate API"
 googleTranslateNetworkError = "Network error: Failed to connect to Google Translate API"
 deeplInvalidResponse = "Invalid response format from DeepL API"
 deeplNetworkError = "Network error: Failed to connect to DeepL API"
 taskTerminated = "Task terminated"
+browserTranslatorUnavailable = "Translator API not available in this browser"
+browserLanguageDetectorUnavailable = "Language Detector API not available in this browser"
+browserLanguageDetectionFailed = "Failed to detect language"
+browserApiError = "Browser translation API error"
+unknownError = "Unknown error"
 
 # Website Rules
 

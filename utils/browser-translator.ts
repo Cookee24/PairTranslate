@@ -63,7 +63,7 @@ export async function checkTranslatorSupport(
 		if (typeof globalThis.Translator === "undefined") {
 			return {
 				isSupported: false,
-				error: "Translator API not available in this browser",
+				error: t("errors.additional.browserTranslatorUnavailable"),
 			};
 		}
 
@@ -80,7 +80,10 @@ export async function checkTranslatorSupport(
 	} catch (error) {
 		return {
 			isSupported: false,
-			error: error instanceof Error ? error.message : "Unknown error",
+			error:
+				error instanceof Error
+					? error.message
+					: t("errors.additional.unknownError"),
 		};
 	}
 }
@@ -96,7 +99,7 @@ export async function checkLanguageDetectorSupport(
 		if (typeof globalThis.LanguageDetector === "undefined") {
 			return {
 				isSupported: false,
-				error: "LanguageDetector API not available in this browser",
+				error: t("errors.additional.browserLanguageDetectorUnavailable"),
 			};
 		}
 
@@ -112,7 +115,10 @@ export async function checkLanguageDetectorSupport(
 	} catch (error) {
 		return {
 			isSupported: false,
-			error: error instanceof Error ? error.message : "Unknown error",
+			error:
+				error instanceof Error
+					? error.message
+					: t("errors.additional.unknownError"),
 		};
 	}
 }
@@ -166,7 +172,7 @@ export async function createBrowserTranslator(
 ) {
 	// @ts-expect-error - Translator API is experimental
 	if (typeof globalThis.Translator === "undefined") {
-		throw new Error("Translator API not available");
+		throw new Error(t("errors.additional.browserTranslatorUnavailable"));
 	}
 
 	const createOptions: TranslatorCreateOptions = {
@@ -214,7 +220,7 @@ export async function createBrowserLanguageDetector(
 ) {
 	// @ts-expect-error - LanguageDetector API is experimental
 	if (typeof globalThis.LanguageDetector === "undefined") {
-		throw new Error("LanguageDetector API not available");
+		throw new Error(t("errors.additional.browserLanguageDetectorUnavailable"));
 	}
 
 	const createOptions: LanguageDetectorCreateOptions = {};

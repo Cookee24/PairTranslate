@@ -24,13 +24,13 @@ const Content = (props: { children?: JSX.Element }) => {
 					<Match when={location.pathname.includes("overall")}>
 						<Button variant="ghost" on:click={() => navigate("website")}>
 							<Earth size={16} />
-							网站规则
+							{t("nav.websiteRules")}
 						</Button>
 					</Match>
 					<Match when={location.pathname.includes("website")}>
 						<Button variant="ghost" on:click={() => navigate("overall")}>
 							<Settings2 size={16} />
-							常规设置
+							{t("nav.basic")}
 						</Button>
 					</Match>
 				</Switch>
@@ -39,7 +39,7 @@ const Content = (props: { children?: JSX.Element }) => {
 					on:click={() => browser.runtime.openOptionsPage()}
 				>
 					<ExternalLink size={16} />
-					更多设置
+					{t("popup.navigation.openOptions")}
 				</Button>
 			</div>
 		</div>

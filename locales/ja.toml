@@ -15,6 +15,9 @@ advanced = "詳細設定"
 about = "について"
 website = "ウェブサイト"
 
+[popup.navigation]
+openOptions = "その他の設定"
+
 # Common UI Elements
 
 [common]
@@ -49,6 +52,17 @@ featureInDevelopment = "機能開発中"
 globalDefault = "グローバルデフォルト"
 yes = "はい"
 no = "いいえ"
+
+[popup.domainTimer]
+keepUntil = "翻訳を維持する期限"
+selectPlaceholder = "時間を選択"
+remainingSeconds = "$1 秒後に終了"
+remainingMinutes = "$1 分後に終了"
+remainingHours = "$1 時間後に終了"
+untilClose = "ブラウザを閉じるまで"
+closeBrowser = "ブラウザを閉じる"
+afterMinutes = "$1 分後"
+afterHours = "$1 時間後"
 
 [migrationError]
 title = "設定をリセットする必要があります"
@@ -331,6 +345,12 @@ mean = "意味"
 fetchModels = "モデルを取得"
 copyAsMarkdown = "Markdownとしてコピー"
 
+[prompts.defaultNames]
+translate = "翻訳"
+batchTranslate = "一括翻訳"
+inputTranslate = "入力欄翻訳"
+explain = "説明"
+
 # Error Messages
 
 [errors]
@@ -471,11 +491,19 @@ googleServerError = "Googleサーバーエラーです"
 microsoftFetchFailed = "EdgeからAPIキーの取得に失敗しました"
 microsoftInvalidResponse = "Microsoft Translator APIからの無効な応答形式です"
 microsoftNetworkError = "ネットワークエラー：Microsoft Translator APIへの接続に失敗しました"
+googleApiError = "Google Translate API エラー: $1"
+microsoftApiError = "Microsoft Translator API エラー: $1"
+deeplApiError = "DeepL API エラー: $1"
 googleTranslateInvalidResponse = "Google Translate APIからの無効な応答形式です"
 googleTranslateNetworkError = "ネットワークエラー：Google Translate APIへの接続に失敗しました"
 deeplInvalidResponse = "DeepL APIからの無効な応答形式です"
 deeplNetworkError = "ネットワークエラー：DeepL APIへの接続に失敗しました"
 taskTerminated = "タスクが終了しました"
+browserTranslatorUnavailable = "このブラウザでは Translator API を利用できません"
+browserLanguageDetectorUnavailable = "このブラウザでは Language Detector API を利用できません"
+browserLanguageDetectionFailed = "言語の検出に失敗しました"
+browserApiError = "ブラウザ翻訳 API エラー"
+unknownError = "不明なエラー"
 
 # Website Rules
 

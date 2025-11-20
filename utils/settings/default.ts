@@ -82,7 +82,7 @@ export function generateQueueControlSettings(): s.QueueControlSettings {
 export function generatePromptSettings(): s.PromptsSettings {
 	return {
 		[PROMPT_ID.translate]: {
-			name: "翻译",
+			name: t("prompts.defaultNames.translate"),
 			systemPrompt: UNARY.system,
 			input: "string",
 			output: "string",
@@ -94,7 +94,7 @@ export function generatePromptSettings(): s.PromptsSettings {
 			],
 		},
 		[PROMPT_ID.batchTranslate]: {
-			name: "批量翻译",
+			name: t("prompts.defaultNames.batchTranslate"),
 			systemPrompt: BATCH.system,
 			input: "stringArray",
 			output: "structured",
@@ -109,7 +109,7 @@ export function generatePromptSettings(): s.PromptsSettings {
 			],
 		},
 		[PROMPT_ID.inputTranslate]: {
-			name: "输入框翻译",
+			name: t("prompts.defaultNames.inputTranslate"),
 			systemPrompt: INPUT.system,
 			input: "string",
 			output: "string",
@@ -121,7 +121,7 @@ export function generatePromptSettings(): s.PromptsSettings {
 			],
 		},
 		[PROMPT_ID.explain]: {
-			name: "解释",
+			name: t("prompts.defaultNames.explain"),
 			systemPrompt: EXPLAIN.system,
 			input: "string",
 			output: "structured",
