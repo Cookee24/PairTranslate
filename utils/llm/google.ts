@@ -119,6 +119,7 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 
 				return {
 					output,
+					rawOutput: content,
 					...(response.usageMetadata && {
 						usage: {
 							promptTokens: response.usageMetadata.promptTokenCount || 0,

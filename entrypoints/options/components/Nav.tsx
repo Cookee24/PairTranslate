@@ -20,7 +20,7 @@ const Root = (props: RootProps) => {
 		>
 			<Status />
 			<Menu.Root
-				class="max-w-96 md:max-w-128 gap-2 bg-secondary/60 backdrop-blur-md text-secondary-content border-base-300 rounded-b-lg flex-nowrap overflow-x-auto"
+				class="max-w-96 md:max-w-lg gap-2 bg-secondary/60 backdrop-blur-md text-secondary-content border-base-300 rounded-b-lg flex-nowrap overflow-x-auto"
 				orientation="horizontal"
 			>
 				{local.children}

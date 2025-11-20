@@ -40,6 +40,7 @@ positionLeft = "왼쪽"
 positionRight = "오른쪽"
 floatingBallIcon = "플로팅 볼 아이콘"
 translationTasks = "번역 작업"
+queue = "대기열"
 completed = "완료"
 running = "실행 중"
 resize = "크기 조정"
@@ -48,6 +49,13 @@ featureInDevelopment = "기능 개발 중"
 globalDefault = "기본값"
 yes = "예"
 no = "아니요"
+
+[migrationError]
+title = "설정을 초기화해야 합니다"
+description = "업데이트 이후 이전 설정을 불러오지 못했습니다. 계속 사용하려면 기본값으로 초기화해주세요."
+detailsLabel = "세부 정보"
+resetButton = "지금 설정 초기화"
+resetFailed = "설정 초기화에 실패했습니다. 다시 시도해주세요."
 
 # Settings Pages
 

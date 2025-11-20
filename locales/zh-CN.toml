@@ -40,6 +40,7 @@ positionLeft = "左侧"
 positionRight = "右侧"
 floatingBallIcon = "悬浮球图标"
 translationTasks = "翻译任务"
+queue = "队列"
 completed = "已完成"
 running = "运行中"
 resize = "调整大小"
@@ -48,6 +49,13 @@ featureInDevelopment = "功能开发中"
 globalDefault = "全局默认"
 yes = "是"
 no = "否"
+
+[migrationError]
+title = "需要重置设置"
+description = "更新后无法加载您的旧设置，请重置为默认值以继续使用。"
+detailsLabel = "详细信息"
+resetButton = "立即重置设置"
+resetFailed = "重置失败，请重试。"
 
 # Settings Pages
 

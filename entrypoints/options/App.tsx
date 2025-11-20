@@ -87,6 +87,7 @@ const Content = () => {
 					"margin-top": `${top()}px`,
 				}}
 			>
+				<SettingsRecoveryBanner />
 				<Basic navId="basic" />
 				<Translation navId="translate" />
 				<LLM navId="llm" />

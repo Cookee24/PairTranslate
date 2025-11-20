@@ -40,6 +40,7 @@ export interface EndResponse {
  */
 export interface ChatResponse<O = string> extends EndResponse {
 	output: O;
+	rawOutput?: string;
 }
 
 /**

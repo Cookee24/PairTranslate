@@ -40,6 +40,7 @@ positionLeft = "左"
 positionRight = "右"
 floatingBallIcon = "フローティングボールアイコン"
 translationTasks = "翻訳タスク"
+queue = "待機列"
 completed = "完了"
 running = "実行中"
 resize = "サイズ変更"
@@ -48,6 +49,13 @@ featureInDevelopment = "機能開発中"
 globalDefault = "グローバルデフォルト"
 yes = "はい"
 no = "いいえ"
+
+[migrationError]
+title = "設定をリセットする必要があります"
+description = "アップデート後に以前の設定を読み込めませんでした。既定値にリセットして利用を続けてください。"
+detailsLabel = "詳細"
+resetButton = "今すぐ設定をリセット"
+resetFailed = "設定のリセットに失敗しました。もう一度お試しください。"
 
 # Settings Pages
 

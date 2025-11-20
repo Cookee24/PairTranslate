@@ -19,7 +19,6 @@ import type {
 	LLMProvider,
 } from "~/utils/llm";
 import { createLLMClient } from "~/utils/llm";
-import type { Message } from "~/utils/prompt/parser";
 import {
 	buildContextWithTranslateParams,
 	templateToTokens,
@@ -34,7 +33,7 @@ import {
 } from "~/utils/translate";
 import type { TranslateContext } from "~/utils/types";
 
-const SINGLE_TEXT_SERVICES = new Set(["deeplx"]);
+const SINGLE_TEXT_SERVICES = new Set(["deeplx", "browser"]);
 
 type TranslatePayload = string | string[];
 
@@ -63,22 +62,44 @@ const estimateTraditionalTokens = (payload: TranslatePayload): number => {
 	return Math.max(1, Math.ceil(payload.length / 2));
 };
 
-type MessageTemplate = {
-	role: Message["role"];
-	tokens: ReturnType<typeof templateToTokens>;
-};
-
 type CompiledStep = {
-	messages: MessageTemplate[];
+	messageTokens: ReturnType<typeof templateToTokens>;
 	output: PromptSettings["steps"][number]["output"];
 };
 
 type CompiledPrompt = {
 	input: PromptSettings["input"];
+	systemTokens: ReturnType<typeof templateToTokens>;
 	steps: CompiledStep[];
 };
 
 type PromptContext = ReturnType<typeof buildContextWithTranslateParams>;
+
+const initializeConversation = (
+	prompt: CompiledPrompt,
+	ctx: PromptContext,
+): ChatRequest["messages"] => {
+	const systemContent = tokensToString(ctx, prompt.systemTokens);
+	return systemContent ? [{ role: "system", content: systemContent }] : [];
+};
+
+const snapshotConversation = (
+	messages: ChatRequest["messages"],
+): ChatRequest["messages"] => messages.map((message) => ({ ...message }));
+
+const toStreamChunk = (value: unknown): string => {
+	if (typeof value === "string") {
+		return value;
+	}
+	if (value === undefined || value === null) {
+		return "";
+	}
+	try {
+		return JSON.stringify(value);
+	} catch {
+		return String(value);
+	}
+};
 
 const buildLLMClient = (
 	provider: LLMProvider,
@@ -114,12 +135,10 @@ const isStringArrayOutput = (
 
 const compilePrompt = (prompt: PromptSettings): CompiledPrompt => ({
 	input: prompt.input,
+	systemTokens: templateToTokens(prompt.systemPrompt),
 	steps: prompt.steps.map((step) => ({
 		output: step.output,
-		messages: step.message.map((message) => ({
-			role: message.role,
-			tokens: templateToTokens(message.content ?? ""),
-		})),
+		messageTokens: templateToTokens(step.message),
 	})),
 });
 
@@ -139,15 +158,6 @@ const normalizePromptInput = (
 
 const toTextArray = (text: TranslatePayload): string[] =>
 	Array.isArray(text) ? text : text ? [text] : [];
-
-const buildStepMessages = (
-	step: CompiledStep,
-	ctx: PromptContext,
-): ChatRequest["messages"] =>
-	step.messages.map((message) => ({
-		role: message.role,
-		content: tokensToString(ctx, message.tokens),
-	}));
 
 const normalizeLLMStepOutput = (
 	step: CompiledStep,
@@ -187,20 +197,6 @@ const createChatRequest = (
 	maxTokens: service.maxOutputTokens,
 	...overrides,
 });
-
-const toStreamChunk = (value: unknown): string => {
-	if (typeof value === "string") {
-		return value;
-	}
-	if (value === undefined || value === null) {
-		return "";
-	}
-	try {
-		return JSON.stringify(value);
-	} catch {
-		return String(value);
-	}
-};
 
 const throwIfAborted = (signal?: AbortSignal) => {
 	if (signal?.aborted) {
@@ -389,11 +385,18 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		);
 		const outputs: unknown[] = [];
 		promptCtx.output = outputs;
+		const conversation = initializeConversation(prompt, promptCtx);
 		let totalTokens = 0;
 		for (const step of prompt.steps) {
 			throwIfAborted(signal);
-			const messages = buildStepMessages(step, promptCtx);
-			const request = createChatRequest(service, messages);
+			conversation.push({
+				role: "user",
+				content: tokensToString(promptCtx, step.messageTokens),
+			});
+			const request = createChatRequest(
+				service,
+				snapshotConversation(conversation),
+			);
 			try {
 				const schema = isStructuredOutput(step.output)
 					? (step.output.schema as JSONSchema)
@@ -403,6 +406,10 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					response.usage?.totalTokens ?? response.usage?.promptTokens ?? 0;
 				const output = normalizeLLMStepOutput(step, response.output);
 				outputs.push(output);
+				conversation.push({
+					role: "assistant",
+					content: response.rawOutput ?? toStreamChunk(output),
+				});
 			} catch (error) {
 				throw convertFromLLMError(error);
 			}
@@ -432,16 +439,29 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			);
 			const outputs: unknown[] = [];
 			promptCtx.output = outputs;
-			const preSteps = prompt.steps.slice(0, -1);
-			for (const step of preSteps) {
-				const messages = buildStepMessages(step, promptCtx);
-				const request = createChatRequest(service, messages);
+			const conversation = initializeConversation(prompt, promptCtx);
+			const lastIndex = prompt.steps.length - 1;
+			for (let index = 0; index < lastIndex; index++) {
+				const step = prompt.steps[index];
+				conversation.push({
+					role: "user",
+					content: tokensToString(promptCtx, step.messageTokens),
+				});
+				const request = createChatRequest(
+					service,
+					snapshotConversation(conversation),
+				);
 				try {
 					const schema = isStructuredOutput(step.output)
 						? (step.output.schema as JSONSchema)
 						: undefined;
 					const response = await client.chat(request, schema);
-					outputs.push(response.output);
+					const output = normalizeLLMStepOutput(step, response.output);
+					outputs.push(output);
+					conversation.push({
+						role: "assistant",
+						content: response.rawOutput ?? toStreamChunk(output),
+					});
 				} catch (error) {
 					throw convertFromLLMError(error);
 				}
@@ -453,8 +473,15 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					"No steps available in the prompt. This should not happen.",
 				);
 			}
-			const messages = buildStepMessages(finalStep, promptCtx);
-			const request = createChatRequest(service, messages, { stream: true });
+			conversation.push({
+				role: "user",
+				content: tokensToString(promptCtx, finalStep.messageTokens),
+			});
+			const request = createChatRequest(
+				service,
+				snapshotConversation(conversation),
+				{ stream: true },
+			);
 
 			const { promise: completion, resolve: resolveCompletion } =
 				Promise.withResolvers<number>();

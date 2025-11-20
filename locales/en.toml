@@ -40,6 +40,7 @@ positionLeft = "Left"
 positionRight = "Right"
 floatingBallIcon = "Floating Ball Icon"
 translationTasks = "Translation Tasks"
+queue = "Queue"
 completed = "completed"
 running = "running"
 resize = "Resize"
@@ -48,6 +49,13 @@ featureInDevelopment = "Feature in development"
 globalDefault = "Global Default"
 yes = "Yes"
 no = "No"
+
+[migrationError]
+title = "Settings need to be reset"
+description = "Pair Translate couldn't load your previous settings after an update. Reset everything to defaults to continue."
+detailsLabel = "Details"
+resetButton = "Reset settings now"
+resetFailed = "Failed to reset settings. Please try again."
 
 # Settings Pages
 

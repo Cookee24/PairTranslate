@@ -83,40 +83,24 @@ export function generatePromptSettings(): s.PromptsSettings {
 	return {
 		[PROMPT_ID.translate]: {
 			name: "翻译",
+			systemPrompt: UNARY.system,
 			input: "string",
 			output: "string",
 			steps: [
 				{
-					message: [
-						{
-							role: "system",
-							content: UNARY.system,
-						},
-						{
-							role: "user",
-							content: UNARY.user,
-						},
-					],
+					message: UNARY.user,
 					output: "string",
 				},
 			],
 		},
 		[PROMPT_ID.batchTranslate]: {
 			name: "批量翻译",
+			systemPrompt: BATCH.system,
 			input: "stringArray",
 			output: "structured",
 			steps: [
 				{
-					message: [
-						{
-							role: "system",
-							content: BATCH.system,
-						},
-						{
-							role: "user",
-							content: BATCH.user,
-						},
-					],
+					message: BATCH.user,
 					output: {
 						type: "structured",
 						schema: BATCH_SCHEMA,
@@ -126,40 +110,24 @@ export function generatePromptSettings(): s.PromptsSettings {
 		},
 		[PROMPT_ID.inputTranslate]: {
 			name: "输入框翻译",
+			systemPrompt: INPUT.system,
 			input: "string",
 			output: "string",
 			steps: [
 				{
-					message: [
-						{
-							role: "system",
-							content: INPUT.system,
-						},
-						{
-							role: "user",
-							content: INPUT.user,
-						},
-					],
+					message: INPUT.user,
 					output: "string",
 				},
 			],
 		},
 		[PROMPT_ID.explain]: {
 			name: "解释",
+			systemPrompt: EXPLAIN.system,
 			input: "string",
 			output: "structured",
 			steps: [
 				{
-					message: [
-						{
-							role: "system",
-							content: EXPLAIN.system,
-						},
-						{
-							role: "user",
-							content: EXPLAIN.user,
-						},
-					],
+					message: EXPLAIN.user,
 					output: {
 						type: "structured",
 						schema: EXPLAIN_SCHEMA,

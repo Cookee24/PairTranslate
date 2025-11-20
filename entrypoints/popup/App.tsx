@@ -15,7 +15,10 @@ const Content = (props: { children?: JSX.Element }) => {
 
 	return (
 		<div class="p-4 flex flex-col gap-4 w-full h-full">
-			<div class="flex-1 overflow-y-auto">{props.children}</div>
+			<div class="flex-1 overflow-y-auto flex flex-col gap-4">
+				<SettingsRecoveryBanner />
+				{props.children}
+			</div>
 			<div class="self-end flex gap-2">
 				<Switch>
 					<Match when={location.pathname.includes("overall")}>

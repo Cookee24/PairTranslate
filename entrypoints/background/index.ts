@@ -9,5 +9,9 @@ export default defineBackground(() => {
 	browser.storage.session.setAccessLevel({
 		accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS",
 	});
-	initializeSettings().then(setRpc);
+	initializeSettings()
+		.catch((error) => {
+			console.error("Failed to initialize settings", error);
+		})
+		.then(setRpc);
 });

@@ -1,6 +1,7 @@
 import { RotateCcw, Trash2 } from "lucide-solid";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
+import { clearSettingsMigrationError } from "~/utils/settings/helper";
 
 export default (props: { navId: string }) => {
 	const { setSettings } = useSettings();
@@ -41,10 +42,13 @@ export default (props: { navId: string }) => {
 
 		try {
 			setSettings(generateDefaultSettings());
+			await clearSettingsMigrationError();
 			await setFeedback({
 				type: "success",
 				message: t("settings.advanced.resetSettingsSuccess"),
 			});
+			browser.runtime.reload();
+			return;
 		} catch (error) {
 			console.error("Failed to reset settings: ", error);
 			setFeedback({

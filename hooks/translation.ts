@@ -1,3 +1,5 @@
+import { useProgressIndicator } from "./progress-indicator";
+
 type Pending = {
 	(): undefined;
 	loading: true;
@@ -60,6 +62,7 @@ export function createBatchTranslation(
 	const promptId = options.promptId || PROMPT_ID.batchTranslate;
 	const ctx = options.ctx || (() => ({ page: getPageContext() }));
 	const thinCache = options.thinCache ?? true;
+	const { beginRequest } = useProgressIndicator();
 
 	const [textResult, setTextResult] = createStore<(string | undefined)[]>([]);
 	const [error, setError] = createStore<(TranslateError | undefined)[]>([]);
@@ -89,6 +92,7 @@ export function createBatchTranslation(
 			return;
 		}
 
+		const endTracking = beginRequest(modelId_);
 		setAllLoading(texts.length);
 		try {
 			const resp = await window.rpc.unary(
@@ -99,6 +103,7 @@ export function createBatchTranslation(
 					srcLang: srcLang(),
 					dstLang: dstLang(),
 					cleanCache,
+					thinCache,
 				},
 				texts,
 			);
@@ -113,6 +118,8 @@ export function createBatchTranslation(
 				});
 		} catch (e) {
 			setAllError(convertGenericError(e), texts.length);
+		} finally {
+			endTracking();
 		}
 	};
 
@@ -126,6 +133,7 @@ export function createBatchTranslation(
 			return;
 		}
 
+		const endTracking = beginRequest(modelId_);
 		batch(() => {
 			setError(index, undefined);
 			setTextResult(index, undefined);
@@ -140,19 +148,20 @@ export function createBatchTranslation(
 					srcLang: srcLang(),
 					dstLang: dstLang(),
 					cleanCache: true,
-					thinCache,
 				},
 				text_,
 			);
 			batch(() => {
 				setError(index, undefined);
-				setTextResult(index, resp);
+				setTextResult(index, Array.isArray(resp) ? resp[0] : resp);
 			});
 		} catch (e) {
 			batch(() => {
 				setError(index, convertGenericError(e));
 				setTextResult(index, undefined);
 			});
+		} finally {
+			endTracking();
 		}
 	};
 
@@ -247,6 +256,7 @@ export function createTranslation<T>(
 	const [modelId, srcLang, dstLang] = useTranslationContext(options.modelId);
 	const promptId = options.promptId || PROMPT_ID.translate;
 	const ctx = options.ctx || (() => ({ page: getPageContext() }));
+	const { beginRequest } = useProgressIndicator();
 
 	const [result, setResult] = createSignal<T>();
 	const [error, setError] = createSignal<TranslateError>();
@@ -277,31 +287,36 @@ export function createTranslation<T>(
 			return;
 		}
 
+		const endTracking = beginRequest(modelId_);
 		setLoading();
-		const listener = window.rpc.stream(
-			ctx(),
-			{
-				modelId: modelId_,
-				promptId,
-				srcLang: srcLang(),
-				dstLang: dstLang(),
-				cleanCache,
-			},
-			text_,
-		);
-		onCleanup(listener.return);
+		let listener: AsyncGenerator<string, void, unknown> | undefined;
 
 		try {
+			listener = window.rpc.stream(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang(),
+					dstLang: dstLang(),
+					cleanCache,
+				},
+				text_,
+			);
+			onCleanup(() => listener?.return?.());
 			setLen(0);
 			for await (const chunk of listener) {
 				batch(() => {
 					setError(undefined);
+					// @ts-ignore stream request must return string chunks
 					setResult((prev) => (prev || "") + chunk);
 					setLen((prev: number) => prev + chunk.length);
 				});
 			}
 		} catch (e) {
 			setErrorVal(convertGenericError(e));
+		} finally {
+			endTracking();
 		}
 	};
 
@@ -312,6 +327,7 @@ export function createTranslation<T>(
 			return;
 		}
 
+		const endTracking = beginRequest(modelId_);
 		setLoading();
 		try {
 			const resp = await window.rpc.unary(
@@ -328,6 +344,8 @@ export function createTranslation<T>(
 			setResultVal(resp);
 		} catch (e) {
 			setErrorVal(convertGenericError(e));
+		} finally {
+			endTracking();
 		}
 	};
 

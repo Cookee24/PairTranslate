@@ -93,6 +93,7 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 
 				return {
 					output,
+					rawOutput: content,
 					...(response.usage && {
 						usage: {
 							promptTokens: response.usage.prompt_tokens,

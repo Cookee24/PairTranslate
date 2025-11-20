@@ -79,7 +79,7 @@ export const PopupRenderer = () => {
 				<PopupImpl
 					onDelete={() => {
 						const index_ = index();
-						// setPopups((p) => p.filter((_, i) => i !== index_));
+						setPopups((p) => p.filter((_, i) => i !== index_));
 					}}
 					onBringToFront={() => {
 						setPopups(index(), "zIndex", ++cnt);

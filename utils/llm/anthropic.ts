@@ -110,6 +110,7 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 
 				return {
 					output,
+					rawOutput: content,
 					usage: {
 						promptTokens: response.usage.input_tokens,
 						completionTokens: response.usage.output_tokens,

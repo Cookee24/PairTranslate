@@ -103,42 +103,29 @@ export type WebsiteRuleSettings = z.infer<typeof WebsiteRuleSettings>;
 export const WebsiteRulesSettings = z.array(WebsiteRuleSettings);
 export type WebsiteRulesSettings = z.infer<typeof WebsiteRulesSettings>;
 
+const PromptStep = z.object({
+	message: z.string(),
+	output: z
+		.union([
+			z.literal("string"),
+			z.object({
+				type: z.literal("stringArray"),
+				// Regexp
+				delimiter: z.string().default("\n"),
+			}),
+			z.object({
+				type: z.literal("structured"),
+				schema: z.any(),
+			}),
+		])
+		.default("string"),
+});
 export const PromptSettings = z.object({
 	name: z.string().min(1),
+	systemPrompt: z.string().default(""),
 	input: z.enum(["string", "stringArray"]).default("string"),
 	output: z.enum(["string", "structured"]).default("string"),
-	// Accessor to get specific field from structured output
-	// Default to `output[N]`, where N is the last step index
-	outputAccessor: z.string().optional(),
-	// Optional schemas for structured output
-	steps: z.array(
-		// Define multi steps prompt. Every single step is added into the conversation history.
-		// Outputted content of previous steps can be referenced by {{output[N]}}
-		// where N is the step index starting from 0, T is the tool call index that llm responded with
-		z.object({
-			message: z.array(
-				z.object({
-					role: z.enum(["system", "user", "assistant"]),
-					// Optional text content for the step
-					content: z.string().optional(),
-				}),
-			),
-			output: z
-				.union([
-					z.literal("string"),
-					z.object({
-						type: z.literal("stringArray"),
-						// Regexp
-						delimiter: z.string().default("\n"),
-					}),
-					z.object({
-						type: z.literal("structured"),
-						schema: z.any(),
-					}),
-				])
-				.default("string"),
-		}),
-	),
+	steps: z.array(PromptStep),
 });
 export type PromptSettings = z.infer<typeof PromptSettings>;
 export const PromptsSettings = z.record(z.uuid(), PromptSettings);

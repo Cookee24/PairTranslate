@@ -25,8 +25,7 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 		<TranslationRender
 			text={data()}
 			loading={data.loading}
-			// TODO: improve error handling
-			error={data.error ? String(data.error) : undefined}
+			error={data.error?.message}
 			element={props.element}
 			hideOriginal={hideOriginal()}
 			onRetry={handleRetry}
@@ -156,6 +155,17 @@ const BatchRender = (props: BatchRenderProps) => {
 	const hideOriginal = () =>
 		(websiteRule.translateMode ?? settings.translate.translationMode) ===
 		"replace";
+	
+	createEffect(() => {
+		const texts = geter();
+		for (let i = 0; i < texts.length; i++) {
+			console.log("Translated Text:", {
+				loading: texts[i].loading,
+				error: texts[i].error,
+				text: texts[i](),
+			});
+		}
+	})
 
 	return (
 		<For each={geter()}>
@@ -163,8 +173,7 @@ const BatchRender = (props: BatchRenderProps) => {
 				<TranslationRender
 					text={item()}
 					loading={item.loading}
-					// TODO: improve error handling
-					error={item.error ? String(item.error) : undefined}
+					error={item.error?.message}
 					element={props.elements[index()]}
 					hideOriginal={hideOriginal()}
 					onRetry={() => retry(index())}

@@ -78,11 +78,10 @@ export default (props: Props) => {
 				size="sm"
 				ref={setRef}
 			>
-				<Menu.Item
-					class="tooltip tooltip-right"
-					data-tip={t("actions.copyAsMarkdown")}
-				>
+				<Menu.Item>
 					<Button
+						class="tooltip tooltip-right"
+						data-tip={t("actions.copyAsMarkdown")}
 						variant="ghost"
 						size="xs"
 						disabled={props.loading || !!props.error}
@@ -91,11 +90,10 @@ export default (props: Props) => {
 						<ClipboardCopy size={16} />
 					</Button>
 				</Menu.Item>
-				<Menu.Item
-					class="tooltip tooltip-right"
-					data-tip={props.error ?? t("common.retry")}
-				>
+				<Menu.Item>
 					<Button
+						class="tooltip tooltip-right"
+						data-tip={props.error ?? t("common.retry")}
 						variant={props.error ? "error" : "ghost"}
 						size="xs"
 						disabled={props.loading}
