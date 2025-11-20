@@ -7,6 +7,7 @@ import {
 	on,
 	onCleanup,
 } from "solid-js";
+import { estimateTokens } from "@/utils/token-estimate";
 import { Md } from "~/components/MD/Md";
 import { InTextPortal } from "~/components/MPortal";
 import { useSettings } from "~/hooks/settings";
@@ -49,13 +50,16 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 	);
 };
 
+type ElementTextPair = [HTMLElement, string];
+
 interface BatchProps {
 	elements: Set<HTMLElement>;
 	onDelete?: (element: HTMLElement) => void;
 }
 export const BatchInTextTranslation = (props: BatchProps) => {
 	const { settings } = useSettings();
-	const [renderList, setRenderList] = createSignal([] as HTMLElement[][], {
+	const websiteRule = useWebsiteRule();
+	const [renderList, setRenderList] = createSignal([] as ElementTextPair[][], {
 		equals: false,
 	});
 
@@ -97,25 +101,48 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 			[() => props.elements],
 			([currentElements]) => {
 				throttle(() => {
-					const maxBatchSize = settings.queue.maxBatchSize;
+					const currentModelQueueSettings =
+						settings.services[
+							websiteRule.inTextTranslateModel ||
+								settings.translate.inTextTranslateModel ||
+								""
+						]?.queue;
+					const maxBatchSize =
+						currentModelQueueSettings?.maxBatchSize ||
+						settings.queue.maxBatchSize;
 
 					if (currentElements.size === 0) clear();
 
 					setRenderList((prev) => {
+						const maxTokensPerBatch =
+							currentModelQueueSettings?.maxTokensPerBatch ||
+							settings.queue.maxTokensPerBatch;
+
 						let last = prev.length; // Force a new batch
 						for (const element of currentElements) {
 							const batchId = batchIds.get(element);
+							const current = [
+								element,
+								extractMarkdownContent(element),
+							] as ElementTextPair;
 							if (batchId === undefined) {
 								const lastBatch = prev[last];
 								if (lastBatch !== undefined) {
-									if (lastBatch.length < maxBatchSize) {
-										prev[last] = [...lastBatch, element];
+									const estimatedTokens = estimateTokens([
+										...lastBatch.map(([, text]) => text),
+										current[1],
+									]);
+									if (
+										lastBatch.length < maxBatchSize &&
+										estimatedTokens <= maxTokensPerBatch
+									) {
+										prev[last] = [...lastBatch, current];
 									} else {
-										prev.push([element]);
+										prev.push([current]);
 										last++;
 									}
 								} else {
-									prev.push([element]);
+									prev.push([current]);
 								}
 								batchIds.set(element, last);
 							} else {
@@ -126,7 +153,11 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 						for (const [element, batchId] of batchIds.entries()) {
 							if (!currentElements.has(element)) {
 								const batch = prev[batchId];
-								const index = batch.indexOf(element);
+								if (!batch) {
+									batchIds.delete(element);
+									continue;
+								}
+								const index = batch.findIndex(([el]) => el === element);
 								if (index !== -1) {
 									prev[batchId] = [
 										...batch.slice(0, index),
@@ -157,15 +188,13 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 };
 
 interface BatchRenderProps {
-	elements: HTMLElement[];
+	elements: ElementTextPair[];
 	onDelete?: (element: HTMLElement) => void;
 }
 const BatchRender = (props: BatchRenderProps) => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
-	const texts = createMemo(() =>
-		props.elements.map((el) => extractMarkdownContent(el)),
-	);
+	const texts = createMemo(() => props.elements.map(([, text]) => text));
 	const [getter, retry] = createBatchTranslation(texts);
 
 	const hideOriginal = () =>
@@ -179,10 +208,10 @@ const BatchRender = (props: BatchRenderProps) => {
 					text={item()}
 					loading={item.loading}
 					error={item.error?.message}
-					element={props.elements[index()]}
+					element={props.elements[index()][0]}
 					hideOriginal={hideOriginal()}
 					onRetry={() => retry(index())}
-					onDelete={() => props.onDelete?.(props.elements[index()])}
+					onDelete={() => props.onDelete?.(props.elements[index()][0])}
 				/>
 			)}
 		</For>

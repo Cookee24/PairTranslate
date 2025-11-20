@@ -163,6 +163,8 @@ tokensPerMinute = "1分あたりのトークン数"
 tokensPerMinuteDesc = "LLMモデルが1分間に消費できるトークン数の上限です。"
 maxBatchSize = "最大バッチサイズ"
 maxBatchSizeDesc = "1つのバッチでまとめて処理するテキスト数の上限です。"
+maxTokensPerBatch = "バッチあたりの最大トークン数"
+maxTokensPerBatchDesc = "バッチ内の推定トークン数がこの値を超えると、残りのテキストは次のバッチに回されます。"
 cacheSize = "キャッシュサイズ"
 cacheSizeDesc = "再利用のために保持する翻訳結果の総数です。"
 

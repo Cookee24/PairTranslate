@@ -163,6 +163,8 @@ tokensPerMinute = "每分钟令牌数"
 tokensPerMinuteDesc = "限制 LLM 模型每分钟可消耗的最大令牌数。"
 maxBatchSize = "最大批量大小"
 maxBatchSizeDesc = "单个批处理中允许的最大文本数量，超出部分会排队。"
+maxTokensPerBatch = "单批最大令牌数"
+maxTokensPerBatchDesc = "当单个批次的估算令牌数超过该阈值时，剩余文本会被放入下一批。"
 cacheSize = "缓存大小"
 cacheSizeDesc = "全局缓存的翻译结果数量。"
 

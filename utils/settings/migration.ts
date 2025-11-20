@@ -83,6 +83,7 @@ function migrateV0ToV1(oldSettings: LegacySettingsV0): SettingsSchema {
 			requestConcurrency: oldSettings.translate?.concurrentRequests,
 			tokensPerMinute: 80000,
 			maxBatchSize: oldSettings.translate?.maxBatchSize,
+			maxTokensPerBatch: 4000,
 			cacheSize: oldSettings.translate?.cacheSize,
 		},
 		services,

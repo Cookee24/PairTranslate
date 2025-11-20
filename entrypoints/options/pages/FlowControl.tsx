@@ -85,6 +85,19 @@ export default (props: { navId: string }) => {
 				/>
 
 				<NumberInput
+					label={t("settings.flowControl.maxTokensPerBatch")}
+					helperText={t("settings.flowControl.maxTokensPerBatchDesc")}
+					error={getFieldError(["maxTokensPerBatch"])?.message}
+					min={1}
+					max={200000}
+					step={100}
+					value={localQueue.maxTokensPerBatch}
+					onChange={(e) =>
+						setLocalQueue("maxTokensPerBatch", Number(e.target.value))
+					}
+				/>
+
+				<NumberInput
 					label={t("settings.flowControl.cacheSize")}
 					helperText={t("settings.flowControl.cacheSizeDesc")}
 					error={getFieldError(["cacheSize"])?.message}

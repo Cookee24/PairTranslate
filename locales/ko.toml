@@ -163,6 +163,8 @@ tokensPerMinute = "분당 토큰 수"
 tokensPerMinuteDesc = "LLM 모델이 1분 동안 소비할 수 있는 토큰 상한입니다."
 maxBatchSize = "최대 배치 크기"
 maxBatchSizeDesc = "한 번의 배치에서 처리할 수 있는 텍스트 수의 상한입니다."
+maxTokensPerBatch = "배치당 최대 토큰 수"
+maxTokensPerBatchDesc = "배치의 예상 토큰 수가 이 값을 넘으면 나머지 텍스트는 다음 배치로 이동합니다."
 cacheSize = "캐시 크기"
 cacheSizeDesc = "전역적으로 보관할 번역 결과의 개수입니다."
 

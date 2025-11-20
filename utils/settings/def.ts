@@ -29,6 +29,7 @@ const QueueOverrideShape = z.object({
 	requestConcurrency: z.number().min(1).optional(),
 	tokensPerMinute: z.number().min(1).optional(),
 	maxBatchSize: z.number().min(1).max(100).optional(),
+	maxTokensPerBatch: z.number().min(1).max(200000).optional(),
 });
 export type QueueOverride = z.infer<typeof QueueOverrideShape>;
 export const QueueOverrideSettings = QueueOverrideShape.optional();
@@ -67,9 +68,10 @@ export const ServicesSettings = z.record(z.uuid(), ModelSettings).default({});
 export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
 export const QueueControlSettings = z.object({
-	requestConcurrency: z.number().min(1).default(8),
+	requestConcurrency: z.number().min(1).default(4),
 	tokensPerMinute: z.number().min(1).default(80000),
-	maxBatchSize: z.number().min(1).max(100).default(4),
+	maxBatchSize: z.number().min(1).max(100).default(8),
+	maxTokensPerBatch: z.number().min(1).max(200000).default(8000),
 	cacheSize: z.number().min(0),
 });
 export type QueueControlSettings = z.infer<typeof QueueControlSettings>;

@@ -163,6 +163,8 @@ tokensPerMinute = "Tokens per Minute"
 tokensPerMinuteDesc = "Upper limit of tokens LLM models can consume per minute before throttling starts."
 maxBatchSize = "Max Batch Size"
 maxBatchSizeDesc = "Largest number of texts grouped into a single request batch before queuing the rest."
+maxTokensPerBatch = "Max Tokens per Batch"
+maxTokensPerBatchDesc = "Cap the estimated tokens inside a batch; when exceeded the remaining items are moved into the next batch."
 cacheSize = "Cache Size"
 cacheSizeDesc = "Total translation results kept in cache to speed up repeated lookups."
 

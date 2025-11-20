@@ -14,6 +14,7 @@ const fieldKeys: Array<keyof QueueOverride> = [
 	"requestConcurrency",
 	"tokensPerMinute",
 	"maxBatchSize",
+	"maxTokensPerBatch",
 ];
 
 const fieldConstraints: Record<
@@ -23,6 +24,7 @@ const fieldConstraints: Record<
 	requestConcurrency: { min: 1, max: 64 },
 	tokensPerMinute: { min: 1, step: 1000 },
 	maxBatchSize: { min: 1, max: 100 },
+	maxTokensPerBatch: { min: 1, max: 200000, step: 100 },
 };
 
 const labelKeyForField = (
@@ -30,12 +32,16 @@ const labelKeyForField = (
 ):
 	| "settings.flowControl.requestConcurrency"
 	| "settings.flowControl.tokensPerMinute"
-	| "settings.flowControl.maxBatchSize" => {
+	| "settings.flowControl.maxBatchSize"
+	| "settings.flowControl.maxTokensPerBatch" => {
 	if (field === "requestConcurrency") {
 		return "settings.flowControl.requestConcurrency";
 	}
 	if (field === "tokensPerMinute") {
 		return "settings.flowControl.tokensPerMinute";
+	}
+	if (field === "maxTokensPerBatch") {
+		return "settings.flowControl.maxTokensPerBatch";
 	}
 	return "settings.flowControl.maxBatchSize";
 };
@@ -45,12 +51,16 @@ const descKeyForField = (
 ):
 	| "settings.flowControl.requestConcurrencyDesc"
 	| "settings.flowControl.tokensPerMinuteDesc"
-	| "settings.flowControl.maxBatchSizeDesc" => {
+	| "settings.flowControl.maxBatchSizeDesc"
+	| "settings.flowControl.maxTokensPerBatchDesc" => {
 	if (field === "requestConcurrency") {
 		return "settings.flowControl.requestConcurrencyDesc";
 	}
 	if (field === "tokensPerMinute") {
 		return "settings.flowControl.tokensPerMinuteDesc";
+	}
+	if (field === "maxTokensPerBatch") {
+		return "settings.flowControl.maxTokensPerBatchDesc";
 	}
 	return "settings.flowControl.maxBatchSizeDesc";
 };

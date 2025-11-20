@@ -1,4 +1,5 @@
 import type { TranslateOptions, TranslateService } from "@/utils/rpc";
+import { estimateTokens } from "@/utils/token-estimate";
 import { createQueueHub } from "~/utils/async/queue-hub";
 import { STORAGE_KEYS } from "~/utils/constants";
 import {
@@ -44,23 +45,6 @@ type ThinCacheState = {
 	keys: ThinCacheKey[];
 	values: unknown[];
 	missing: number[];
-};
-
-const estimateLLMTokens = (payload: TranslatePayload): number => {
-	if (Array.isArray(payload)) {
-		return payload.reduce((total, part) => total + estimateLLMTokens(part), 0);
-	}
-	return Math.max(1, Math.ceil(payload.length / 4));
-};
-
-const estimateTraditionalTokens = (payload: TranslatePayload): number => {
-	if (Array.isArray(payload)) {
-		return payload.reduce(
-			(total, part) => total + estimateTraditionalTokens(part),
-			0,
-		);
-	}
-	return Math.max(1, Math.ceil(payload.length / 2));
 };
 
 type CompiledStep = {
@@ -205,14 +189,6 @@ const throwIfAborted = (signal?: AbortSignal) => {
 	}
 };
 
-const estimateTokensForService = (
-	service: ServiceSettings,
-	payload: TranslatePayload,
-): number =>
-	service.type === "llm"
-		? estimateLLMTokens(payload)
-		: estimateTraditionalTokens(payload);
-
 export const createTranslateService = async (): Promise<TranslateService> => {
 	let settings = await getSettings();
 	if (!settings) {
@@ -323,13 +299,13 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				const response = await runOnce([text]);
 				translated.push(response.translatedText[0]);
 			}
-			return { result: translated, tokens: estimateTraditionalTokens(texts) };
+			return { result: translated, tokens: estimateTokens(texts) };
 		}
 
 		const response = await runOnce(texts);
 		return {
 			result: response.translatedText,
-			tokens: estimateTraditionalTokens(texts),
+			tokens: estimateTokens(texts),
 		};
 	};
 
@@ -675,7 +651,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			const normalized = prompt
 				? normalizePromptInput(prompt, payload)
 				: (payload ?? "");
-			const estimated = estimateTokensForService(service, normalized);
+			const estimated = estimateTokens(normalized);
 			const queue = queueHub.queue(options.modelId);
 			return queue.enqueueUnary(
 				() => executeUnary(ctx, options, payload),
@@ -712,7 +688,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					}
 				}
 				const queue = queueHub.queue(modelId);
-				const estimated = estimateTokensForService(service, normalized);
+				const estimated = estimateTokens(normalized);
 				let traditionalResult: string[] | undefined;
 				const streamRunner =
 					service.type === "llm"

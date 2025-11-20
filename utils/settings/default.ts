@@ -83,9 +83,10 @@ export function generateWebsiteRuleSettings(): s.WebsiteRulesSettings {
 
 export function generateQueueControlSettings(): s.QueueControlSettings {
 	return {
-		requestConcurrency: 8,
+		requestConcurrency: 4,
 		tokensPerMinute: 60000,
-		maxBatchSize: 4,
+		maxBatchSize: 8,
+		maxTokensPerBatch: 8000,
 		cacheSize: 1000,
 	};
 }

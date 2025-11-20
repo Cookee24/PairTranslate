@@ -11,6 +11,7 @@ const fields: Array<{ key: keyof QueueOverride }> = [
 	{ key: "requestConcurrency" },
 	{ key: "tokensPerMinute" },
 	{ key: "maxBatchSize" },
+	{ key: "maxTokensPerBatch" },
 ];
 
 const labelKeyForField = (
@@ -18,12 +19,16 @@ const labelKeyForField = (
 ):
 	| "settings.flowControl.requestConcurrency"
 	| "settings.flowControl.tokensPerMinute"
-	| "settings.flowControl.maxBatchSize" => {
+	| "settings.flowControl.maxBatchSize"
+	| "settings.flowControl.maxTokensPerBatch" => {
 	if (field === "requestConcurrency") {
 		return "settings.flowControl.requestConcurrency";
 	}
 	if (field === "tokensPerMinute") {
 		return "settings.flowControl.tokensPerMinute";
+	}
+	if (field === "maxTokensPerBatch") {
+		return "settings.flowControl.maxTokensPerBatch";
 	}
 	return "settings.flowControl.maxBatchSize";
 };
