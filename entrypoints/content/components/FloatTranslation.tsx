@@ -21,7 +21,7 @@ export default (props: Props) => {
 
 const Explain = (props: { textContext: TextContext }) => {
 	const { settings } = useSettings();
-	const [data, retry] = createTranslation(() => props.textContext.text, {
+	const [data, _retry] = createTranslation(() => props.textContext.text, {
 		promptId: PROMPT_ID.explain,
 		modelId: () => settings.translate.floatingExplainModel,
 		ctx: () => ({
@@ -30,7 +30,7 @@ const Explain = (props: { textContext: TextContext }) => {
 		}),
 		stream: true,
 	});
-	const completeData = createMemo(
+	const _completeData = createMemo(
 		() =>
 			JSON.parse(jsonAutocomplete(data() || "{}")) as Partial<ExplainOutput>,
 	);
@@ -40,7 +40,7 @@ const Explain = (props: { textContext: TextContext }) => {
 
 const Translate = (props: { textContext: TextContext }) => {
 	const { settings } = useSettings();
-	const [data, retry] = createTranslation(() => props.textContext.text, {
+	const [_data, _retry] = createTranslation(() => props.textContext.text, {
 		promptId: PROMPT_ID.translate,
 		modelId: () => settings.translate.floatingTranslateModel,
 		ctx: () => ({

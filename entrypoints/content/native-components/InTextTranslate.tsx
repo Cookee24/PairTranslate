@@ -155,7 +155,7 @@ const BatchRender = (props: BatchRenderProps) => {
 	const hideOriginal = () =>
 		(websiteRule.translateMode ?? settings.translate.translationMode) ===
 		"replace";
-	
+
 	createEffect(() => {
 		const texts = geter();
 		for (let i = 0; i < texts.length; i++) {
@@ -165,7 +165,7 @@ const BatchRender = (props: BatchRenderProps) => {
 				text: texts[i](),
 			});
 		}
-	})
+	});
 
 	return (
 		<For each={geter()}>

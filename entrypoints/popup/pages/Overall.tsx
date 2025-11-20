@@ -230,8 +230,7 @@ export default () => {
 							}}
 						>
 							<option value="" disabled selected>
-								{remainingDisplay() ||
-									t("popup.domainTimer.selectPlaceholder")}
+								{remainingDisplay() || t("popup.domainTimer.selectPlaceholder")}
 							</option>
 							<For each={timerOptions()}>
 								{(option) => (

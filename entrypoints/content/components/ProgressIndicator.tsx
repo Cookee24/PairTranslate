@@ -87,7 +87,7 @@ export default function ProgressIndicator() {
 							</span>
 						</div>
 					</div>
-						<div class="flex flex-wrap items-center gap-1 text-xs">
+					<div class="flex flex-wrap items-center gap-1 text-xs">
 						<Badge
 							class="gap-1 px-2"
 							variant="primary"
@@ -96,7 +96,9 @@ export default function ProgressIndicator() {
 							title={t("common.translationTasks")}
 						>
 							<Loader size={10} class="animate-spin" />
-							<span class="font-semibold tabular-nums">{progress.counter()}</span>
+							<span class="font-semibold tabular-nums">
+								{progress.counter()}
+							</span>
 						</Badge>
 						<Badge
 							class="gap-1 px-2"
