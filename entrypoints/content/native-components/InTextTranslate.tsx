@@ -166,25 +166,14 @@ const BatchRender = (props: BatchRenderProps) => {
 	const texts = createMemo(() =>
 		props.elements.map((el) => extractMarkdownContent(el)),
 	);
-	const [geter, retry] = createBatchTranslation(texts);
+	const [getter, retry] = createBatchTranslation(texts);
 
 	const hideOriginal = () =>
 		(websiteRule.translateMode ?? settings.translate.translationMode) ===
 		"replace";
 
-	createEffect(() => {
-		const texts = geter();
-		for (let i = 0; i < texts.length; i++) {
-			console.log("Translated Text:", {
-				loading: texts[i].loading,
-				error: texts[i].error,
-				text: texts[i](),
-			});
-		}
-	});
-
 	return (
-		<For each={geter()}>
+		<For each={getter()}>
 			{(item, index) => (
 				<TranslationRender
 					text={item()}
