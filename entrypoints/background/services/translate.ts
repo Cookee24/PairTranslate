@@ -286,11 +286,11 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 	});
 
 	listenSettings((next) => {
+		settings = next;
 		promptCache.clear();
 		clientCache.clear();
 		queueHub.refresh();
 		resultCache.resize(next.queue.cacheSize);
-		settings = next;
 	});
 
 	const runTraditional = async (
