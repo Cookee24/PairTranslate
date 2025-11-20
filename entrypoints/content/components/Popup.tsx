@@ -1,6 +1,26 @@
 import { GripHorizontal, Pin, X } from "lucide-solid";
-import type { JSX } from "solid-js";
-import type { SetStoreFunction, Store } from "solid-js/store";
+import {
+	createContext,
+	createEffect,
+	createSignal,
+	For,
+	type JSX,
+	on,
+	onCleanup,
+	onMount,
+	Show,
+	untrack,
+	useContext,
+} from "solid-js";
+import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
+import { Button } from "~/components/Button";
+import {
+	animateDown,
+	animateLift,
+	createAnimatedAppearance,
+	onOuterClick,
+} from "~/hooks/animation";
+import { t } from "~/utils/i18n";
 
 const DEFAULT_STATE = {
 	x: 12,

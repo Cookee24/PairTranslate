@@ -1,5 +1,7 @@
+import { Button } from "~/components/Button";
 import { FormGrid } from "~/components/settings/FormGrid";
 import { NumberInput } from "~/components/settings/NumberInput";
+import { t } from "~/utils/i18n";
 import type { QueueControlSettings, QueueOverride } from "~/utils/settings/def";
 
 export interface QueueOverrideFieldsProps {

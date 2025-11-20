@@ -1,6 +1,14 @@
 import katex from "katex";
-import { type JSX, splitProps } from "solid-js";
+import {
+	createEffect,
+	createSignal,
+	type JSX,
+	onCleanup,
+	onMount,
+	splitProps,
+} from "solid-js";
 import { Dynamic } from "solid-js/web";
+import { animateEnter } from "~/hooks/animation";
 import { cn } from "~/utils/cn";
 
 const styles: Record<string, string> = {

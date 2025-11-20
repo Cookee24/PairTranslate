@@ -1,6 +1,13 @@
 import { mergeRefs } from "@solid-primitives/refs";
-import { type Component, createEffect, type JSX, splitProps } from "solid-js";
+import {
+	type Component,
+	createEffect,
+	createSignal,
+	type JSX,
+	splitProps,
+} from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
+import { createAnimatedAppearance } from "~/hooks/animation";
 import { cn } from "~/utils/cn";
 
 const modalVariants = tv({

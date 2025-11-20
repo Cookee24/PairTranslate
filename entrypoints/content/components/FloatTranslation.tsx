@@ -1,4 +1,13 @@
 import type { JSX } from "solid-js";
+import { createMemo, splitProps } from "solid-js";
+import { useSettings } from "~/hooks/settings";
+import { createTranslation } from "~/hooks/translation";
+import { cn } from "~/utils/cn";
+import { PROMPT_ID } from "~/utils/constants";
+import { jsonAutocomplete } from "~/utils/json-autocomplete";
+import { getPageContext } from "~/utils/page-context";
+import type { ExplainOutput } from "~/utils/prompt";
+import type { TextContext } from "~/utils/types";
 
 interface Props extends JSX.HTMLAttributes<HTMLDivElement> {
 	textContext: TextContext;

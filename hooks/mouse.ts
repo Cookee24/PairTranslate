@@ -1,3 +1,5 @@
+import { createSignal, onCleanup, onMount } from "solid-js";
+
 export function useMousePosition() {
 	const [pos, setPos] = createSignal({ x: 0, y: 0 });
 

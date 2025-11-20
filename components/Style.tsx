@@ -1,3 +1,11 @@
+import { onCleanup, onMount } from "solid-js";
+import { browser } from "#imports";
+import {
+	ELEMENT_CONTAINER,
+	ELEMENT_TRANSLATED,
+	STYLE_CONTAINER,
+} from "~/utils/constants";
+
 export const ContentStyle = () => {
 	onMount(() => {
 		const style = document.createElement("style");

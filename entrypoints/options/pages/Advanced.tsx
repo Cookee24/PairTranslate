@@ -1,6 +1,11 @@
 import { RotateCcw, Trash2 } from "lucide-solid";
+import { createSignal } from "solid-js";
+import { browser } from "#imports";
+import { Button } from "~/components/Button";
+import { Card } from "~/components/Card";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
+import { generateDefaultSettings } from "~/utils/settings/default";
 import { clearSettingsMigrationError } from "~/utils/settings/helper";
 
 export default (props: { navId: string }) => {

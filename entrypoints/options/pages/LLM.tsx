@@ -1,5 +1,7 @@
 import { QueueSummary } from "~/components/settings/QueueSummary";
 import { ServiceManager } from "~/components/settings/ServiceManager";
+import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import {
 	replaceServicesOfType,
 	type ServiceByType,

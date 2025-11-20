@@ -1,3 +1,5 @@
+import { createEffect, createSignal, onCleanup } from "solid-js";
+import { useSettings } from "~/hooks/settings";
 import { selectionListener } from "../selection";
 import type { SelectEvent } from "../types";
 import Tip from "./Tip";

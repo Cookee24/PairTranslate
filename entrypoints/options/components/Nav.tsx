@@ -1,5 +1,18 @@
 import { Check, CircleX } from "lucide-solid";
-import type { JSX } from "solid-js";
+import {
+	createEffect,
+	createSignal,
+	type JSX,
+	onCleanup,
+	onMount,
+	splitProps,
+} from "solid-js";
+import { Button } from "~/components/Button";
+import { Loading } from "~/components/Loading";
+import { Menu } from "~/components/Menu";
+import { useSettings } from "~/hooks/settings";
+import { cn } from "~/utils/cn";
+import { t } from "~/utils/i18n";
 
 interface ItemProps {
 	children?: JSX.Element;

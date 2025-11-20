@@ -1,3 +1,14 @@
+import { MS_TRANSLATOR_ID, PROMPT_ID } from "~/utils/constants";
+import { t } from "~/utils/i18n";
+import { getTargetLanguage } from "~/utils/language";
+import {
+	BATCH,
+	BATCH_SCHEMA,
+	EXPLAIN,
+	EXPLAIN_SCHEMA,
+	INPUT,
+	UNARY,
+} from "~/utils/prompt";
 import type * as s from "./def";
 import { SETTINGS_VERSION } from "./def";
 

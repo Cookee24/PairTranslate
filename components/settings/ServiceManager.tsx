@@ -1,5 +1,7 @@
 import { Edit, Plus, Trash2 } from "lucide-solid";
 import { For, type JSX } from "solid-js";
+import { Button } from "~/components/Button";
+import { Card } from "~/components/Card";
 import type { ServiceSettings } from "~/utils/settings";
 import { SettingsCard } from "./SettingsCard";
 

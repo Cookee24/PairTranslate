@@ -1,6 +1,10 @@
 import { mergeRefs } from "@solid-primitives/refs";
 import { CircleX } from "lucide-solid";
 import type { JSX } from "solid-js";
+import { splitProps } from "solid-js";
+import { Loading } from "~/components/Loading";
+import { cn } from "~/utils/cn";
+import { t } from "~/utils/i18n";
 
 interface Props extends JSX.HTMLAttributes<HTMLDivElement> {
 	loading?: boolean;

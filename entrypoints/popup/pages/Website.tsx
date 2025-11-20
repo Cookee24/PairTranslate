@@ -1,5 +1,9 @@
 import { CheckCheck, Link, Plus, Trash2 } from "lucide-solid";
+import { createEffect, createSignal, on, Show, untrack } from "solid-js";
+import { Button } from "~/components/Button";
 import { WebsiteRuleEditor } from "~/components/website-rule/Editor";
+import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import type { WebsiteRuleSettings } from "~/utils/settings";
 import { getCurrentDomain } from "../get-current";
 

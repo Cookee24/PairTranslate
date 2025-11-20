@@ -1,3 +1,4 @@
+import { DEFAULT_DOM_LISTENER, PARSER_LIST } from "~/utils/parser";
 import type { ElementGenerator, Options } from "~/utils/parser/types";
 
 let lstDomain: string | undefined;

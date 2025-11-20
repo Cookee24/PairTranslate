@@ -1,3 +1,4 @@
+import { browser, defineBackground } from "#imports";
 import { initializeSettings } from "~/utils/settings/helper";
 import { setRpc } from "./rpc";
 

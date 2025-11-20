@@ -1,3 +1,5 @@
+import { createSignal, onCleanup, Show } from "solid-js";
+import { animateBlink } from "~/hooks/animation";
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import ControlFloat from "./ControlFloat";
 import TripleTouch from "./TripleTouch";

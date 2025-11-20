@@ -1,4 +1,20 @@
 import { CircleX, Languages } from "lucide-solid";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	For,
+	on,
+	onCleanup,
+} from "solid-js";
+import { Md } from "~/components/MD/Md";
+import { InTextPortal } from "~/components/MPortal";
+import { useSettings } from "~/hooks/settings";
+import { createBatchTranslation, createTranslation } from "~/hooks/translation";
+import { useWebsiteRule } from "~/hooks/website-rule";
+import { ELEMENT_TRANSLATED } from "~/utils/constants";
+import { copyToClipboard } from "~/utils/copy";
+import { extractMarkdownContent } from "~/utils/markdown";
 import InTextTooltip from "../components/InTextTooltip";
 import { extractTextContext } from "../context/element";
 import { NativeLoading } from "./Loading";

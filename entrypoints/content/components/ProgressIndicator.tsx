@@ -1,8 +1,11 @@
 import { Activity, Languages, ListOrdered, Loader } from "lucide-solid";
 import { createMemo, createSignal, Show } from "solid-js";
+import { Badge } from "~/components/Badge";
+import { Loading } from "~/components/Loading";
 import { createAnimatedAppearance } from "~/hooks/animation";
 import { useProgressIndicator } from "~/hooks/progress-indicator";
 import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 
 export default function ProgressIndicator() {
 	const { settings } = useSettings();

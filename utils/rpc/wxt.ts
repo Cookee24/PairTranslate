@@ -1,5 +1,6 @@
 // Using wxt/browser allows for cross-browser compatibility (Chrome, Firefox, etc.)
 import { browser } from "wxt/browser";
+import type { Browser } from "#imports";
 import {
 	Closed,
 	type Message,

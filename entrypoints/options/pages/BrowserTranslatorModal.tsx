@@ -1,5 +1,10 @@
 import { Check, CheckCheck, Download, Plus, X } from "lucide-solid";
-import { createSignal, For, onMount, Show } from "solid-js";
+import { createMemo, createSignal, For, onMount, Show } from "solid-js";
+import { Alert } from "~/components/Alert";
+import { Badge } from "~/components/Badge";
+import { Button } from "~/components/Button";
+import { Modal } from "~/components/Modal";
+import { useSettings } from "~/hooks/settings";
 import {
 	checkBrowserTranslationCapabilities,
 	type TranslatorCheckResult,
@@ -63,7 +68,7 @@ export default (props: BrowserTranslatorModalProps) => {
 
 	// Check if browser translator service already exists
 	const hasBrowserService = createMemo(() =>
-		Object.values(settings.services).some(
+		(Object.values(settings.services) as ServiceSettings[]).some(
 			(service) =>
 				service.type === "traditional" && service.apiSpec === "browser",
 		),

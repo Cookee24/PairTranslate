@@ -1,4 +1,13 @@
-import type { Accessor, JSX } from "solid-js";
+import {
+	type Accessor,
+	createContext,
+	createSignal,
+	type JSX,
+	onCleanup,
+	onMount,
+	Show,
+	useContext,
+} from "solid-js";
 import {
 	createStore,
 	reconcile,
@@ -6,6 +15,7 @@ import {
 	unwrap,
 } from "solid-js/store";
 import type * as s from "~/utils/settings/def";
+import { listenSettings, saveSettings } from "~/utils/settings/helper";
 
 interface SettingsContextType {
 	settings: s.SettingsSchema;

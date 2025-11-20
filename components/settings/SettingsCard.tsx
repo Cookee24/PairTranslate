@@ -1,4 +1,5 @@
 import type { Component, JSX } from "solid-js";
+import { Card } from "~/components/Card";
 
 export interface SettingsCardProps {
 	title: string;

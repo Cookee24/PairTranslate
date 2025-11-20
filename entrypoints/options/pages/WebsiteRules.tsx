@@ -9,6 +9,7 @@ import {
 	type WebsiteRuleEditorRef,
 } from "~/components/website-rule/Editor";
 import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import type { WebsiteRuleSettings } from "~/utils/settings/def";
 import { useWebsiteRuleManagement } from "../hooks/useWebsiteRuleManagement";
 

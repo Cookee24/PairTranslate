@@ -1,6 +1,8 @@
 import { TriangleAlert } from "lucide-solid";
 import type { Component } from "solid-js";
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { type Browser, browser } from "#imports";
+import { Button } from "~/components/Button";
 import { useSettings } from "~/hooks/settings";
 import { cn } from "~/utils/cn";
 import { STORAGE_KEYS } from "~/utils/constants";

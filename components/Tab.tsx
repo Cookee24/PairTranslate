@@ -1,6 +1,11 @@
 import { mergeRefs } from "@solid-primitives/refs";
 import { type Component, type JSX, onMount, splitProps } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
+import {
+	animatedHover,
+	animateScaleDown,
+	animateScaleUp,
+} from "~/hooks/animation";
 import { cn } from "~/utils/cn";
 
 const tabVariants = tv({

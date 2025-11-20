@@ -1,7 +1,9 @@
 import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
-import { For } from "solid-js";
+import { createEffect, For, Show } from "solid-js";
+import { createStore, reconcile } from "solid-js/store";
 import { unified } from "unified";
+import { fixMarkdown } from "~/utils/markdown";
 import NativeMapping from "./Native";
 
 interface Props {

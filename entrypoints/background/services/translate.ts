@@ -1,5 +1,6 @@
-import type { TranslateService } from "@/utils/rpc";
+import type { TranslateOptions, TranslateService } from "@/utils/rpc";
 import { createQueueHub } from "~/utils/async/queue-hub";
+import { STORAGE_KEYS } from "~/utils/constants";
 import {
 	convertFromLLMError,
 	convertFromTranslationError,

@@ -7,6 +7,10 @@ import {
 	Info,
 	Languages,
 } from "lucide-solid";
+import { createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import { SettingsRecoveryBanner } from "~/components/SettingsRecoveryBanner";
+import { SettingsProvider, useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import { getThemeClass } from "~/utils/theme";
 import Nav from "./components/Nav";
 import About from "./pages/About";
@@ -44,7 +48,6 @@ const Content = () => {
 			window.removeEventListener("resize", () => handler(ref.offsetHeight)),
 		);
 	});
-
 	return (
 		<>
 			<Nav.Root ref={ref}>

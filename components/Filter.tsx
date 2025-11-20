@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
 import { cn } from "~/utils/cn";
+import { t } from "~/utils/i18n";
 
 const filterVariants = tv({
 	base: "filter",

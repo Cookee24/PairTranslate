@@ -1,4 +1,5 @@
 import "~/utils/rpc/wxt-def";
+import { waitRpc } from "~/utils/rpc/wxt-def";
 import App from "./App";
 
 waitRpc()

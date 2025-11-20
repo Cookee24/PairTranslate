@@ -1,4 +1,5 @@
 import { type Component, For, Show } from "solid-js";
+import { t } from "~/utils/i18n";
 import type { QueueControlSettings, QueueOverride } from "~/utils/settings/def";
 
 interface QueueSummaryProps {

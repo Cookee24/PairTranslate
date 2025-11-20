@@ -1,5 +1,18 @@
-import { createEffect, createSignal, on, onCleanup } from "solid-js";
-import { SUPPORTED_LANGUAGES } from "~/utils/constants";
+import {
+	createEffect,
+	createSignal,
+	For,
+	on,
+	onCleanup,
+	onMount,
+} from "solid-js";
+import { Button } from "~/components/Button";
+import { Loading } from "~/components/Loading";
+import { Select } from "~/components/Select";
+import { useSettings } from "~/hooks/settings";
+import { createTranslation } from "~/hooks/translation";
+import { PROMPT_ID, SUPPORTED_LANGUAGES } from "~/utils/constants";
+import { t } from "~/utils/i18n";
 import { usePopup } from "./Popup";
 
 const TranslateElement = (props: {

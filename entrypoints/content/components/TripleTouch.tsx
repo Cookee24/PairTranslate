@@ -1,3 +1,5 @@
+import { createEffect, onCleanup } from "solid-js";
+import { useSettings } from "~/hooks/settings";
 import { getDomListener } from "../parser";
 
 interface Props {

@@ -2,6 +2,8 @@ import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormGrid } from "~/components/settings/FormGrid";
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { SettingsToggle } from "~/components/settings/SettingsToggle";
+import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import ShortcutInput from "../components/ShortcutInput";
 
 export default (props: { navId: string }) => {

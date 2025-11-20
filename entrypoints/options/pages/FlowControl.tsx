@@ -1,9 +1,12 @@
 import { trackStore } from "@solid-primitives/deep";
-import { unwrap } from "solid-js/store";
+import { createEffect, createSignal, on } from "solid-js";
+import { createStore, reconcile, unwrap } from "solid-js/store";
 import type z from "zod";
 import { FormGrid } from "~/components/settings/FormGrid";
 import { NumberInput } from "~/components/settings/NumberInput";
 import { SettingsCard } from "~/components/settings/SettingsCard";
+import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import * as s from "~/utils/settings/def";
 
 export default (props: { navId: string }) => {

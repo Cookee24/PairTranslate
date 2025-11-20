@@ -1,6 +1,13 @@
 import { HashRouter, Route, useLocation, useNavigate } from "@solidjs/router";
 import { Earth, ExternalLink, Settings2 } from "lucide-solid";
 import type { JSX } from "solid-js";
+import { Match, Switch } from "solid-js";
+import { browser } from "#imports";
+import { Button } from "~/components/Button";
+import { Loading } from "~/components/Loading";
+import { SettingsRecoveryBanner } from "~/components/SettingsRecoveryBanner";
+import { SettingsProvider } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import { getCurrentDomain } from "./get-current";
 import Overall from "./pages/Overall";
 import Website from "./pages/Website";

@@ -1,3 +1,7 @@
+import { WXT_TRANSPORTATION_NAME } from "~/utils/constants";
+import type { AllServices } from "~/utils/rpc";
+import type { Server } from "~/utils/rpc/factory";
+import { setupWxtServer } from "~/utils/rpc/wxt";
 import { createDictionaryService } from "./services/dictionary";
 import { createMatchService } from "./services/match";
 import { createStyleService } from "./services/style";

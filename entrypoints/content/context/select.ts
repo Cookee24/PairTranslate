@@ -1,3 +1,5 @@
+import type { TextContext } from "~/utils/types";
+
 export const extractContextFromSelection = (
 	selection: Selection,
 ): TextContext | null => {

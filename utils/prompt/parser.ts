@@ -1,17 +1,18 @@
 /** biome-ignore-all lint/suspicious/noConstEnum: For performance */
+import { getNativeName } from "~/utils/constants";
 
 export interface Message {
 	role: "system" | "user" | "assistant";
 	content: string;
 }
 
-export const enum ExprSegmentType {
+export enum ExprSegmentType {
 	Identifier,
 	Property,
 	Index,
 }
 
-export const enum TokenType {
+export enum TokenType {
 	String,
 	Variable,
 	Conditional,

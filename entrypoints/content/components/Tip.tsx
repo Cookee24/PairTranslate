@@ -1,5 +1,10 @@
 import { Languages, Lightbulb } from "lucide-solid";
-import { createEffect, createSignal } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
+import { Button } from "~/components/Button";
+import { Menu } from "~/components/Menu";
+import { createAnimatedAppearance, onOuterClick } from "~/hooks/animation";
+import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import { extractContextFromSelection } from "../context/select";
 import type { Position, SelectEvent } from "../types";
 import FloatTranslation from "./FloatTranslation";

@@ -1,4 +1,5 @@
 import { type Component, type JSX, splitProps } from "solid-js";
+import { Toggle } from "~/components/Toggle";
 
 export interface SettingsToggleProps
 	extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "size"> {

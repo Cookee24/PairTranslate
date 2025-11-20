@@ -1,3 +1,5 @@
+import { type Browser, browser } from "#imports";
+import { STORAGE_KEYS } from "~/utils/constants";
 import type * as s from "./def";
 import { generateDefaultSettings } from "./default";
 import { migrateSettings } from "./migration";

@@ -1,4 +1,9 @@
 import { ClipboardCopy, RotateCcw, Trash2 } from "lucide-solid";
+import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { Button } from "~/components/Button";
+import { Menu } from "~/components/Menu";
+import { createAnimatedAppearance, onOuterClick } from "~/hooks/animation";
+import { t } from "~/utils/i18n";
 
 interface Props {
 	pos?: { x: number; y: number };

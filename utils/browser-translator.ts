@@ -1,3 +1,5 @@
+import { t } from "~/utils/i18n";
+
 /**
  * Browser Translator API utilities
  * Based on the Web Translation and Language Detector APIs

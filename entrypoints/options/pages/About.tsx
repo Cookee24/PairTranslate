@@ -1,4 +1,6 @@
 import { ExternalLink, Github, Info } from "lucide-solid";
+import { Card } from "~/components/Card";
+import { t } from "~/utils/i18n";
 
 export default (props: { navId: string }) => {
 	const extensionName = t("settings.about.extensionName");

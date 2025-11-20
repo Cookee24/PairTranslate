@@ -1,3 +1,4 @@
+import { t } from "~/utils/i18n";
 import {
 	createBrowserLanguageDetector,
 	createBrowserTranslator,
