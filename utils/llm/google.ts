@@ -3,6 +3,7 @@ import {
 	GoogleGenerativeAI,
 	type Part,
 } from "@google/generative-ai";
+import { autoStripMarkdown } from "../json-autocomplete";
 import type {
 	ChatRequest,
 	ClientConfig,
@@ -115,7 +116,7 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 
 				const response = result.response;
 				const content = response.text();
-				const output = (schema ? JSON.parse(content) : content) as O;
+				const output = (schema ? autoStripMarkdown(content) : content) as O;
 
 				return {
 					output,

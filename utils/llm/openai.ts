@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { autoStripMarkdown } from "../json-autocomplete";
 import type {
 	ChatRequest,
 	ClientConfig,
@@ -89,7 +90,7 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 				});
 
 				const content = response.choices[0]?.message?.content || "";
-				const output = (schema ? JSON.parse(content) : content) as O;
+				const output = (schema ? autoStripMarkdown(content) : content) as O;
 
 				return {
 					output,

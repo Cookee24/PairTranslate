@@ -59,3 +59,33 @@ export function jsonAutocomplete(partialJson: string): string {
 
 	return completion;
 }
+
+export function autoStripMarkdown<T>(maybeMarkdownJson: string): T {
+	let er: unknown;
+	try {
+		return JSON.parse(maybeMarkdownJson) as T;
+	} catch (e) {
+		er = e;
+	}
+
+	const markdownRegex = /```(?:\w+)?\s*([\s\S]*?)\s*```/;
+	const match = maybeMarkdownJson.match(markdownRegex);
+
+	if (match?.[1]) {
+		return JSON.parse(match[1]) as T;
+	}
+	throw er;
+}
+
+export function autoParseJson<T>(maybePartialJson: string): T | null {
+	try {
+		return JSON.parse(maybePartialJson) as T;
+	} catch {
+		try {
+			const completedJson = jsonAutocomplete(maybePartialJson);
+			return JSON.parse(completedJson) as T;
+		} catch {
+			return null;
+		}
+	}
+}

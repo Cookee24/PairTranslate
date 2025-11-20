@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { autoStripMarkdown } from "../json-autocomplete";
 import type {
 	ChatRequest,
 	ClientConfig,
@@ -106,7 +107,7 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 
 				const content =
 					response.content[0]?.type === "text" ? response.content[0].text : "";
-				const output = (schema ? JSON.parse(content) : content) as O;
+				const output = (schema ? autoStripMarkdown(content) : content) as O;
 
 				return {
 					output,
