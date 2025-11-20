@@ -302,10 +302,9 @@ export function createTranslation<T>(
 
 		const endTracking = beginRequest(modelId_);
 		setLoading();
-		let listener: AsyncGenerator<string, void, unknown> | undefined;
 
 		try {
-			listener = window.rpc.stream(
+			const listener = window.rpc.stream(
 				ctx(),
 				{
 					modelId: modelId_,
@@ -316,7 +315,7 @@ export function createTranslation<T>(
 				},
 				text_,
 			);
-			onCleanup(() => listener?.return?.());
+			onCleanup(() => listener.return());
 			setLen(0);
 			for await (const chunk of listener) {
 				batch(() => {

@@ -110,6 +110,12 @@ export function createClient<
 								}
 							}
 						},
+						return: (val?: unknown) => {
+							responseMessages.return(val);
+						},
+						throw: (error: E) => {
+							responseMessages.throw(error);
+						},
 					};
 				};
 			},
