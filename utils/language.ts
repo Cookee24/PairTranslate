@@ -1,3 +1,4 @@
+import { browser } from "#imports";
 import { SUPPORTED_LANGUAGES } from "~/utils/constants";
 
 /**

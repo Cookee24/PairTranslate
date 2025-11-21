@@ -7,12 +7,16 @@ description = "一个用于网页对照翻译的浏览器扩展"
 [nav]
 basic = "基本设置"
 translation = "翻译服务"
+flowControl = "流控设置"
 llmServices = "LLM 服务"
 traditionalServices = "传统翻译"
 websiteRules = "网站规则"
 advanced = "高级设置"
 about = "关于"
 website = "网站"
+
+[popup.navigation]
+openOptions = "更多设置"
 
 # Common UI Elements
 
@@ -24,6 +28,7 @@ edit = "编辑"
 delete = "删除"
 close = "关闭"
 loading = "加载中..."
+processing = "处理中..."
 enabled = "已启用"
 disabled = "已禁用"
 configure = "配置"
@@ -35,10 +40,12 @@ selectModel = "选择模型"
 modelsLoaded = "已加载 $1 个模型"
 retry = "重试"
 confirm = "确认"
+clear = "清除"
 positionLeft = "左侧"
 positionRight = "右侧"
 floatingBallIcon = "悬浮球图标"
 translationTasks = "翻译任务"
+queue = "队列"
 completed = "已完成"
 running = "运行中"
 resize = "调整大小"
@@ -47,6 +54,24 @@ featureInDevelopment = "功能开发中"
 globalDefault = "全局默认"
 yes = "是"
 no = "否"
+
+[popup.domainTimer]
+keepUntil = "保持翻译，直到"
+selectPlaceholder = "选择时间"
+remainingSeconds = "$1 秒后结束"
+remainingMinutes = "$1 分钟后结束"
+remainingHours = "$1 小时后结束"
+untilClose = "关闭浏览器时结束"
+closeBrowser = "关闭浏览器"
+afterMinutes = "$1 分钟后"
+afterHours = "$1 小时后"
+
+[migrationError]
+title = "需要重置设置"
+description = "更新后无法加载您的旧设置，请重置为默认值以继续使用。"
+detailsLabel = "详细信息"
+resetButton = "立即重置设置"
+resetFailed = "重置失败，请重试。"
 
 # Settings Pages
 
@@ -130,6 +155,26 @@ filterInteractive = "过滤交互元素"
 filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素，以避免不必要的翻译"
 translateFullPage = "翻译范围"
 translateFullPageDesc = "勾选后翻译全部页面内容；不勾选则仅翻译可见内容"
+
+[settings.flowControl]
+title = "流控设置"
+description = "配置全局翻译队列的速率限制与缓存策略。"
+requestConcurrency = "并发请求数"
+requestConcurrencyDesc = "限制所有模型可同时发起的翻译请求数量。"
+tokensPerMinute = "每分钟令牌数"
+tokensPerMinuteDesc = "限制 LLM 模型每分钟可消耗的最大令牌数。"
+maxBatchSize = "最大批量大小"
+maxBatchSizeDesc = "单个批处理中允许的最大文本数量，超出部分会排队。"
+maxTokensPerBatch = "单批最大令牌数"
+maxTokensPerBatchDesc = "当单个批次的估算令牌数超过该阈值时，剩余文本会被放入下一批。"
+cacheSize = "缓存大小"
+cacheSizeDesc = "全局缓存的翻译结果数量。"
+
+[settings.services.flowControl]
+title = "流控设置"
+description = "仅对当前服务修改流控限制，留空则沿用全局默认。"
+usingGlobal = "使用全局默认值"
+reset = "重置设置"
 
 [settings.llmServices]
 title = "LLM 服务"
@@ -304,6 +349,40 @@ mean = "含义"
 fetchModels = "获取模型"
 copyAsMarkdown = "复制为 Markdown"
 
+[dictionary.tabs]
+overview = "概览"
+definitions = "释义"
+
+[dictionary.labels]
+source = "来源"
+meaning = "第 $1 个释义"
+meaningShort = "第$1义"
+examplePrefix = "例"
+example = "例句"
+synonyms = "同义词"
+antonyms = "反义词"
+
+[dictionary.sections]
+meanings = "释义"
+
+[dictionary.messages]
+noDefinitions = "未找到相关释义。"
+
+[floatingTranslator.sections]
+dictionary = "词典"
+contextExplanation = "上下文说明"
+textExplanation = "文本说明"
+examples = "示例"
+translation = "翻译"
+reasoning = "思考过程"
+
+[prompts.defaultNames]
+translate = "翻译"
+batchTranslate = "批量翻译"
+inputTranslate = "输入框翻译"
+explain = "解释"
+dictionaryTranslate = "词典释义翻译"
+
 # Error Messages
 
 [errors]
@@ -327,6 +406,7 @@ explainOnlyLlm = "解释功能仅支持 LLM 模型"
 explanationFailed = "解释失败"
 streamingExplanationFailed = "流式解释失败"
 noTranslationModel = "未配置翻译模型"
+translationModelRequired = "尚未配置模型。请在设置中选择翻译模型。"
 noExplanationModel = "未配置解释模型"
 batchResponseMismatch = "批处理响应数量不匹配，预期 $1 项但收到 $2 项"
 promptNotFound = "在设置中找不到 ID 为 '$1' 的提示词"
@@ -444,11 +524,19 @@ googleServerError = "Google 服务器错误"
 microsoftFetchFailed = "从 Edge 获取 API 密钥失败"
 microsoftInvalidResponse = "Microsoft Translator API 响应格式无效"
 microsoftNetworkError = "网络错误：无法连接到 Microsoft Translator API"
+googleApiError = "Google Translate API 错误：$1"
+microsoftApiError = "Microsoft Translator API 错误：$1"
+deeplApiError = "DeepL API 错误：$1"
 googleTranslateInvalidResponse = "Google Translate API 响应格式无效"
 googleTranslateNetworkError = "网络错误：无法连接到 Google Translate API"
 deeplInvalidResponse = "DeepL API 响应格式无效"
 deeplNetworkError = "网络错误：无法连接到 DeepL API"
 taskTerminated = "任务已终止"
+browserTranslatorUnavailable = "此浏览器不支持 Translator API"
+browserLanguageDetectorUnavailable = "此浏览器不支持 Language Detector API"
+browserLanguageDetectionFailed = "语言检测失败"
+browserApiError = "浏览器翻译 API 错误"
+unknownError = "未知错误"
 
 # Website Rules
 

@@ -1,12 +1,29 @@
+import { QueueSummary } from "~/components/settings/QueueSummary";
+import { ServiceManager } from "~/components/settings/ServiceManager";
+import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import {
-	type ServiceConfig,
-	ServiceManager,
-} from "~/components/settings/ServiceManager";
+	replaceServicesOfType,
+	type ServiceByType,
+	selectServicesByType,
+} from "~/utils/settings/services";
 import { useServiceManagement } from "../hooks/useServiceManagement";
 import LLMModal from "./LLMModal";
 
 export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
+	type LLMService = ServiceByType<"llm">;
+
+	const getLLMServices = () => selectServicesByType(settings.services, "llm");
+
+	const setLLMServices = (
+		updater: (data: Record<string, LLMService>) => Record<string, LLMService>,
+	) =>
+		setSettings("services", (services) => {
+			const subset = selectServicesByType(services, "llm");
+			const updatedSubset = updater({ ...subset });
+			return replaceServicesOfType(services, "llm", updatedSubset);
+		});
 
 	const {
 		services: llmServices,
@@ -17,12 +34,9 @@ export default (props: { navId: string }) => {
 		handleDeleteService,
 		handleSaveService,
 		handleCloseModal,
-	} = useServiceManagement(
-		() => settings.services.llmServices,
-		(updater) => setSettings("services", "llmServices", updater),
-	);
+	} = useServiceManagement<LLMService>(getLLMServices, setLLMServices);
 
-	const renderLLMServiceDetails = (service: ServiceConfig) => (
+	const renderLLMServiceDetails = (service: LLMService) => (
 		<div class="space-y-1 text-sm text-base-content/70">
 			<p>
 				<strong>{t("settings.llmServices.serviceDetails.model")}:</strong>{" "}
@@ -44,6 +58,7 @@ export default (props: { navId: string }) => {
 					{service.temperature}
 				</p>
 			)}
+			<QueueSummary queue={service.queue} defaults={settings.queue} />
 		</div>
 	);
 
@@ -67,6 +82,7 @@ export default (props: { navId: string }) => {
 				modelInfo={editingService()?.[1]}
 				onSave={handleSaveService}
 				onClose={handleCloseModal}
+				queueDefaults={settings.queue}
 			/>
 		</>
 	);

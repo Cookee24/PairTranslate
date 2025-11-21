@@ -4,9 +4,11 @@ import {
 	createEffect,
 	type JSX,
 	onCleanup,
+	onMount,
 	splitProps,
 } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
+import { animatedHover, animatePulse } from "~/hooks/animation";
 import { cn } from "~/utils/cn";
 
 const badgeVariants = tv({

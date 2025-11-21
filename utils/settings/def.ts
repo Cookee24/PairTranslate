@@ -1,5 +1,7 @@
 import z from "zod";
 
+export const SETTINGS_VERSION = 1;
+
 export const FloatingBallPosition = z.object({
 	side: z.enum(["left", "right"]).default("right"),
 	top: z.number().min(0).max(100).default(20), // Percentage of viewport height
@@ -23,34 +25,58 @@ export const BasicSettings = z.object({
 });
 export type BasicSettings = z.infer<typeof BasicSettings>;
 
-export const ModelConfig = z.object({
+const QueueOverrideShape = z.object({
+	requestConcurrency: z.number().min(1).optional(),
+	tokensPerMinute: z.number().min(1).optional(),
+	maxBatchSize: z.number().min(1).max(100).optional(),
+	maxTokensPerBatch: z.number().min(1).max(200000).optional(),
+});
+export type QueueOverride = z.infer<typeof QueueOverrideShape>;
+export const QueueOverrideSettings = QueueOverrideShape.optional();
+
+export const BaseServiceSettings = z.object({
 	name: z.string().min(1),
-	baseUrl: z.string().url(),
-	apiSpec: z.enum(["openai", "anthropic", "google"]).default("openai"),
+	baseUrl: z.string().url().optional(),
 	apiKey: z.string().optional(),
-	model: z.string(),
+	queue: QueueOverrideSettings,
+});
+
+export const LLMServiceSettings = BaseServiceSettings.extend({
+	type: z.literal("llm"),
+	apiSpec: z.enum(["openai", "anthropic", "google"]),
+	model: z.string().optional(),
 	temperature: z.number().optional(),
 	maxOutputTokens: z.number().optional(),
 });
-export type ModelConfig = z.infer<typeof ModelConfig>;
 
-export const TraditionalTranslationConfig = z.object({
-	name: z.string().min(1),
-	baseUrl: z.string().url().optional(),
-	apiSpec: z
-		.enum(["microsoft", "google", "deepl", "deeplx", "browser"])
-		.default("microsoft"),
-	apiKey: z.string().optional(),
+export const TraditionalServiceSettings = BaseServiceSettings.extend({
+	type: z.literal("traditional"),
+	apiSpec: z.enum(["microsoft", "google", "deepl", "deeplx", "browser"]),
 	region: z.string().optional(),
 });
-export type TraditionalTranslationConfig = z.infer<
-	typeof TraditionalTranslationConfig
->;
+
+export const ServiceSettings = z.union([
+	LLMServiceSettings,
+	TraditionalServiceSettings,
+]);
+export type ServiceSettings = z.infer<typeof ServiceSettings>;
+
+export const ModelSettings = ServiceSettings;
+export type ModelSettings = ServiceSettings;
+
+export const ServicesSettings = z.record(z.uuid(), ModelSettings).default({});
+export type ServicesSettings = z.infer<typeof ServicesSettings>;
+
+export const QueueControlSettings = z.object({
+	requestConcurrency: z.number().min(1).default(4),
+	tokensPerMinute: z.number().min(1).default(80000),
+	maxBatchSize: z.number().min(1).max(100).default(8),
+	maxTokensPerBatch: z.number().min(1).max(200000).default(8000),
+	cacheSize: z.number().min(0),
+});
+export type QueueControlSettings = z.infer<typeof QueueControlSettings>;
 
 export const TranslateSettings = z.object({
-	concurrentRequests: z.number().min(1).default(8),
-	cacheSize: z.number().min(0).default(4096), // Number of entries in LRU cache
-	maxBatchSize: z.number().min(1).max(100).default(4),
 	sourceLang: z.string().default("auto"),
 	targetLang: z.string().default("en"), // Default fallback, will be overridden by browser detection
 	filterInteractive: z.boolean().default(true), // Skip interactive elements like buttons, headers, navigation
@@ -63,14 +89,6 @@ export const TranslateSettings = z.object({
 	inputTranslateLang: z.string().default("en"), // Target language for input translation
 });
 export type TranslateSettings = z.infer<typeof TranslateSettings>;
-
-export const ServicesSettings = z.object({
-	llmServices: z.record(z.uuid(), ModelConfig).default({}),
-	traditionalServices: z
-		.record(z.uuid(), TraditionalTranslationConfig)
-		.default({}),
-});
-export type ServicesSettings = z.infer<typeof ServicesSettings>;
 
 export const WebsiteRuleSettings = z.object({
 	urlPatterns: z.array(z.string()),
@@ -87,27 +105,41 @@ export type WebsiteRuleSettings = z.infer<typeof WebsiteRuleSettings>;
 export const WebsiteRulesSettings = z.array(WebsiteRuleSettings);
 export type WebsiteRulesSettings = z.infer<typeof WebsiteRulesSettings>;
 
+const PromptStep = z.object({
+	message: z.string(),
+	output: z
+		.union([
+			z.literal("string"),
+			z.object({
+				type: z.literal("stringArray"),
+				// Regexp
+				delimiter: z.string().default("\n"),
+			}),
+			z.object({
+				type: z.literal("structured"),
+				schema: z.any(),
+			}),
+		])
+		.default("string"),
+});
 export const PromptSettings = z.object({
 	name: z.string().min(1),
-	system: z.string().optional(),
-	user: z.string().optional(),
-	batch: z.optional(
-		z.object({
-			delimiter: z.string(),
-			trimWhitespace: z.boolean().default(true),
-		}),
-	),
+	systemPrompt: z.string().default(""),
+	input: z.enum(["string", "stringArray"]).default("string"),
+	output: z.enum(["string", "structured"]).default("string"),
+	steps: z.array(PromptStep),
 });
 export type PromptSettings = z.infer<typeof PromptSettings>;
 export const PromptsSettings = z.record(z.uuid(), PromptSettings);
 export type PromptsSettings = z.infer<typeof PromptsSettings>;
 
 export const SettingsSchema = z.object({
-	__v: z.number().default(0),
+	__v: z.number().default(SETTINGS_VERSION),
 	basic: BasicSettings,
 	translate: TranslateSettings,
 	services: ServicesSettings,
-	websiteRules: WebsiteRulesSettings,
+	queue: QueueControlSettings,
 	prompts: PromptsSettings,
+	websiteRules: WebsiteRulesSettings,
 });
 export type SettingsSchema = z.infer<typeof SettingsSchema>;

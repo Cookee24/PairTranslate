@@ -1,12 +1,16 @@
-import type { TraditionalTranslationConfig } from "../settings";
+import type { ServiceSettings } from "../settings";
 
-export type TranslationService = TraditionalTranslationConfig["apiSpec"];
+export type TranslationService = Extract<
+	ServiceSettings,
+	{ type: "traditional" }
+>["apiSpec"];
 
-export interface TranslationConfig {
-	apiKey: string;
-	region?: string; // Required for Microsoft Translator regional resources
-	apiUrl?: string; // Optional: Override default API URL
-}
+export type TranslationConfig = Extract<
+	ServiceSettings,
+	{ type: "traditional" }
+> & {
+	name?: string;
+};
 
 export interface TranslationParams {
 	text: string[];

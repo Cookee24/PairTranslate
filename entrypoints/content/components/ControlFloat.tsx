@@ -1,4 +1,9 @@
 import { animate } from "motion/mini";
+import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { createAnimatedAppearance } from "~/hooks/animation";
+import { useModifierKeyStatus } from "~/hooks/keyboard-shortcut";
+import { useMousePosition } from "~/hooks/mouse";
+import { isApple } from "~/utils/isapple";
 import { getDomListener } from "../parser";
 
 interface SelectionBox {

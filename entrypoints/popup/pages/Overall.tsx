@@ -1,7 +1,14 @@
 import { trackStore } from "@solid-primitives/deep";
 import { Link, Power, PowerOff, Trash2 } from "lucide-solid";
+import { createMemo, createResource, For } from "solid-js";
 import { unwrap } from "solid-js/store";
-import { ButtonGroup } from "@/components/settings/ButtonGroup";
+import { Button } from "~/components/Button";
+import { Card } from "~/components/Card";
+import { ButtonGroup } from "~/components/settings/ButtonGroup";
+import { createDomainEnabledTimer } from "~/hooks/domain-timer";
+import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
+import { selectServicesByType } from "~/utils/settings/services";
 import { getCurrentDomain } from "../get-current";
 
 export default () => {
@@ -16,20 +23,51 @@ export default () => {
 		const rem = remaining();
 		if (rem === undefined) return "";
 		if (rem < 60) {
-			return `${rem} 秒后`;
-		} else if (rem < 3600) {
-			return `${Math.ceil(rem / 60)} 分钟后`;
-		} else if (rem < 3600 * 24) {
-			return `${Math.ceil(rem / 3600)} 小时后`;
-		} else {
-			return `关闭浏览器`;
+			return t("popup.domainTimer.remainingSeconds", [
+				Math.max(1, Math.ceil(rem)).toString(),
+			]);
 		}
+		if (rem < 3600) {
+			return t("popup.domainTimer.remainingMinutes", [
+				Math.max(1, Math.ceil(rem / 60)).toString(),
+			]);
+		}
+		if (rem < 3600 * 24) {
+			return t("popup.domainTimer.remainingHours", [
+				Math.max(1, Math.ceil(rem / 3600)).toString(),
+			]);
+		}
+		return t("popup.domainTimer.untilClose");
 	});
+	const timerOptions = createMemo(() => [
+		{ value: "close", label: t("popup.domainTimer.closeBrowser") },
+		{
+			value: `${5 * 60}`,
+			label: t("popup.domainTimer.afterMinutes", ["5"]),
+		},
+		{
+			value: `${15 * 60}`,
+			label: t("popup.domainTimer.afterMinutes", ["15"]),
+		},
+		{
+			value: `${30 * 60}`,
+			label: t("popup.domainTimer.afterMinutes", ["30"]),
+		},
+		{
+			value: `${60 * 60}`,
+			label: t("popup.domainTimer.afterHours", ["1"]),
+		},
+		{
+			value: `${3 * 60 * 60}`,
+			label: t("popup.domainTimer.afterHours", ["3"]),
+		},
+	]);
 
 	const modelList = createMemo(() => {
 		trackStore(settings.services);
-		const llmServices = unwrap(settings.services.llmServices);
-		const traditionalServices = unwrap(settings.services.traditionalServices);
+		const services = unwrap(settings.services);
+		const llmServices = selectServicesByType(services, "llm");
+		const traditionalServices = selectServicesByType(services, "traditional");
 
 		const options = [
 			{ value: "", label: t("settings.translation.noModel"), disabled: false },
@@ -177,7 +215,9 @@ export default () => {
 						</span>
 					</span>
 					<div class="flex gap-2 items-center">
-						<span class="text-sm font-bold">保持翻译，直到</span>
+						<span class="text-sm font-bold">
+							{t("popup.domainTimer.keepUntil")}
+						</span>
 						<select
 							id="domain-timer-select"
 							class="select select-sm max-w-32"
@@ -196,14 +236,13 @@ export default () => {
 							}}
 						>
 							<option value="" disabled selected>
-								{remainingDisplay() || "选择时间"}
+								{remainingDisplay() || t("popup.domainTimer.selectPlaceholder")}
 							</option>
-							<option value="close">关闭浏览器</option>
-							<option value={`${5 * 60}`}>5 分钟后</option>
-							<option value={`${15 * 60}`}>15 分钟后</option>
-							<option value={`${30 * 60}`}>30 分钟后</option>
-							<option value={`${60 * 60}`}>1 小时后</option>
-							<option value={`${3 * 60 * 60}`}>3 小时后</option>
+							<For each={timerOptions()}>
+								{(option) => (
+									<option value={option.value}>{option.label}</option>
+								)}
+							</For>
 						</select>
 						<Button
 							class="ml-auto"

@@ -1,4 +1,5 @@
 import {
+	Activity,
 	BrainCircuit,
 	Cog,
 	FileText,
@@ -6,11 +7,16 @@ import {
 	Info,
 	Languages,
 } from "lucide-solid";
+import { createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import { SettingsRecoveryBanner } from "~/components/SettingsRecoveryBanner";
+import { SettingsProvider, useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import { getThemeClass } from "~/utils/theme";
 import Nav from "./components/Nav";
 import About from "./pages/About";
 import Advanced from "./pages/Advanced";
 import Basic from "./pages/Basic";
+import FlowControl from "./pages/FlowControl";
 import LLM from "./pages/LLM";
 import Traditional from "./pages/Traditional";
 import Translation from "./pages/Translation";
@@ -42,7 +48,6 @@ const Content = () => {
 			window.removeEventListener("resize", () => handler(ref.offsetHeight)),
 		);
 	});
-
 	return (
 		<>
 			<Nav.Root ref={ref}>
@@ -61,6 +66,10 @@ const Content = () => {
 				<Nav.Item navId="traditional">
 					<Globe size={16} />
 					{t("nav.traditionalServices")}
+				</Nav.Item>
+				<Nav.Item navId="flowControl">
+					<Activity size={16} />
+					{t("nav.flowControl")}
 				</Nav.Item>
 				<Nav.Item navId="websiteRules">
 					<FileText size={16} />
@@ -81,10 +90,12 @@ const Content = () => {
 					"margin-top": `${top()}px`,
 				}}
 			>
+				<SettingsRecoveryBanner />
 				<Basic navId="basic" />
 				<Translation navId="translate" />
 				<LLM navId="llm" />
 				<Traditional navId="traditional" />
+				<FlowControl navId="flowControl" />
 				<WebsiteRules navId="websiteRules" />
 				<Advanced navId="advanced" />
 				<About navId="about" />

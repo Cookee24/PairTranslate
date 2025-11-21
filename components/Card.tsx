@@ -1,6 +1,7 @@
 import { mergeRefs } from "@solid-primitives/refs";
-import { type Component, type JSX, splitProps } from "solid-js";
+import { type Component, type JSX, onMount, splitProps } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
+import { animatedHover } from "~/hooks/animation";
 import { cn } from "~/utils/cn";
 
 const cardVariants = tv({

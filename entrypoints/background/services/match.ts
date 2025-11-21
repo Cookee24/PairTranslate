@@ -1,3 +1,8 @@
+import { makeDomainMatcher } from "~/utils/domain-matcher";
+import { PARSER_PATTERNS, PATTERNS_IDX_TO_PARSER_IDX } from "~/utils/parser";
+import type { MatchService } from "~/utils/rpc";
+import { listenSettings } from "~/utils/settings/helper";
+
 export const createMatchService = (): MatchService => {
 	const parserMatcher = makeDomainMatcher(PARSER_PATTERNS);
 	let websiteRuleMatcher = (_domain: string): number | null => {

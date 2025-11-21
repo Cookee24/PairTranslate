@@ -1,6 +1,13 @@
 import { HashRouter, Route, useLocation, useNavigate } from "@solidjs/router";
 import { Earth, ExternalLink, Settings2 } from "lucide-solid";
 import type { JSX } from "solid-js";
+import { Match, Switch } from "solid-js";
+import { browser } from "#imports";
+import { Button } from "~/components/Button";
+import { Loading } from "~/components/Loading";
+import { SettingsRecoveryBanner } from "~/components/SettingsRecoveryBanner";
+import { SettingsProvider } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import { getCurrentDomain } from "./get-current";
 import Overall from "./pages/Overall";
 import Website from "./pages/Website";
@@ -15,19 +22,22 @@ const Content = (props: { children?: JSX.Element }) => {
 
 	return (
 		<div class="p-4 flex flex-col gap-4 w-full h-full">
-			<div class="flex-1 overflow-y-auto">{props.children}</div>
+			<div class="flex-1 overflow-y-auto flex flex-col gap-4">
+				<SettingsRecoveryBanner />
+				{props.children}
+			</div>
 			<div class="self-end flex gap-2">
 				<Switch>
 					<Match when={location.pathname.includes("overall")}>
 						<Button variant="ghost" on:click={() => navigate("website")}>
 							<Earth size={16} />
-							网站规则
+							{t("nav.websiteRules")}
 						</Button>
 					</Match>
 					<Match when={location.pathname.includes("website")}>
 						<Button variant="ghost" on:click={() => navigate("overall")}>
 							<Settings2 size={16} />
-							常规设置
+							{t("nav.basic")}
 						</Button>
 					</Match>
 				</Switch>
@@ -36,7 +46,7 @@ const Content = (props: { children?: JSX.Element }) => {
 					on:click={() => browser.runtime.openOptionsPage()}
 				>
 					<ExternalLink size={16} />
-					更多设置
+					{t("popup.navigation.openOptions")}
 				</Button>
 			</div>
 		</div>

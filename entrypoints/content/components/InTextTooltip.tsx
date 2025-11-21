@@ -1,4 +1,9 @@
 import { ClipboardCopy, RotateCcw, Trash2 } from "lucide-solid";
+import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { Button } from "~/components/Button";
+import { Menu } from "~/components/Menu";
+import { createAnimatedAppearance, onOuterClick } from "~/hooks/animation";
+import { t } from "~/utils/i18n";
 
 interface Props {
 	pos?: { x: number; y: number };
@@ -78,11 +83,10 @@ export default (props: Props) => {
 				size="sm"
 				ref={setRef}
 			>
-				<Menu.Item
-					class="tooltip tooltip-right"
-					data-tip={t("actions.copyAsMarkdown")}
-				>
+				<Menu.Item>
 					<Button
+						class="tooltip tooltip-right"
+						data-tip={t("actions.copyAsMarkdown")}
 						variant="ghost"
 						size="xs"
 						disabled={props.loading || !!props.error}
@@ -91,11 +95,10 @@ export default (props: Props) => {
 						<ClipboardCopy size={16} />
 					</Button>
 				</Menu.Item>
-				<Menu.Item
-					class="tooltip tooltip-right"
-					data-tip={props.error ?? t("common.retry")}
-				>
+				<Menu.Item>
 					<Button
+						class="tooltip tooltip-right"
+						data-tip={props.error ?? t("common.retry")}
 						variant={props.error ? "error" : "ghost"}
 						size="xs"
 						disabled={props.loading}

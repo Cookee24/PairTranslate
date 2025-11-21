@@ -7,12 +7,16 @@ description = "A browser extension for side-by-side translation of web pages"
 [nav]
 basic = "Basic Settings"
 translation = "Translation Services"
+flowControl = "Flow Control"
 llmServices = "LLM Services"
 traditionalServices = "Traditional Translation"
 websiteRules = "Website Rules"
 advanced = "Advanced Settings"
 about = "About"
 website = "Website"
+
+[popup.navigation]
+openOptions = "More settings"
 
 # Common UI Elements
 
@@ -24,6 +28,7 @@ edit = "Edit"
 delete = "Delete"
 close = "Close"
 loading = "Loading..."
+processing = "Processing..."
 enabled = "Enabled"
 disabled = "Disabled"
 configure = "Configure"
@@ -35,10 +40,12 @@ selectModel = "Select Model"
 modelsLoaded = "Loaded $1 models"
 retry = "Retry"
 confirm = "Confirm"
+clear = "Clear"
 positionLeft = "Left"
 positionRight = "Right"
 floatingBallIcon = "Floating Ball Icon"
 translationTasks = "Translation Tasks"
+queue = "Queue"
 completed = "completed"
 running = "running"
 resize = "Resize"
@@ -47,6 +54,24 @@ featureInDevelopment = "Feature in development"
 globalDefault = "Global Default"
 yes = "Yes"
 no = "No"
+
+[popup.domainTimer]
+keepUntil = "Keep translation enabled until"
+selectPlaceholder = "Select duration"
+remainingSeconds = "Ends in $1 sec"
+remainingMinutes = "Ends in $1 min"
+remainingHours = "Ends in $1 hr"
+untilClose = "Until the browser closes"
+closeBrowser = "Close the browser"
+afterMinutes = "In $1 min"
+afterHours = "In $1 hr"
+
+[migrationError]
+title = "Settings need to be reset"
+description = "Pair Translate couldn't load your previous settings after an update. Reset everything to defaults to continue."
+detailsLabel = "Details"
+resetButton = "Reset settings now"
+resetFailed = "Failed to reset settings. Please try again."
 
 # Settings Pages
 
@@ -130,6 +155,26 @@ filterInteractive = "Filter Interactive Elements"
 filterInteractiveDesc = "Skip interactive elements like buttons, headers, navigation, and footers to avoid unwanted translations"
 translateFullPage = "Translation Scope"
 translateFullPageDesc = "When checked, translate entire page content; when unchecked, only translate visible content"
+
+[settings.flowControl]
+title = "Flow Control"
+description = "Tune global queue throughput, rate limits, and caching for every translation model."
+requestConcurrency = "Concurrent Requests"
+requestConcurrencyDesc = "Maximum number of translation requests that can run at the same time across all models."
+tokensPerMinute = "Tokens per Minute"
+tokensPerMinuteDesc = "Upper limit of tokens LLM models can consume per minute before throttling starts."
+maxBatchSize = "Max Batch Size"
+maxBatchSizeDesc = "Largest number of texts grouped into a single request batch before queuing the rest."
+maxTokensPerBatch = "Max Tokens per Batch"
+maxTokensPerBatchDesc = "Cap the estimated tokens inside a batch; when exceeded the remaining items are moved into the next batch."
+cacheSize = "Cache Size"
+cacheSizeDesc = "Total translation results kept in cache to speed up repeated lookups."
+
+[settings.services.flowControl]
+title = "Flow Control Settings"
+description = "Customize this service's flow control limits. Leave fields empty to inherit the global defaults."
+usingGlobal = "Using global defaults"
+reset = "Reset fields"
 
 [settings.llmServices]
 title = "LLM Services"
@@ -304,6 +349,40 @@ mean = "Meaning"
 fetchModels = "Fetch Models"
 copyAsMarkdown = "Copy as Markdown"
 
+[dictionary.tabs]
+overview = "Overview"
+definitions = "Definitions"
+
+[dictionary.labels]
+source = "Source"
+meaning = "Meaning $1"
+meaningShort = "M$1"
+examplePrefix = "Ex"
+example = "Example"
+synonyms = "Synonyms"
+antonyms = "Antonyms"
+
+[dictionary.sections]
+meanings = "Meanings"
+
+[dictionary.messages]
+noDefinitions = "No definitions found."
+
+[floatingTranslator.sections]
+dictionary = "Dictionary"
+contextExplanation = "Context Explanation"
+textExplanation = "Text Explanation"
+examples = "Examples"
+translation = "Translation"
+reasoning = "Reasoning"
+
+[prompts.defaultNames]
+translate = "Translate"
+batchTranslate = "Batch Translate"
+inputTranslate = "Input Translate"
+explain = "Explain"
+dictionaryTranslate = "Dictionary Translate"
+
 # Error Messages
 
 [errors]
@@ -327,6 +406,7 @@ explainOnlyLlm = "Explain feature only supports LLM models"
 explanationFailed = "Explanation failed"
 streamingExplanationFailed = "Streaming explanation failed"
 noTranslationModel = "No translation model configured"
+translationModelRequired = "Model not configured. Please set up a translation model in the settings."
 noExplanationModel = "No explanation model configured"
 batchResponseMismatch = "Batch response mismatch, expected $1 items but got $2"
 promptNotFound = "Prompt with ID '$1' not found in settings"
@@ -444,11 +524,19 @@ googleServerError = "Google server error"
 microsoftFetchFailed = "Failed to fetch API key from Edge"
 microsoftInvalidResponse = "Invalid response format from Microsoft Translator API"
 microsoftNetworkError = "Network error: Failed to connect to Microsoft Translator API"
+googleApiError = "Google Translate API error: $1"
+microsoftApiError = "Microsoft Translator API error: $1"
+deeplApiError = "DeepL API error: $1"
 googleTranslateInvalidResponse = "Invalid response format from Google Translate API"
 googleTranslateNetworkError = "Network error: Failed to connect to Google Translate API"
 deeplInvalidResponse = "Invalid response format from DeepL API"
 deeplNetworkError = "Network error: Failed to connect to DeepL API"
 taskTerminated = "Task terminated"
+browserTranslatorUnavailable = "Translator API not available in this browser"
+browserLanguageDetectorUnavailable = "Language Detector API not available in this browser"
+browserLanguageDetectionFailed = "Failed to detect language"
+browserApiError = "Browser translation API error"
+unknownError = "Unknown error"
 
 # Website Rules
 

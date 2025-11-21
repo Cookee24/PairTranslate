@@ -1,6 +1,7 @@
 import type { Accessor } from "solid-js";
-import { createEffect, onCleanup } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
 import { isInput } from "@/utils/is-input";
+import { isApple } from "~/utils/isapple";
 
 interface KeyboardShortcutOptions {
 	enabled?: Accessor<boolean>;

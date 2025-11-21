@@ -1,0 +1,19 @@
+Below are some examples of input and output pairs. Please follow the instructions in the output to generate your response. {{#if page}} The context of current page is wrapped in <page> tags. Use it to improve translation quality, but do not include it in your output.{{/if}}
+
+<example>
+%% INPUT 1:
+
+{{#if page}}<page>
+Title: Gmail
+Domain: gmail.com
+</page>{{/if}}
+
+Hello Sam,
+I hope this email finds you well. ...
+
+%% OUTPUT 1:
+
+サムさんへ
+
+ご無沙汰しております。...
+</example>

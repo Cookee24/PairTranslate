@@ -1,17 +1,24 @@
 import { Check, CheckCheck, Download, Plus, X } from "lucide-solid";
-import { createSignal, For, onMount, Show } from "solid-js";
+import { createMemo, createSignal, For, onMount, Show } from "solid-js";
+import { Alert } from "~/components/Alert";
+import { Badge } from "~/components/Badge";
+import { Button } from "~/components/Button";
+import { Modal } from "~/components/Modal";
+import { useSettings } from "~/hooks/settings";
 import {
 	checkBrowserTranslationCapabilities,
 	type TranslatorCheckResult,
 } from "~/utils/browser-translator";
 import { SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { t } from "~/utils/i18n";
-import type { TraditionalTranslationConfig } from "~/utils/settings/def";
+import type { ServiceSettings } from "~/utils/settings";
 
 interface BrowserTranslatorModalProps {
 	open?: boolean;
 	onClose: () => void;
-	onAddService?: (config: TraditionalTranslationConfig) => void;
+	onAddService?: (
+		config: Extract<ServiceSettings, { type: "traditional" }>,
+	) => void;
 }
 
 interface LanguagePair {
@@ -61,8 +68,9 @@ export default (props: BrowserTranslatorModalProps) => {
 
 	// Check if browser translator service already exists
 	const hasBrowserService = createMemo(() =>
-		Object.values(settings.services.traditionalServices).some(
-			(service) => service.apiSpec === "browser",
+		(Object.values(settings.services) as ServiceSettings[]).some(
+			(service) =>
+				service.type === "traditional" && service.apiSpec === "browser",
 		),
 	);
 
@@ -102,7 +110,8 @@ export default (props: BrowserTranslatorModalProps) => {
 	const handleAddBrowserService = () => {
 		if (!props.onAddService) return;
 
-		const config: TraditionalTranslationConfig = {
+		const config: Extract<ServiceSettings, { type: "traditional" }> = {
+			type: "traditional",
 			name: t("settings.browserTranslator.serviceName"),
 			apiSpec: "browser",
 		};

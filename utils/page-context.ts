@@ -1,4 +1,4 @@
-import type { PageContext } from "@/utils/types";
+import type { PageContext } from "./types";
 
 const getMetaContent = (name: string): string => {
 	const meta =
@@ -44,16 +44,19 @@ const getExtraMeta = (): Record<string, string> => {
 };
 
 let cache: PageContext | undefined;
+let lastUrl: string;
 export function getPageContext(): PageContext {
-	if (!cache) {
-		cache = {
-			pageTitle: document.title?.trim() || "",
-			pageDescription: getMetaContent("description"),
-			pageKeywords: getMetaKeywords(),
-			domain: window.location.hostname,
-			extra: getExtraMeta(),
-		};
+	if (lastUrl !== window.location.href) {
+		lastUrl = window.location.href;
+		cache = undefined;
 	}
 
+	cache ||= {
+		title: document.title.trim(),
+		domain: window.location.hostname,
+		desc: getMetaContent("description"),
+		keywords: getMetaKeywords().join(", "),
+		...getExtraMeta(),
+	};
 	return cache;
 }

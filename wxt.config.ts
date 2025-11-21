@@ -3,6 +3,7 @@ import { defineConfig } from "wxt";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
+	imports: false,
 	modules: [
 		"@wxt-dev/module-solid",
 		"@wxt-dev/i18n/module",
@@ -20,7 +21,7 @@ export default defineConfig({
 		default_locale: "en",
 		web_accessible_resources: [
 			{
-				resources: ["katex/*", "icons/*"],
+				resources: ["katex/*", "icons/*", "iframe.html"],
 				matches: ["<all_urls>"],
 			},
 		],

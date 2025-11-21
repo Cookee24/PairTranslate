@@ -7,12 +7,16 @@ description = "ウェブページのサイドバイサイド翻訳用ブラウ�
 [nav]
 basic = "基本設定"
 translation = "翻訳サービス"
+flowControl = "フロー制御"
 llmServices = "LLMサービス"
 traditionalServices = "従来の翻訳"
 websiteRules = "ウェブサイトルール"
 advanced = "詳細設定"
 about = "について"
 website = "ウェブサイト"
+
+[popup.navigation]
+openOptions = "その他の設定"
 
 # Common UI Elements
 
@@ -24,6 +28,7 @@ edit = "編集"
 delete = "削除"
 close = "閉じる"
 loading = "読み込み中..."
+processing = "処理中..."
 enabled = "有効"
 disabled = "無効"
 configure = "設定"
@@ -35,10 +40,12 @@ selectModel = "モデルを選択"
 modelsLoaded = "$1個のモデルを読み込みました"
 retry = "再試行"
 confirm = "確認"
+clear = "クリア"
 positionLeft = "左"
 positionRight = "右"
 floatingBallIcon = "フローティングボールアイコン"
 translationTasks = "翻訳タスク"
+queue = "待機列"
 completed = "完了"
 running = "実行中"
 resize = "サイズ変更"
@@ -47,6 +54,24 @@ featureInDevelopment = "機能開発中"
 globalDefault = "グローバルデフォルト"
 yes = "はい"
 no = "いいえ"
+
+[popup.domainTimer]
+keepUntil = "翻訳を維持する期限"
+selectPlaceholder = "時間を選択"
+remainingSeconds = "$1 秒後に終了"
+remainingMinutes = "$1 分後に終了"
+remainingHours = "$1 時間後に終了"
+untilClose = "ブラウザを閉じるまで"
+closeBrowser = "ブラウザを閉じる"
+afterMinutes = "$1 分後"
+afterHours = "$1 時間後"
+
+[migrationError]
+title = "設定をリセットする必要があります"
+description = "アップデート後に以前の設定を読み込めませんでした。既定値にリセットして利用を続けてください。"
+detailsLabel = "詳細"
+resetButton = "今すぐ設定をリセット"
+resetFailed = "設定のリセットに失敗しました。もう一度お試しください。"
 
 # Settings Pages
 
@@ -130,6 +155,26 @@ filterInteractive = "インタラクティブ要素をフィルター"
 filterInteractiveDesc = "ボタン、ヘッダー、ナビゲーション、フッターなどのインタラクティブ要素をスキップして、不要な翻訳を避けます"
 translateFullPage = "翻訳範囲"
 translateFullPageDesc = "チェックするとページ全体のコンテンツを翻訳します。チェックしないと、表示されているコンテンツのみを翻訳します"
+
+[settings.flowControl]
+title = "フロー制御"
+description = "翻訳キュー全体のスループットやキャッシュポリシーを調整します。"
+requestConcurrency = "同時リクエスト数"
+requestConcurrencyDesc = "すべてのモデルで同時に実行できる翻訳リクエストの上限です。"
+tokensPerMinute = "1分あたりのトークン数"
+tokensPerMinuteDesc = "LLMモデルが1分間に消費できるトークン数の上限です。"
+maxBatchSize = "最大バッチサイズ"
+maxBatchSizeDesc = "1つのバッチでまとめて処理するテキスト数の上限です。"
+maxTokensPerBatch = "バッチあたりの最大トークン数"
+maxTokensPerBatchDesc = "バッチ内の推定トークン数がこの値を超えると、残りのテキストは次のバッチに回されます。"
+cacheSize = "キャッシュサイズ"
+cacheSizeDesc = "再利用のために保持する翻訳結果の総数です。"
+
+[settings.services.flowControl]
+title = "フロー制御設定"
+description = "このサービス専用のフロー制御上限を設定します。空欄のままにするとグローバル設定を引き継ぎます。"
+usingGlobal = "グローバル設定を使用"
+reset = "設定をリセット"
 
 [settings.llmServices]
 title = "LLMサービス"
@@ -304,6 +349,40 @@ mean = "意味"
 fetchModels = "モデルを取得"
 copyAsMarkdown = "Markdownとしてコピー"
 
+[dictionary.tabs]
+overview = "概要"
+definitions = "定義"
+
+[dictionary.labels]
+source = "ソース"
+meaning = "第$1義"
+meaningShort = "第$1義"
+examplePrefix = "例"
+example = "例文"
+synonyms = "類義語"
+antonyms = "反意語"
+
+[dictionary.sections]
+meanings = "意味"
+
+[dictionary.messages]
+noDefinitions = "定義が見つかりませんでした。"
+
+[floatingTranslator.sections]
+dictionary = "辞書"
+contextExplanation = "文脈の説明"
+textExplanation = "本文の説明"
+examples = "例文"
+translation = "翻訳"
+reasoning = "推論"
+
+[prompts.defaultNames]
+translate = "翻訳"
+batchTranslate = "一括翻訳"
+inputTranslate = "入力欄翻訳"
+explain = "説明"
+dictionaryTranslate = "辞書訳"
+
 # Error Messages
 
 [errors]
@@ -327,6 +406,7 @@ explainOnlyLlm = "説明機能はLLMモデルのみをサポートしていま�
 explanationFailed = "説明に失敗しました"
 streamingExplanationFailed = "ストリーミング説明に失敗しました"
 noTranslationModel = "翻訳モデルが設定されていません"
+translationModelRequired = "モデルが未設定です。設定画面で翻訳モデルを設定してください。"
 noExplanationModel = "説明モデルが設定されていません"
 batchResponseMismatch = "バッチ応答の不一致、$1項を期待しましたが$2項を取得しました"
 promptNotFound = "設定にID '$1' のプロンプトが見つかりません"
@@ -444,11 +524,19 @@ googleServerError = "Googleサーバーエラーです"
 microsoftFetchFailed = "EdgeからAPIキーの取得に失敗しました"
 microsoftInvalidResponse = "Microsoft Translator APIからの無効な応答形式です"
 microsoftNetworkError = "ネットワークエラー：Microsoft Translator APIへの接続に失敗しました"
+googleApiError = "Google Translate API エラー: $1"
+microsoftApiError = "Microsoft Translator API エラー: $1"
+deeplApiError = "DeepL API エラー: $1"
 googleTranslateInvalidResponse = "Google Translate APIからの無効な応答形式です"
 googleTranslateNetworkError = "ネットワークエラー：Google Translate APIへの接続に失敗しました"
 deeplInvalidResponse = "DeepL APIからの無効な応答形式です"
 deeplNetworkError = "ネットワークエラー：DeepL APIへの接続に失敗しました"
 taskTerminated = "タスクが終了しました"
+browserTranslatorUnavailable = "このブラウザでは Translator API を利用できません"
+browserLanguageDetectorUnavailable = "このブラウザでは Language Detector API を利用できません"
+browserLanguageDetectionFailed = "言語の検出に失敗しました"
+browserApiError = "ブラウザ翻訳 API エラー"
+unknownError = "不明なエラー"
 
 # Website Rules
 

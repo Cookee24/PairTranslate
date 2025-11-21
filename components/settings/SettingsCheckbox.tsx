@@ -1,4 +1,5 @@
 import { type Component, type JSX, splitProps } from "solid-js";
+import { Checkbox } from "~/components/Checkbox";
 
 export interface SettingsCheckboxProps
 	extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "size"> {

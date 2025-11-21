@@ -1,4 +1,4 @@
-import { LLMError } from "#imports";
+import { LLMError } from "~/utils/llm/types";
 
 export enum TranslateErrorType {
 	MODEL_NOT_FOUND = "MODEL_NOT_FOUND",
@@ -161,7 +161,7 @@ export const convertFromLLMError = (error: unknown): TranslateError => {
 		error.originalError,
 		error.message || "Unknown LLM error",
 	);
-	const code = extractErrorCode(error.originalError) || error.code;
+	const code = extractErrorCode(error.originalError);
 
 	return createTranslateError(errorType, message, code);
 };

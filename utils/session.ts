@@ -1,3 +1,5 @@
+import { type Browser, browser } from "#imports";
+
 export function createSessionStorage<T>() {
 	return {
 		set(key: string, value: T): Promise<void> {

@@ -1,4 +1,5 @@
 import { type Component, For, splitProps } from "solid-js";
+import { Button } from "~/components/Button";
 
 export interface ButtonOption {
 	value: string;

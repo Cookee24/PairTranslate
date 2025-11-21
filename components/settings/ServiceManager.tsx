@@ -1,27 +1,29 @@
 import { Edit, Plus, Trash2 } from "lucide-solid";
-import { type Component, For, type JSX } from "solid-js";
+import { For, type JSX } from "solid-js";
+import { Button } from "~/components/Button";
+import { Card } from "~/components/Card";
+import type { ServiceSettings } from "~/utils/settings";
 import { SettingsCard } from "./SettingsCard";
 
-export interface ServiceConfig {
-	name: string;
-	[key: string]: string | number | boolean | undefined;
-}
-
-export interface ServiceManagerProps {
+export interface ServiceManagerProps<
+	T extends ServiceSettings = ServiceSettings,
+> {
 	title: string;
 	navId: string;
-	services: [string, ServiceConfig][];
+	services: [string, T][];
 	addServiceLabel: string;
 	noServicesConfigured: string;
 	noServicesDesc: string;
 	onAddService: () => void;
 	onEditService: (id: string) => void;
 	onDeleteService: (id: string) => void;
-	renderServiceDetails: (service: ServiceConfig) => JSX.Element;
+	renderServiceDetails: (service: T) => JSX.Element;
 	extraActions?: JSX.Element;
 }
 
-export const ServiceManager: Component<ServiceManagerProps> = (props) => {
+export const ServiceManager = <T extends ServiceSettings>(
+	props: ServiceManagerProps<T>,
+) => {
 	return (
 		<SettingsCard title={props.title} navId={props.navId}>
 			<div class="flex justify-between items-center mb-4">

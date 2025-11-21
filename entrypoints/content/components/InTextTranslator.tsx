@@ -1,3 +1,6 @@
+import { createEffect, createSignal, on, onCleanup } from "solid-js";
+import { useSettings } from "~/hooks/settings";
+import { useWebsiteRule } from "~/hooks/website-rule";
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import {
 	destroyObservers,

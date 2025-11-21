@@ -1,3 +1,4 @@
+import { t } from "~/utils/i18n";
 import type {
 	TranslationConfig,
 	TranslationError,
@@ -10,7 +11,8 @@ export const googleTranslate = async (
 	params: TranslationParams,
 ): Promise<TranslationResult> => {
 	const apiUrl =
-		config.apiUrl || "https://translation.googleapis.com/language/translate/v2";
+		config.baseUrl ||
+		"https://translation.googleapis.com/language/translate/v2";
 
 	try {
 		const response = await fetch(`${apiUrl}?key=${config.apiKey}`, {
@@ -27,7 +29,9 @@ export const googleTranslate = async (
 
 		if (!response.ok) {
 			const errorData = await response.text();
-			let errorMessage = `Google Translate API error: ${response.statusText}`;
+			let errorMessage = t("errors.additional.googleApiError", [
+				response.statusText,
+			]);
 
 			try {
 				const parsedError = JSON.parse(errorData);
@@ -64,7 +68,7 @@ export const googleTranslate = async (
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
 			const networkError: TranslationError = {
 				type: "NETWORK_ERROR",
-				message: "Network error: Failed to connect to Google Translate API",
+				message: t("errors.additional.googleTranslateNetworkError"),
 				service: "google",
 			};
 			throw networkError;

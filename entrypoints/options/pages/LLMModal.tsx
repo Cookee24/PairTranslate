@@ -1,15 +1,30 @@
+import { createEffect, createSignal, on } from "solid-js";
 import type z from "zod";
-import { ModelConfig } from "~/utils/settings/def";
+import { Button } from "~/components/Button";
+import { Loading } from "~/components/Loading";
+import { Modal } from "~/components/Modal";
+import { t } from "~/utils/i18n";
+import { createLLMClient } from "~/utils/llm";
+import {
+	LLMServiceSettings,
+	type QueueControlSettings,
+} from "~/utils/settings/def";
+import { LLMServiceTemplates } from "~/utils/settings/default";
+import { QueueOverrideFields } from "../components/QueueOverrideFields";
+
+type LLMService = z.infer<typeof LLMServiceSettings>;
 
 interface LLMModalProps {
-	modelInfo?: z.infer<typeof ModelConfig>;
-	onSave: (config: z.infer<typeof ModelConfig>) => void;
+	modelInfo?: LLMService;
+	onSave: (config: LLMService) => void;
 	onClose: () => void;
 	open?: boolean;
+	queueDefaults: QueueControlSettings;
 }
 
 export default (props: LLMModalProps) => {
-	const DEFAULT: ModelConfig = {
+	const DEFAULT: LLMService = {
+		type: "llm",
 		name: "",
 		baseUrl: "",
 		apiSpec: "openai",
@@ -37,9 +52,10 @@ export default (props: LLMModalProps) => {
 	const handleTemplateChange = (templateName: string) => {
 		setSelectedTemplate(templateName);
 		const template = LLMServiceTemplates.find((t) => t.name === templateName);
-		if (template) {
+		if (template && template.type === "llm") {
 			setFormData({
 				...formData(),
+				type: "llm",
 				name: template.name,
 				baseUrl: template.baseUrl,
 				apiSpec: template.apiSpec,
@@ -58,10 +74,19 @@ export default (props: LLMModalProps) => {
 		setModelFetchError(null);
 
 		try {
-			const client = createLLMClient(config.apiSpec as LLMProvider, {
+			const clientConfig = {
 				apiKey: config.apiKey,
 				baseUrl: config.baseUrl,
-			});
+			};
+
+			// Create client based on API spec with proper type narrowing
+			const client =
+				config.apiSpec === "openai"
+					? createLLMClient("openai", clientConfig)
+					: config.apiSpec === "anthropic"
+						? createLLMClient("anthropic", clientConfig)
+						: createLLMClient("google", clientConfig);
+
 			const models = await client.listModels();
 
 			const modelIds = Array.isArray(models) ? models.map((m) => m.id) : [];
@@ -79,7 +104,7 @@ export default (props: LLMModalProps) => {
 
 	const handleSave = (e: Event) => {
 		e.preventDefault();
-		const result = ModelConfig.safeParse(formData());
+		const result = LLMServiceSettings.safeParse(formData());
 		if (result.success) {
 			props.onSave(result.data);
 			props.onClose();
@@ -202,7 +227,7 @@ export default (props: LLMModalProps) => {
 						<option value="anthropic">
 							{t("settings.llmModal.apiSpecs.anthropic")}
 						</option>
-						<option value="gemini">
+						<option value="google">
 							{t("settings.llmModal.apiSpecs.gemini")}
 						</option>
 					</select>
@@ -328,6 +353,18 @@ export default (props: LLMModalProps) => {
 						/>
 					</div>
 				</div>
+
+				<div class="divider" />
+				<QueueOverrideFields
+					value={formData().queue}
+					defaults={props.queueDefaults}
+					onChange={(queue) =>
+						setFormData((prev) => ({
+							...prev,
+							queue,
+						}))
+					}
+				/>
 			</div>
 		</Modal>
 	);

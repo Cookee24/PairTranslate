@@ -1,6 +1,12 @@
 import { spring } from "motion";
 import { animate } from "motion/mini";
-import type { Accessor } from "solid-js";
+import {
+	type Accessor,
+	createEffect,
+	createSignal,
+	on,
+	onCleanup,
+} from "solid-js";
 
 export const animateEnter = (element: Element) =>
 	animate(

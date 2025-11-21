@@ -1,3 +1,8 @@
+import { createEffect, createSignal, Show } from "solid-js";
+import { createDomainEnabledTimer } from "~/hooks/domain-timer";
+import { useKeyboardShortcut } from "~/hooks/keyboard-shortcut";
+import { useSettings } from "~/hooks/settings";
+import { useWebsiteRule } from "~/hooks/website-rule";
 import FloatingBall from "./FloatingBall";
 import InputTranslator from "./InputTranslator";
 import InTextTranslator from "./InTextTranslator";

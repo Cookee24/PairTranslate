@@ -7,12 +7,16 @@ description = "웹 페이지의 나란히 번역을 위한 브라우저 확장 �
 [nav]
 basic = "기본 설정"
 translation = "번역 서비스"
+flowControl = "플로우 제어"
 llmServices = "LLM 서비스"
 traditionalServices = "전통 번역"
 websiteRules = "웹사이트 규칙"
 advanced = "고급 설정"
 about = "정보"
 website = "웹사이트"
+
+[popup.navigation]
+openOptions = "추가 설정"
 
 # Common UI Elements
 
@@ -24,6 +28,7 @@ edit = "편집"
 delete = "삭제"
 close = "닫기"
 loading = "로딩 중..."
+processing = "처리 중..."
 enabled = "활성화"
 disabled = "비활성화"
 configure = "구성"
@@ -35,10 +40,12 @@ selectModel = "모델 선택"
 modelsLoaded = "$1개의 모델을 로드했습니다"
 retry = "재시도"
 confirm = "확인"
+clear = "지우기"
 positionLeft = "왼쪽"
 positionRight = "오른쪽"
 floatingBallIcon = "플로팅 볼 아이콘"
 translationTasks = "번역 작업"
+queue = "대기열"
 completed = "완료"
 running = "실행 중"
 resize = "크기 조정"
@@ -47,6 +54,24 @@ featureInDevelopment = "기능 개발 중"
 globalDefault = "기본값"
 yes = "예"
 no = "아니요"
+
+[popup.domainTimer]
+keepUntil = "번역 유지 시간"
+selectPlaceholder = "시간 선택"
+remainingSeconds = "$1초 후 종료"
+remainingMinutes = "$1분 후 종료"
+remainingHours = "$1시간 후 종료"
+untilClose = "브라우저를 닫을 때까지"
+closeBrowser = "브라우저 닫기"
+afterMinutes = "$1분 후"
+afterHours = "$1시간 후"
+
+[migrationError]
+title = "설정을 초기화해야 합니다"
+description = "업데이트 이후 이전 설정을 불러오지 못했습니다. 계속 사용하려면 기본값으로 초기화해주세요."
+detailsLabel = "세부 정보"
+resetButton = "지금 설정 초기화"
+resetFailed = "설정 초기화에 실패했습니다. 다시 시도해주세요."
 
 # Settings Pages
 
@@ -130,6 +155,26 @@ filterInteractive = "인터랙티브 요소 필터링"
 filterInteractiveDesc = "버튼, 헤더, 내비게이션, 푸터 등 인터랙티브 요소를 건너뛰어 원치 않는 번역을 방지합니다"
 translateFullPage = "번역 범위"
 translateFullPageDesc = "체크하면 전체 페이지 콘텐츠를 번역하고, 체크하지 않으면 보이는 콘텐츠만 번역합니다"
+
+[settings.flowControl]
+title = "플로우 제어"
+description = "번역 큐 전체의 처리량과 캐시 한도를 조정합니다."
+requestConcurrency = "동시 요청 수"
+requestConcurrencyDesc = "모든 모델이 동시에 보낼 수 있는 번역 요청의 최대값입니다."
+tokensPerMinute = "분당 토큰 수"
+tokensPerMinuteDesc = "LLM 모델이 1분 동안 소비할 수 있는 토큰 상한입니다."
+maxBatchSize = "최대 배치 크기"
+maxBatchSizeDesc = "한 번의 배치에서 처리할 수 있는 텍스트 수의 상한입니다."
+maxTokensPerBatch = "배치당 최대 토큰 수"
+maxTokensPerBatchDesc = "배치의 예상 토큰 수가 이 값을 넘으면 나머지 텍스트는 다음 배치로 이동합니다."
+cacheSize = "캐시 크기"
+cacheSizeDesc = "전역적으로 보관할 번역 결과의 개수입니다."
+
+[settings.services.flowControl]
+title = "플로우 제어 설정"
+description = "이 서비스만의 플로우 제어 한도를 조정합니다. 값을 비워 두면 글로벌 기본값을 따릅니다."
+usingGlobal = "글로벌 기본값 사용"
+reset = "설정 초기화"
 
 [settings.llmServices]
 title = "LLM 서비스"
@@ -304,6 +349,40 @@ mean = "의미"
 fetchModels = "모델 가져오기"
 copyAsMarkdown = "Markdown으로 복사"
 
+[dictionary.tabs]
+overview = "개요"
+definitions = "정의"
+
+[dictionary.labels]
+source = "출처"
+meaning = "$1번째 의미"
+meaningShort = "$1번째 의미"
+examplePrefix = "예"
+example = "예문"
+synonyms = "동의어"
+antonyms = "반의어"
+
+[dictionary.sections]
+meanings = "의미"
+
+[dictionary.messages]
+noDefinitions = "정의를 찾을 수 없습니다."
+
+[floatingTranslator.sections]
+dictionary = "사전"
+contextExplanation = "문맥 설명"
+textExplanation = "본문 설명"
+examples = "예시"
+translation = "번역"
+reasoning = "추론"
+
+[prompts.defaultNames]
+translate = "번역"
+batchTranslate = "일괄 번역"
+inputTranslate = "입력창 번역"
+explain = "설명"
+dictionaryTranslate = "사전 뜻 번역"
+
 # Error Messages
 
 [errors]
@@ -327,6 +406,7 @@ explainOnlyLlm = "설명 기능은 LLM 모델만 지원합니다"
 explanationFailed = "설명에 실패했습니다"
 streamingExplanationFailed = "스트리밍 설명에 실패했습니다"
 noTranslationModel = "번역 모델이 구성되지 않았습니다"
+translationModelRequired = "모델이 설정되지 않았습니다. 설정에서 번역 모델을 구성하세요."
 noExplanationModel = "설명 모델이 구성되지 않았습니다"
 batchResponseMismatch = "배치 응답 불일치, $1항을 예상했지만 $2항을 받았습니다"
 promptNotFound = "설정에서 ID '$1' 프롬프트를 찾을 수 없습니다"
@@ -444,11 +524,19 @@ googleServerError = "Google 서버 오류"
 microsoftFetchFailed = "Edge에서 API 키 가져오기에 실패했습니다"
 microsoftInvalidResponse = "Microsoft Translator API에서 잘못된 응답 형식입니다"
 microsoftNetworkError = "네트워크 오류: Microsoft Translator API 연결에 실패했습니다"
+googleApiError = "Google Translate API 오류: $1"
+microsoftApiError = "Microsoft Translator API 오류: $1"
+deeplApiError = "DeepL API 오류: $1"
 googleTranslateInvalidResponse = "Google Translate API에서 잘못된 응답 형식입니다"
 googleTranslateNetworkError = "네트워크 오류: Google Translate API 연결에 실패했습니다"
 deeplInvalidResponse = "DeepL API에서 잘못된 응답 형식입니다"
 deeplNetworkError = "네트워크 오류: DeepL API 연결에 실패했습니다"
 taskTerminated = "작업이 종료되었습니다"
+browserTranslatorUnavailable = "이 브라우저에서는 Translator API를 사용할 수 없습니다"
+browserLanguageDetectorUnavailable = "이 브라우저에서는 Language Detector API를 사용할 수 없습니다"
+browserLanguageDetectionFailed = "언어 감지에 실패했습니다"
+browserApiError = "브라우저 번역 API 오류"
+unknownError = "알 수 없는 오류"
 
 # Website Rules
 

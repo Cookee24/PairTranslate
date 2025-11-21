@@ -1,23 +1,14 @@
-/**
- * Defines the role of the message author.
- * 'system': Provides high-level instructions for the conversation.
- * 'user': Represents a message from the end-user.
- * 'assistant': Represents a message from the model.
- */
-export type UnifiedMessageRole = "user" | "assistant" | "system";
+export type MessageRole = "user" | "assistant" | "system";
 
-/**
- * A single message in a chat conversation.
- */
-export interface UnifiedMessage {
-	role: UnifiedMessageRole;
+export interface Message {
+	role: MessageRole;
 	content: string;
 }
 
 /**
  * Optional parameters to control the model's output.
  */
-export interface UnifiedChatParams {
+export interface ChatParams {
 	temperature?: number;
 	maxTokens?: number;
 	topP?: number;
@@ -27,37 +18,45 @@ export interface UnifiedChatParams {
 /**
  * The complete request object for a chat completion.
  */
-export interface UnifiedChatRequest extends UnifiedChatParams {
+export interface ChatRequest extends ChatParams {
 	model: string;
-	messages: UnifiedMessage[];
+	messages: Message[];
+	schema?: object;
 	stream?: boolean;
+}
+
+export interface EndResponse {
+	usage?: {
+		promptTokens: number;
+		completionTokens: number;
+		totalTokens: number;
+	};
+	/** Optional reasoning or thinking traces returned by the provider. */
+	reasoning?: string;
+	/** The original, raw response from the provider for debugging or provider-specific data. */
+	providerResponse?: unknown;
 }
 
 /**
  * The response object for a standard (non-streaming) chat request.
  */
-export interface UnifiedChatResponse {
+export interface ChatResponse<O = string> extends EndResponse {
+	output: O;
 	content: string;
-	usage: {
-		promptTokens: number;
-		completionTokens: number;
-		totalTokens: number;
-	};
-	/** The original, raw response from the provider for debugging or provider-specific data. */
-	providerResponse: unknown;
 }
 
 /**
  * A single chunk of data from a streaming chat response.
  */
-export interface UnifiedStreamChunk {
-	content: string;
+export interface StreamChunk {
+	content?: string;
+	reasoning?: string;
 }
 
 /**
  * Represents a model available from a provider.
  */
-export interface UnifiedModel {
+export interface Model {
 	id: string;
 	provider: LLMProvider;
 	displayName?: string;
@@ -68,13 +67,23 @@ export interface UnifiedModel {
  */
 export type LLMProvider = "openai" | "anthropic" | "google";
 
+export type JSONSchema = {
+	[key: string]: unknown;
+};
+
 /**
  * The core interface that every provider-specific client must implement.
  */
 export interface LLMClient {
-	listModels(): Promise<UnifiedModel[]>;
-	chat(request: UnifiedChatRequest): Promise<UnifiedChatResponse>;
-	chatStream(request: UnifiedChatRequest): AsyncIterable<UnifiedStreamChunk>;
+	listModels(): Promise<Model[]>;
+	chat<S extends JSONSchema, O extends S extends undefined ? string : object>(
+		request: ChatRequest,
+		schema?: S,
+	): Promise<ChatResponse<O>>;
+	chatStream<S extends JSONSchema>(
+		request: ChatRequest,
+		schema?: S,
+	): AsyncGenerator<StreamChunk, EndResponse>;
 }
 
 /**
@@ -82,7 +91,7 @@ export interface LLMClient {
  */
 export interface ClientConfig {
 	apiKey?: string;
-	baseUrl: string;
+	baseUrl?: string;
 }
 
 /**
@@ -94,6 +103,7 @@ export enum LLMErrorType {
 	AUTHENTICATION_ERROR = "authentication_error",
 	RATE_LIMIT_ERROR = "rate_limit_error",
 	VALIDATION_ERROR = "validation_error",
+	MODEL_LIST_NOT_SUPPORTED = "model_list_not_supported",
 	UNKNOWN_ERROR = "unknown_error",
 }
 

@@ -1,6 +1,6 @@
 const themeMap = {
-	light: "nord",
-	dark: "dracula",
+	light: "lemonade",
+	dark: "dim",
 	system: undefined,
 };
 

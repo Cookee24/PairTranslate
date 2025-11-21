@@ -1,5 +1,8 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: any type can be returned */
+
+import type { DictionaryResponse } from "./dictionary";
 import type { RpcService } from "./rpc/factory";
-import type { PageContext, TextContext } from "./types";
+import type { TranslateContext, TranslateQueueStatus } from "./types";
 
 export interface CoreService extends RpcService {
 	ping(): Promise<string>;
@@ -7,26 +10,26 @@ export interface CoreService extends RpcService {
 
 export interface TranslateService extends RpcService {
 	unary(
-		context: [PageContext | undefined, TextContext],
+		ctx: TranslateContext,
 		options: TranslateOptions,
-	): Promise<string>;
+		text?: string | string[],
+	): Promise<any>;
 	stream(
-		context: [PageContext | undefined, TextContext],
+		ctx: TranslateContext,
 		options: TranslateOptions,
-	): AsyncGenerator<string, void, unknown>;
-	batch(
-		context: [PageContext | undefined, string[]],
-		options: TranslateOptions,
-	): Promise<string[]>;
+		text?: string | string[],
+	): AsyncGenerator<any, void, unknown>;
+	queueStatus(modelId: string): AsyncGenerator<TranslateQueueStatus>;
 	clearCache(): Promise<void>;
 }
 
 export interface TranslateOptions {
 	modelId: string;
-	promptId: string; // Indicating the prompt uuid, can be queried in settings
+	promptId: string;
 	cleanCache?: boolean;
-	sourceLang: string;
-	targetLang: string;
+	thinCache?: boolean;
+	srcLang: string;
+	dstLang: string;
 }
 
 export interface StyleService extends RpcService {
@@ -38,14 +41,28 @@ export interface MatchService extends RpcService {
 	matchWebsiteRule(domain: string): Promise<number | null>;
 }
 
+export interface DictionaryService extends RpcService {
+	lookup(word: string): Promise<DictionaryResponse | null>;
+}
+
 export interface AllServices
 	extends CoreService,
 		TranslateService,
 		StyleService,
-		MatchService {}
+		MatchService,
+		DictionaryService {}
+
+export interface AudioService extends RpcService {
+	play(url: string): Promise<void>;
+	stop(): Promise<void>;
+}
+
+export interface IframeServices extends AudioService {}
 
 export * from "./rpc/core";
 export * from "./rpc/factory";
+export * from "./rpc/iframe";
+export * from "./rpc/iframe-def";
 export * from "./rpc/logger";
 export * from "./rpc/wxt";
 export * from "./rpc/wxt-def";

@@ -1,5 +1,13 @@
-import { getOwner, type JSX, runWithOwner } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	getOwner,
+	type JSX,
+	onCleanup,
+	runWithOwner,
+} from "solid-js";
 import { insert } from "solid-js/web";
+import { ELEMENT_CONTAINER } from "~/utils/constants";
 
 export function InTextPortal(props: {
 	mount: HTMLElement;

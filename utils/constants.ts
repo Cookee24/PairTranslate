@@ -157,24 +157,16 @@ export const STORAGE_KEYS = {
 	cache: "pair-translate:cache",
 	translateEnabled: "pair-translate:translate-enabled",
 	domainTimer: "pair-translate:domain-timer",
+	settingsMigrationError: "pair-translate:settings-migration-error",
 };
 
 export const WXT_TRANSPORTATION_NAME = "wxt-transport";
 
-export const TAGS = {
-	think: "think",
-	page: "page",
-	content: "content",
-	context: "context",
-	contextMean: "context-mean",
-	mean: "mean",
-	example: "example",
-};
-
 export const MS_TRANSLATOR_ID = "a404995f-8bf9-4e3c-86aa-bbc4698bc050"; // Fixed ID for Microsoft Translator
 export const PROMPT_ID = {
-	translate: "f7c3d8a1-2b4e-4f9a-8c1d-5e6f7a8b9c0d",
-	batchTranslate: "a1b2c3d4-e5f6-47a8-9b0c-1d2e3f4a5b6c",
-	explain: "9e8f7d6c-5b4a-3291-8a7f-6e5d4c3b2a19",
-	inputTranslate: "c0d1e2f3-4a5b-6c7d-8e9f-0a1b2c3d4e5f",
+	translate: "8e6da19e-808e-4696-810c-e1c1fe2cd1fd",
+	batchTranslate: "99337c6e-3cc2-4b57-a8ce-aed530ecd97f",
+	explain: "c39b8ab4-5656-4887-8b48-d5eb86fa0b8f",
+	inputTranslate: "4a87e959-cab4-4b8d-bc8f-1079dc2c4c86",
+	dictionaryTranslate: "d736a0f9-6f61-4f34-9d54-2c7ec49c70d7",
 };

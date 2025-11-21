@@ -1,6 +1,26 @@
 import { GripHorizontal, Pin, X } from "lucide-solid";
-import type { JSX } from "solid-js";
-import type { SetStoreFunction, Store } from "solid-js/store";
+import {
+	createContext,
+	createEffect,
+	createSignal,
+	For,
+	type JSX,
+	on,
+	onCleanup,
+	onMount,
+	Show,
+	untrack,
+	useContext,
+} from "solid-js";
+import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
+import { Button } from "~/components/Button";
+import {
+	animateDown,
+	animateLift,
+	createAnimatedAppearance,
+	onOuterClick,
+} from "~/hooks/animation";
+import { t } from "~/utils/i18n";
 
 const DEFAULT_STATE = {
 	x: 12,
@@ -351,7 +371,7 @@ const PopupImpl = (props: ImplProps) => {
 						<X size={16} />
 					</Button>
 				</div>
-				<div class="overflow-y-auto">{untrack(props.content)}</div>
+				<div class="overflow-y-auto">{props.content()}</div>
 				<button
 					type="button"
 					class="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize touch-none"

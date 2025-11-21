@@ -1,27 +1,29 @@
-export type PageContext = {
-	pageTitle: string;
-	pageKeywords: string[];
-	pageDescription: string;
+export interface PageContext extends Record<string, string> {
+	title: string;
 	domain: string;
-	extra: Record<string, string>;
-};
-
-export interface TextContext {
-	content: string;
-	before: string;
-	after: string;
 }
 
-export type Operation = {
-	textContext: TextContext;
-	pageContext?: PageContext;
-} & (
-	| {
-			type: "translate" | "explain";
-	  }
-	| {
-			// User defined custom operation
-			type: "custom";
-			id: string;
-	  }
-);
+export interface TextContext {
+	text: string;
+	surr?: {
+		before?: string;
+		after?: string;
+	};
+}
+
+export interface TranslateContext extends Record<string, unknown> {
+	page?: PageContext;
+	surr?: {
+		before?: string;
+		after?: string;
+	};
+}
+
+export interface TranslateQueueStatus {
+	modelId: string;
+	queued: number;
+	running: number;
+	tokensAvailable: number;
+	tokensPerMinute: number;
+	requestConcurrency: number;
+}

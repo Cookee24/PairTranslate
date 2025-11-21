@@ -1,15 +1,28 @@
+import { createEffect, createSignal, on } from "solid-js";
 import type z from "zod";
-import { TraditionalTranslationConfig } from "~/utils/settings/def";
+import { Button } from "~/components/Button";
+import { Modal } from "~/components/Modal";
+import { t } from "~/utils/i18n";
+import {
+	type QueueControlSettings,
+	TraditionalServiceSettings,
+} from "~/utils/settings/def";
+import { QueueOverrideFields } from "../components/QueueOverrideFields";
+
+type TraditionalService = z.infer<typeof TraditionalServiceSettings>;
+type TraditionalApiSpec = TraditionalService["apiSpec"];
 
 interface TraditionalModalProps {
-	modelInfo?: z.infer<typeof TraditionalTranslationConfig>;
-	onSave: (config: z.infer<typeof TraditionalTranslationConfig>) => void;
+	modelInfo?: TraditionalService;
+	onSave: (config: TraditionalService) => void;
 	onClose: () => void;
 	open?: boolean;
+	queueDefaults: QueueControlSettings;
 }
 
 export default (props: TraditionalModalProps) => {
-	const DEFAULT: TraditionalTranslationConfig = {
+	const DEFAULT: TraditionalService = {
+		type: "traditional",
 		name: "",
 		baseUrl: undefined,
 		apiSpec: "microsoft",
@@ -30,7 +43,7 @@ export default (props: TraditionalModalProps) => {
 
 	const handleSave = (e: Event) => {
 		e.preventDefault();
-		const result = TraditionalTranslationConfig.safeParse(formData());
+		const result = TraditionalServiceSettings.safeParse(formData());
 		if (result.success) {
 			props.onSave(result.data);
 			props.onClose();
@@ -107,7 +120,7 @@ export default (props: TraditionalModalProps) => {
 						onChange={(e) =>
 							setFormData({
 								...formData(),
-								apiSpec: e.target.value as TranslationService,
+								apiSpec: e.target.value as TraditionalApiSpec,
 							})
 						}
 					>
@@ -199,6 +212,18 @@ export default (props: TraditionalModalProps) => {
 						</span>
 					</label>
 				</div>
+
+				<div class="divider" />
+				<QueueOverrideFields
+					value={formData().queue}
+					defaults={props.queueDefaults}
+					onChange={(queue) =>
+						setFormData((prev) => ({
+							...prev,
+							queue,
+						}))
+					}
+				/>
 			</div>
 		</Modal>
 	);

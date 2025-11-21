@@ -1,3 +1,4 @@
+import { hasMeaningfulChars } from "~/utils/blank";
 import type { SelectEvent } from "./types";
 
 export async function* selectionListener() {

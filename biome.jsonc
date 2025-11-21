@@ -12,6 +12,17 @@
 			"!assets/*.css" // Tailwind CSS
 		]
 	},
+	"overrides": [
+		{
+			"includes": ["**/*.test.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": "off",
+					"style": "off"
+				}
+			}
+		}
+	],
 	"linter": {
 		"rules": {
 			"suspicious": {

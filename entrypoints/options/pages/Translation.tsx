@@ -1,16 +1,20 @@
 import { trackStore } from "@solid-primitives/deep";
-import { unwrap } from "solid-js/store";
+import { createEffect, createMemo, createSignal, on } from "solid-js";
+import { createStore, reconcile, unwrap } from "solid-js/store";
 import type z from "zod";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormGrid } from "~/components/settings/FormGrid";
-import { NumberInput } from "~/components/settings/NumberInput";
 import {
 	OptionSelect,
 	type SelectOption,
 } from "~/components/settings/OptionSelect";
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { SettingsCheckbox } from "~/components/settings/SettingsCheckbox";
+import { useSettings } from "~/hooks/settings";
+import { SUPPORTED_LANGUAGES } from "~/utils/constants";
+import { t } from "~/utils/i18n";
 import * as s from "~/utils/settings/def";
+import { selectServicesByType } from "~/utils/settings/services";
 
 export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
@@ -40,8 +44,9 @@ export default (props: { navId: string }) => {
 
 	createEffect(() => {
 		trackStore(settings.services);
-		const llmServices = unwrap(settings.services.llmServices);
-		const traditionalServices = unwrap(settings.services.traditionalServices);
+		const services = unwrap(settings.services);
+		const llmServices = selectServicesByType(services, "llm");
+		const traditionalServices = selectServicesByType(services, "traditional");
 
 		const options: SelectOption[] = [
 			{ value: "", label: t("settings.translation.noModel"), disabled: false },
@@ -96,44 +101,6 @@ export default (props: { navId: string }) => {
 
 	return (
 		<SettingsCard title={t("settings.translation.title")} navId={props.navId}>
-			<FormGrid gap="lg">
-				<NumberInput
-					label={t("settings.translation.concurrentRequests")}
-					helperText={t("settings.translation.concurrentRequestsDesc")}
-					error={getFieldError(["concurrentRequests"])?.message}
-					min={1}
-					max={32}
-					value={localSettings.concurrentRequests}
-					onChange={(e) =>
-						setLocalSettings("concurrentRequests", Number(e.target.value))
-					}
-				/>
-
-				<NumberInput
-					label={t("settings.translation.cacheSize")}
-					helperText={t("settings.translation.cacheSizeDesc")}
-					error={getFieldError(["cacheSize"])?.message}
-					min={0}
-					max={10000}
-					value={localSettings.cacheSize}
-					onChange={(e) =>
-						setLocalSettings("cacheSize", Number(e.target.value))
-					}
-				/>
-
-				<NumberInput
-					label={t("settings.translation.maxBatchSize")}
-					helperText={t("settings.translation.maxBatchSizeDesc")}
-					error={getFieldError(["maxBatchSize"])?.message}
-					min={1}
-					max={100}
-					value={localSettings.maxBatchSize}
-					onChange={(e) =>
-						setLocalSettings("maxBatchSize", Number(e.target.value))
-					}
-				/>
-			</FormGrid>
-			<div class="divider m-0" />
 			<FormGrid gap="lg">
 				<OptionSelect
 					label={t("settings.translation.sourceLanguage")}

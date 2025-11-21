@@ -1,463 +1,475 @@
-import { ifBatchRequestSupported } from "@/utils/if-batch";
-import { useTaskList } from "./task-list";
-import { useWebsiteRule } from "./website-rule";
+import { batch, createEffect, createSignal, onCleanup } from "solid-js";
+import { createStore } from "solid-js/store";
+import { useSettings } from "~/hooks/settings";
+import { useWebsiteRule } from "~/hooks/website-rule";
+import { PROMPT_ID } from "~/utils/constants";
+import {
+	convertGenericError,
+	createTranslateError,
+	type TranslateError,
+	TranslateErrorType,
+} from "~/utils/errors";
+import { t } from "~/utils/i18n";
+import { getPageContext } from "~/utils/page-context";
+import type { TranslateContext } from "~/utils/types";
+import { useProgressIndicator } from "./progress-indicator";
 
-interface Options {
-	stream?: boolean;
-	floating?: boolean;
-	queue?: boolean;
-	cleanCache?: boolean;
-}
+type Pending = {
+	(): undefined;
+	loading: true;
+	error: undefined;
+};
+type Error = {
+	(): undefined;
+	loading: false;
+	error: TranslateError;
+};
+type Success<T> = {
+	(): T;
+	loading: false;
+	error: undefined;
+};
+type Result<T> = Pending | Error | Success<T>;
 
-export function useTranslation(
-	operation: () => Operation | undefined,
-	options: Options = {},
-) {
-	const { add } = useTaskList();
-	const { stream = false, floating = false } = options;
-	const { settings, loading: settingsLoading } = useSettings();
-	const websiteRule = useWebsiteRule();
+type BatchReturn = readonly [
+	() => Result<string>[],
+	retry: (index: number | undefined) => void,
+];
 
-	const [error, setError] = createSignal<string>();
-	const [loading, setLoading] = createSignal(false);
-	const [len, setLen] = createSignal(0);
-	const [text, setText] = createSignal("");
-	const [retry, setRetry] = createSignal<{ cleanCache?: boolean } | undefined>(
-		undefined,
-		{
-			equals: false,
-		},
-	);
+type TranslateUnaryPayload<T> =
+	| T
+	| {
+			output: T;
+			reasoning?: string;
+	  };
 
-	createEffect(
-		on(
-			[retry, settingsLoading, operation],
-			async ([currentRetry, isSettingsLoading, op]) => {
-				if (isSettingsLoading) return;
-				if (!op) return;
-				const cleanCache =
-					currentRetry?.cleanCache ?? options.cleanCache ?? false;
-
-				if (op.type === "custom") {
-					setError(t("errors.additional.customOperationNotSupported"));
-					return;
-				}
-
-				const isExplain = op.type === "explain";
-
-				const modelId = isExplain
-					? floating && settings.translate.floatingExplainModel
-					: floating
-						? settings.translate.floatingTranslateModel
-						: (websiteRule.inTextTranslateModel ??
-							settings.translate.inTextTranslateModel);
-
-				if (!modelId) {
-					setError(t("settings.translation.noModel"));
-					return;
-				}
-
-				const promptId = isExplain ? PROMPT_ID.explain : PROMPT_ID.translate;
-
-				let task = emptyTask();
-				if (options.queue ?? true) {
-					task = add();
-				}
-
-				let cancelled = false;
-				onCleanup(() => {
-					task.terminate();
-					cancelled = true;
-				});
-
-				try {
-					setLoading(true);
-					setError(undefined);
-					setText("");
-					setLen(0);
-
-					await task.wait();
-
-					const translateOptions: TranslateOptions = {
-						modelId,
-						promptId,
-						cleanCache,
-						sourceLang: websiteRule.sourceLang ?? settings.translate.sourceLang,
-						targetLang: websiteRule.targetLang ?? settings.translate.targetLang,
-					};
-
-					if (stream) {
-						const listener = window.rpc.stream(
-							[op.pageContext, op.textContext],
-							translateOptions,
-						);
-
-						for await (const chunk of listener) {
-							if (cancelled) return;
-							setText((t) => t + chunk);
-							setLen((l) => l + chunk.length);
-						}
-					} else {
-						const response = await window.rpc.unary(
-							[op.pageContext, op.textContext],
-							translateOptions,
-						);
-
-						setText(response);
-						setLen(response.length);
-					}
-				} catch (error) {
-					if (error instanceof Error) {
-						setError(error.message);
-					} else if (isTranslateError(error)) {
-						// Build error message with code if available
-						let msg = "";
-						if (error.code) msg += `[${error.code}] `;
-						msg += error.message;
-						setError(msg);
-					} else {
-						setError(JSON.stringify(error, null, 2));
-					}
-				} finally {
-					task.done();
-					setLoading(false);
-				}
-			},
-		),
-	);
-
-	return [text, { error, loading, len, retry: setRetry }] as const;
-}
-
-interface BatchOptions {
-	floating?: boolean;
-	queue?: boolean;
-	cleanCache?: boolean;
-}
-
-interface TranslationState {
-	origin: string;
-	result?: string;
-	loading: boolean;
-	error?: string;
-}
-
-export function useBatchTranslation(
-	texts: () => string[],
-	pageContext?: PageContext,
-	options: BatchOptions = {},
-) {
-	const { add } = useTaskList();
-	const { floating = false } = options;
-	const { settings } = useSettings();
-	const websiteRule = useWebsiteRule();
-
-	const [store, setStore] = createStore<TranslationState[]>([]);
-	const [retry, setRetry] = createSignal<{ cleanCache?: boolean }>(
-		{},
-		{ equals: false },
-	);
-
-	createEffect(
-		on([texts, retry], async ([textArray, currentRetry]) => {
-			if (!textArray || textArray.length === 0) {
-				if (store.length > 0) setStore([]);
-				return;
-			}
-
-			const cleanCache = currentRetry.cleanCache ?? options.cleanCache ?? false;
-			const isFullRetry = Object.keys(currentRetry).length > 0;
-
-			const modelId = floating
-				? settings.translate.floatingTranslateModel
-				: (websiteRule.inTextTranslateModel ??
-					settings.translate.inTextTranslateModel);
-
-			if (!modelId) {
-				const errorMsg = t("settings.translation.noModel");
-				setStore(
-					{ from: 0, to: textArray.length - 1 },
-					{ loading: false, error: errorMsg },
-				);
-				return;
-			}
-
-			const translationRequests: [string, number][] = [];
-
-			const newStoreState = textArray.map((text, index) => {
-				const existing = store[index];
-				// Keep existing state if text is unchanged, not in error, and not a full retry
-				if (
-					!isFullRetry &&
-					existing?.origin === text &&
-					!existing.error &&
-					!existing.loading
-				) {
-					return existing;
-				}
-				translationRequests.push([text, index]);
-				return {
-					origin: text,
-					loading: true,
-					result: existing?.result, // Preserve old result to prevent flickering
-					error: undefined,
-				};
-			});
-
-			// Reconcile the store: SolidJS will only update what has changed.
-			if (translationRequests.length > 0 || store.length !== textArray.length) {
-				setStore(reconcile(newStoreState));
-			}
-
-			if (translationRequests.length === 0) {
-				if (isFullRetry) setRetry({}); // Reset retry signal if it was used
-				return;
-			}
-
-			let task = emptyTask();
-			if (options.queue ?? true) {
-				const weight = ifBatchRequestSupported(
-					settings.services.traditionalServices[modelId]?.apiSpec,
-				)
-					? undefined
-					: settings.translate.maxBatchSize;
-				task = add(weight);
-			}
-
-			let cancelled = false;
-			onCleanup(() => {
-				task.terminate();
-				cancelled = true;
-			});
-
-			try {
-				await task.wait();
-				if (cancelled) return;
-
-				const textsToTranslate = translationRequests.map((req) => req[0]);
-
-				const translateOptions: TranslateOptions = {
-					modelId,
-					promptId: PROMPT_ID.batchTranslate,
-					cleanCache,
-					sourceLang: websiteRule.sourceLang ?? settings.translate.sourceLang,
-					targetLang: websiteRule.targetLang ?? settings.translate.targetLang,
-				};
-
-				const response = await window.rpc.batch(
-					[pageContext, textsToTranslate],
-					translateOptions,
-				);
-
-				if (cancelled) return;
-
-				batch(() => {
-					for (let i = 0; i < response.length; i++) {
-						const originalIndex = translationRequests[i][1];
-						setStore(originalIndex, {
-							loading: false,
-							result: response[i],
-						});
-					}
-				});
-			} catch (error) {
-				let errorMsg = "";
-				if (error instanceof Error) {
-					errorMsg = error.message;
-				} else if (isTranslateError(error)) {
-					if (error.code) errorMsg += `[${error.code}] `;
-					errorMsg += error.message;
-				} else {
-					errorMsg = JSON.stringify(error, null, 2);
-				}
-
-				batch(() => {
-					translationRequests.forEach(([_, index]) => {
-						setStore(index, { loading: false, error: errorMsg });
-					});
-				});
-			} finally {
-				task.done();
-				if (isFullRetry) setRetry({});
-			}
-		}),
-	);
-
-	const retryAll = (retryOptions: { cleanCache?: boolean } = {}) => {
-		setRetry(retryOptions);
+const normalizeUnaryResponse = <T>(
+	resp: TranslateUnaryPayload<T>,
+): { output: T; reasoning?: string } => {
+	if (resp && typeof resp === "object" && "output" in resp) {
+		return resp as { output: T; reasoning?: string };
+	}
+	return {
+		output: resp as T,
+		reasoning: undefined,
 	};
+};
 
-	const retrySingle = async (
-		index: number,
-		retryOptions: { cleanCache?: boolean } = {},
-	) => {
-		const textArray = texts();
-		const textToTranslate = textArray[index];
+type TranslationStreamChunk = {
+	content?: string;
+	reasoning?: string;
+};
 
-		if (!textToTranslate) return;
+const noModelError = () =>
+	createTranslateError(
+		TranslateErrorType.MODEL_NOT_FOUND,
+		t("errors.translationModelRequired"),
+	);
+const batchMismatchError = (exp: number, got: number) =>
+	createTranslateError(
+		TranslateErrorType.VALIDATION_ERROR,
+		`Expected ${exp} translations, but got ${got}`,
+	);
 
-		const textContext: TextContext = {
-			content: textToTranslate,
-			before: "",
-			after: "",
-		};
+// Helper to get translation context
+const useTranslationContext = (modelIdOverride?: () => string | undefined) => {
+	const websiteRule = useWebsiteRule();
+	const { settings } = useSettings();
 
-		const modelId = floating
-			? settings.translate.floatingTranslateModel
-			: (websiteRule.inTextTranslateModel ??
-				settings.translate.inTextTranslateModel);
+	const modelId = () =>
+		modelIdOverride
+			? modelIdOverride()
+			: websiteRule.inTextTranslateModel ||
+				settings.translate.inTextTranslateModel;
 
-		if (!modelId) {
-			setStore(index, "error", t("settings.translation.noModel"));
+	const srcLang = () => websiteRule.sourceLang || settings.translate.sourceLang;
+	const dstLang = () => websiteRule.targetLang || settings.translate.targetLang;
+
+	return [modelId, srcLang, dstLang] as const;
+};
+
+export function createBatchTranslation(
+	text: () => string[],
+	options: {
+		promptId?: string;
+		modelId?: () => string | undefined;
+		thinCache?: boolean;
+		ctx?: () => Record<string, unknown>;
+	} = {},
+): BatchReturn {
+	const [modelId, srcLang, dstLang] = useTranslationContext(options.modelId);
+	const promptId = options.promptId || PROMPT_ID.batchTranslate;
+	const ctx = options.ctx || (() => ({ page: getPageContext() }));
+	const thinCache = options.thinCache ?? true;
+	const { beginRequest } = useProgressIndicator();
+
+	const [textResult, setTextResult] = createStore<(string | undefined)[]>([]);
+	const [error, setError] = createStore<(TranslateError | undefined)[]>([]);
+
+	const setAllError = (e: TranslateError, len: number) =>
+		batch(() => {
+			setError({ to: len - 1 }, e);
+			setTextResult({ to: len - 1 }, undefined);
+		});
+
+	const setAllLoading = (len: number) =>
+		batch(() => {
+			setError({ to: len - 1 }, undefined);
+			setTextResult({ to: len - 1 }, undefined);
+		});
+
+	const setResultTexts = (texts: string[]) =>
+		batch(() => {
+			setError({ to: texts.length - 1 }, undefined);
+			setTextResult(texts);
+		});
+
+	const translate = async (texts: string[], cleanCache = false) => {
+		const modelId_ = modelId();
+		if (modelId_ === undefined) {
+			setAllError(noModelError(), texts.length);
 			return;
 		}
 
-		let task = emptyTask();
-		if (options.queue ?? true) {
-			const weight = ifBatchRequestSupported(
-				settings.services.traditionalServices[modelId]?.apiSpec,
-			)
-				? undefined
-				: settings.translate.maxBatchSize;
-			task = add(weight);
-		}
-
+		const endTracking = beginRequest(modelId_);
+		setAllLoading(texts.length);
 		try {
-			// Update store, preserving previous result while loading
-			setStore(index, {
-				origin: textToTranslate,
-				loading: true,
-				error: undefined,
-				result: store[index]?.result,
-			});
-
-			await task.wait();
-
-			const translateOptions: TranslateOptions = {
-				modelId,
-				promptId: PROMPT_ID.translate,
-				cleanCache: retryOptions.cleanCache ?? options.cleanCache ?? false,
-				sourceLang: websiteRule.sourceLang ?? settings.translate.sourceLang,
-				targetLang: websiteRule.targetLang ?? settings.translate.targetLang,
-			};
-
-			const response = await window.rpc.unary(
-				[pageContext, textContext],
-				translateOptions,
+			const resp = await window.rpc.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang(),
+					dstLang: dstLang(),
+					cleanCache,
+					thinCache,
+				},
+				texts,
 			);
-
-			setStore(index, { result: response, loading: false });
-		} catch (error) {
-			let errorMsg = "";
-			if (error instanceof Error) {
-				errorMsg = error.message;
-			} else if (isTranslateError(error)) {
-				if (error.code) errorMsg += `[${error.code}] `;
-				errorMsg += error.message;
-			} else {
-				errorMsg = JSON.stringify(error, null, 2);
-			}
-
-			setStore(index, { error: errorMsg, loading: false });
+			const normalized = normalizeUnaryResponse<string[]>(resp);
+			const translated = Array.isArray(normalized.output)
+				? normalized.output
+				: [normalized.output];
+			setResultTexts(translated);
+			translated.length < texts.length &&
+				batch(() => {
+					setError(
+						{ from: translated.length, to: texts.length - 1 },
+						batchMismatchError(translated.length, texts.length),
+					);
+					setTextResult(
+						{ from: translated.length, to: texts.length - 1 },
+						undefined,
+					);
+				});
+		} catch (e) {
+			setAllError(convertGenericError(e), texts.length);
 		} finally {
-			task.done();
+			endTracking();
 		}
 	};
 
-	return [store, { single: retrySingle, all: retryAll }] as const;
+	const translateSingle = async (index: number, text_: string) => {
+		const modelId_ = modelId();
+		if (modelId_ === undefined) {
+			batch(() => {
+				setError(index, noModelError());
+				setTextResult(index, undefined);
+			});
+			return;
+		}
+
+		const endTracking = beginRequest(modelId_);
+		batch(() => {
+			setError(index, undefined);
+			setTextResult(index, undefined);
+		});
+
+		try {
+			const resp = await window.rpc.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang(),
+					dstLang: dstLang(),
+					cleanCache: true,
+				},
+				text_,
+			);
+			const normalized = normalizeUnaryResponse<string | string[]>(resp);
+			const value = Array.isArray(normalized.output)
+				? normalized.output[0]
+				: normalized.output;
+			batch(() => {
+				setError(index, undefined);
+				setTextResult(index, value);
+			});
+		} catch (e) {
+			batch(() => {
+				setError(index, convertGenericError(e));
+				setTextResult(index, undefined);
+			});
+		} finally {
+			endTracking();
+		}
+	};
+
+	createEffect(() => {
+		const text_ = text();
+		if (text_.length === 0) {
+			batch(() => {
+				setError([]);
+				setTextResult([]);
+			});
+			return;
+		}
+		translate(text_);
+	});
+
+	const retry = (index: number | undefined) => {
+		const text_ = text();
+		if (text_.length === 0) return;
+
+		if (index === undefined) {
+			translate(text_, true);
+		} else if (index >= 0 && index < text_.length) {
+			translateSingle(index, text_[index]);
+		}
+	};
+
+	const ret = () => {
+		const len = text().length;
+		return Array.from({ length: len }, (_, i) => {
+			function read(): string | undefined {
+				return textResult[i];
+			}
+
+			Object.defineProperties(read, {
+				error: {
+					get() {
+						return error[i];
+					},
+				},
+				loading: {
+					get() {
+						// Access each store explicitly to track reactivity
+						const hasResult = textResult[i] !== undefined;
+						const hasError = error[i] !== undefined;
+						return !hasResult && !hasError;
+					},
+				},
+			});
+
+			return read as Result<string>;
+		});
+	};
+
+	return [ret, retry];
 }
 
-export function useInputTranslation(
+type ResultWithReasoning<T> = Result<T> & { reasoning?: string };
+type SingleReturn<T> = readonly [ResultWithReasoning<T>, retry: () => void];
+type SingleStreamReturn<T> = readonly [
+	ResultWithReasoning<T> & { len: number; streaming: boolean },
+	retry: () => void,
+];
+
+export function createTranslation<T = string>(
 	text: () => string,
-	targetLang?: () => string,
-	pageContext?: () => PageContext | undefined,
-) {
-	const { settings, loading: settingsLoading } = useSettings();
-	const websiteRule = useWebsiteRule();
+	options?: {
+		stream: true;
+		promptId?: string;
+		modelId?: () => string | undefined;
+		ctx?: () => TranslateContext;
+	},
+): SingleStreamReturn<T>;
+export function createTranslation<T>(
+	text: () => string,
+	options?: {
+		stream?: false;
+		modelId?: () => string | undefined;
+		promptId?: string;
+		ctx?: () => TranslateContext;
+	},
+): SingleReturn<T>;
+export function createTranslation<T>(
+	text: () => string,
+	options: {
+		stream?: boolean;
+		promptId?: string;
+		modelId?: () => string | undefined;
+		ctx?: () => TranslateContext;
+	} = {
+		stream: false,
+	},
+): SingleReturn<T> | SingleStreamReturn<T> {
+	const [modelId, srcLang, dstLang] = useTranslationContext(options.modelId);
+	const promptId = options.promptId || PROMPT_ID.translate;
+	const ctx = options.ctx || (() => ({ page: getPageContext() }));
+	const { beginRequest } = useProgressIndicator();
 
-	const [error, setError] = createSignal<string>();
-	const [loading, setLoading] = createSignal(false);
-	const [result, setResult] = createSignal("");
-	const [retry, setRetry] = createSignal<boolean>(false, { equals: false });
+	const [result, setResult] = createSignal<T>();
+	const [error, setError] = createSignal<TranslateError>();
+	const [reasoning, setReasoning] = createSignal<string>();
 
-	createEffect(
-		on(
-			[
-				retry,
-				settingsLoading,
-				text,
-				() => targetLang?.(),
-				() => pageContext?.(),
-			],
-			async ([, isSettingsLoading, inputText, lang, context]) => {
-				if (isSettingsLoading) return;
-				if (!inputText || inputText.trim() === "") {
-					setResult("");
+	const [len, setLen] = options.stream ? createSignal(0) : [() => 0, () => {}];
+	const [streaming, setStreaming] = options.stream
+		? createSignal(false)
+		: [() => false, () => {}];
+
+	const setLoading = () =>
+		batch(() => {
+			setError(undefined);
+			setResult(undefined);
+			setReasoning(undefined);
+		});
+
+	const setResultVal = (val: T, reasoning?: string) =>
+		batch(() => {
+			setError(undefined);
+			setResult(() => val);
+			setReasoning(reasoning);
+		});
+
+	const setErrorVal = (e: TranslateError) =>
+		batch(() => {
+			setError(e);
+			setResult(undefined);
+			setReasoning(undefined);
+		});
+
+	const translateStream = async (text_: string, cleanCache?: boolean) => {
+		const modelId_ = modelId();
+		if (modelId_ === undefined) {
+			setErrorVal(noModelError());
+			return;
+		}
+
+		const endTracking = beginRequest(modelId_);
+		setLoading();
+
+		try {
+			const listener = window.rpc.stream(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang(),
+					dstLang: dstLang(),
+					cleanCache,
+				},
+				text_,
+			);
+			onCleanup(() => listener.return());
+			setLen(0);
+			setStreaming(true);
+			for await (const chunk of listener as AsyncGenerator<TranslationStreamChunk>) {
+				batch(() => {
 					setError(undefined);
-					return;
-				}
-
-				const modelId = settings.translate.inputTranslateModel;
-
-				if (!modelId) {
-					setError(t("settings.translation.noModel"));
-					return;
-				}
-
-				let cancelled = false;
-				onCleanup(() => {
-					cancelled = true;
+					const content = chunk.content;
+					const reasoning = chunk.reasoning;
+					if (content) {
+						// @ts-ignore stream request must return string chunks
+						setResult((prev) => (prev || "") + content);
+						setLen((prev: number) => prev + content.length);
+					}
+					if (reasoning) {
+						setReasoning((prev) => (prev || "") + reasoning);
+						setLen((prev: number) => prev + reasoning.length);
+					}
 				});
+			}
+		} catch (e) {
+			setErrorVal(convertGenericError(e));
+		} finally {
+			endTracking();
+			setStreaming(false);
+		}
+	};
 
-				try {
-					setLoading(true);
-					setError(undefined);
-					setResult("");
+	const translateUnary = async (text_: string, cleanCache?: boolean) => {
+		const modelId_ = modelId();
+		if (modelId_ === undefined) {
+			setErrorVal(noModelError());
+			return;
+		}
 
-					const textContext: TextContext = {
-						content: inputText,
-						before: "",
-						after: "",
-					};
+		const endTracking = beginRequest(modelId_);
+		setLoading();
+		try {
+			const resp = await window.rpc.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang(),
+					dstLang: dstLang(),
+					cleanCache,
+				},
+				text_,
+			);
+			const normalized = normalizeUnaryResponse<T>(resp);
+			setResultVal(normalized.output, normalized.reasoning);
+		} catch (e) {
+			setErrorVal(convertGenericError(e));
+		} finally {
+			endTracking();
+		}
+	};
 
-					const translateOptions: TranslateOptions = {
-						modelId,
-						promptId: PROMPT_ID.inputTranslate,
-						cleanCache: false,
-						sourceLang: websiteRule.sourceLang ?? settings.translate.sourceLang,
-						targetLang:
-							lang ||
-							websiteRule.targetLang ||
-							settings.translate.inputTranslateLang ||
-							settings.translate.targetLang,
-					};
+	const doTranslate = (text_: string, cleanCache?: boolean) =>
+		options.stream
+			? translateStream(text_, cleanCache)
+			: translateUnary(text_, cleanCache);
 
-					const listener = window.rpc.stream(
-						[context, textContext],
-						translateOptions,
-					);
+	createEffect(() => {
+		const text_ = text();
+		if (text_.length === 0) {
+			batch(() => {
+				setError(undefined);
+				setResult(undefined);
+				setReasoning(undefined);
+			});
+			return;
+		}
+		doTranslate(text_);
+	});
 
-					for await (const chunk of listener) {
-						if (cancelled) return;
-						setResult((r) => r + chunk);
-					}
-				} catch (error) {
-					if (error instanceof Error) {
-						setError(error.message);
-					} else if (isTranslateError(error)) {
-						let msg = "";
-						if (error.code) msg += `[${error.code}] `;
-						msg += error.message;
-						setError(msg);
-					} else {
-						setError(JSON.stringify(error, null, 2));
-					}
-				} finally {
-					setLoading(false);
-				}
+	const retry = () => {
+		const text_ = text();
+		if (text_.length === 0) return;
+		doTranslate(text_, true);
+	};
+
+	function read(): T | undefined {
+		return result();
+	}
+
+	Object.defineProperties(read, {
+		error: {
+			get: error,
+		},
+		reasoning: {
+			get: reasoning,
+		},
+		loading: {
+			get: () => {
+				// Access each signal explicitly to track reactivity
+				const hasResult = result() !== undefined;
+				const hasError = error() !== undefined;
+				return !hasResult && !hasError;
 			},
-		),
-	);
+		},
+		...(options.stream && {
+			len: {
+				get: len,
+			},
+			streaming: {
+				get: streaming,
+			},
+		}),
+	});
 
-	return [result, { error, loading, retry: () => setRetry(true) }] as const;
+	return [read as ResultWithReasoning<T>, retry];
 }

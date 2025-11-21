@@ -1,5 +1,11 @@
+import { ContentStyle, KatexStyle } from "~/components/Style";
+import { ProgressIndicatorProvider } from "~/hooks/progress-indicator";
+import { SettingsProvider } from "~/hooks/settings";
+import { createTheme } from "~/hooks/theme";
+import { WebsiteRuleProvider } from "~/hooks/website-rule";
+import { getThemeClass } from "~/utils/theme";
 import { PopupProvider, PopupRenderer } from "./components/Popup";
-import Task from "./components/Task";
+import ProgressIndicator from "./components/ProgressIndicator";
 import TipRenderer from "./components/TipRenderer";
 import TranslatorHost from "./components/TranslatorHost";
 
@@ -14,7 +20,7 @@ const Content = () => {
 			<TranslatorHost />
 			<PopupRenderer />
 			<TipRenderer />
-			<Task />
+			<ProgressIndicator />
 		</div>
 	);
 };
@@ -22,13 +28,13 @@ const Content = () => {
 export default () => {
 	return (
 		<SettingsProvider>
-			<PopupProvider>
-				<TaskListProvider>
+			<ProgressIndicatorProvider>
+				<PopupProvider>
 					<WebsiteRuleProvider>
 						<Content />
 					</WebsiteRuleProvider>
-				</TaskListProvider>
-			</PopupProvider>
+				</PopupProvider>
+			</ProgressIndicatorProvider>
 		</SettingsProvider>
 	);
 };

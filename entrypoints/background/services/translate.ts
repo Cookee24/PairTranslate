@@ -1,598 +1,809 @@
-import type * as s from "~/utils/settings";
-import { translate as traditionalTranslate } from "~/utils/translate";
+import type { TranslateOptions, TranslateService } from "@/utils/rpc";
+import { estimateTokens } from "@/utils/token-estimate";
+import { createQueueHub } from "~/utils/async/queue-hub";
+import { STORAGE_KEYS } from "~/utils/constants";
+import {
+	convertFromLLMError,
+	convertFromTranslationError,
+	createTranslateError,
+	TranslateErrorType,
+} from "~/utils/errors";
+import type {
+	StreamRunner,
+	UnaryResult,
+} from "~/utils/flow-control/model-queue";
+import { computeCacheKey } from "~/utils/hasher";
+import type {
+	ChatRequest,
+	ClientConfig,
+	JSONSchema,
+	LLMClient,
+	LLMProvider,
+} from "~/utils/llm";
+import { createLLMClient } from "~/utils/llm";
+import { appendReasoningContent } from "~/utils/llm/reasoning";
+import {
+	buildContextWithTranslateParams,
+	templateToTokens,
+	tokensToString,
+} from "~/utils/prompt/parser";
+import type { PromptSettings, ServiceSettings } from "~/utils/settings";
+import { getSettings, listenSettings } from "~/utils/settings/helper";
+import { createLRUStorage } from "~/utils/storage";
+import {
+	translate as runTraditionalService,
+	type TranslationConfig,
+} from "~/utils/translate";
+import type { TranslateContext } from "~/utils/types";
 
-/**
- * Handle API errors and convert to TranslateError
- */
-const handleApiError = (error: unknown): never => {
-	if (isTranslateError(error)) {
-		throw error;
+const SINGLE_TEXT_SERVICES = new Set(["deeplx", "browser"]);
+
+type TranslatePayload = string | string[];
+
+type ThinCacheKey = Awaited<ReturnType<typeof computeCacheKey>>;
+
+type ThinCacheState = {
+	keys: ThinCacheKey[];
+	values: (string | undefined)[];
+	missing: number[];
+};
+
+type CachedValue<T = unknown> = {
+	output: T;
+	reasoning?: string;
+};
+
+type CompiledStep = {
+	messageTokens: ReturnType<typeof templateToTokens>;
+	output: PromptSettings["steps"][number]["output"];
+};
+
+type CompiledPrompt = {
+	input: PromptSettings["input"];
+	systemTokens: ReturnType<typeof templateToTokens>;
+	steps: CompiledStep[];
+};
+
+type PromptContext = ReturnType<typeof buildContextWithTranslateParams>;
+
+const initializeConversation = (
+	prompt: CompiledPrompt,
+	ctx: PromptContext,
+): ChatRequest["messages"] => {
+	const systemContent = tokensToString(ctx, prompt.systemTokens);
+	return systemContent ? [{ role: "system", content: systemContent }] : [];
+};
+
+const snapshotConversation = (
+	messages: ChatRequest["messages"],
+): ChatRequest["messages"] => messages.map((message) => ({ ...message }));
+
+const toStreamChunk = (value: unknown): string => {
+	if (typeof value === "string") {
+		return value;
 	}
-
+	if (value === undefined || value === null) {
+		return "";
+	}
 	try {
-		throw convertFromLLMError(error);
-	} catch (llmError) {
-		if (isTranslateError(llmError)) throw llmError;
-		try {
-			throw convertFromTranslationError(error);
-		} catch (translationError) {
-			if (isTranslateError(translationError)) throw translationError;
-			throw convertGenericError(error);
-		}
+		return JSON.stringify(value);
+	} catch {
+		return String(value);
 	}
 };
 
-/**
- * Get model configuration by ID
- */
-const getModelConfig = async (
-	modelId: string,
-): Promise<
-	| { type: "llm"; config: s.ModelConfig }
-	| {
-			type: "traditional";
-			config: s.TraditionalTranslationConfig;
-			apiSpec: s.TraditionalTranslationConfig["apiSpec"];
-	  }
-> => {
-	const settings = await getSettings();
-
-	const llm = settings.services.llmServices[modelId];
-	if (llm) {
-		return {
-			type: "llm",
-			config: llm,
-		};
+const buildLLMClient = (
+	provider: LLMProvider,
+	config: ClientConfig,
+): LLMClient => {
+	switch (provider) {
+		case "openai":
+			return createLLMClient("openai", config);
+		case "anthropic":
+			return createLLMClient("anthropic", config);
+		case "google":
+			return createLLMClient("google", config);
+		default:
+			throw new Error(`Unsupported LLM provider: ${provider}`);
 	}
-
-	const traditional = settings.services.traditionalServices[modelId];
-	if (traditional) {
-		return {
-			type: "traditional",
-			config: traditional,
-			apiSpec: traditional.apiSpec,
-		};
-	}
-
-	throw createTranslateError(
-		TranslateErrorType.MODEL_NOT_FOUND,
-		t("errors.modelNotFound", [modelId]),
-	);
 };
 
-/**
- * Get prompt settings by ID
- */
-const getPromptSettings = async (
-	promptId: string,
-): Promise<s.PromptSettings> => {
-	const settings = await getSettings();
-	const prompt = settings.prompts[promptId];
+const isStructuredOutput = (
+	output: PromptSettings["steps"][number]["output"],
+): output is { type: "structured"; schema: object } =>
+	typeof output === "object" &&
+	output !== null &&
+	"type" in output &&
+	output.type === "structured";
 
-	if (!prompt) {
-		throw createTranslateError(
-			TranslateErrorType.INVALID_PROMPT,
-			t("errors.promptNotFound", [promptId]),
-		);
-	}
+const isStringArrayOutput = (
+	output: PromptSettings["steps"][number]["output"],
+): output is { type: "stringArray"; delimiter: string } =>
+	typeof output === "object" &&
+	output !== null &&
+	"type" in output &&
+	output.type === "stringArray";
 
-	return prompt;
-};
-
-/**
- * Create cache manager for translation results
- */
-const createCacheManager = (
-	cacheStorage: import("~/utils/storage").Storage<string>,
-) => ({
-	async get(cacheKey: ArrayBuffer): Promise<string | null> {
-		try {
-			return (await cacheStorage.get(cacheKey)) ?? null;
-		} catch (error) {
-			throw createTranslateError(
-				TranslateErrorType.CACHE_ERROR,
-				t("errors.cacheRetrieveFailed"),
-				undefined,
-				{
-					originalError: error instanceof Error ? error.message : String(error),
-				},
-			);
-		}
-	},
-
-	async set(cacheKey: ArrayBuffer, result: string): Promise<void> {
-		try {
-			await cacheStorage.set(cacheKey, result);
-		} catch (error) {
-			console.warn("Failed to cache result:", error);
-		}
-	},
-
-	async del(cacheKey: ArrayBuffer): Promise<void> {
-		try {
-			await cacheStorage.del(cacheKey);
-		} catch (error) {
-			console.warn("Failed to clean cache entry:", error);
-		}
-	},
-
-	async withCache<T>(
-		cacheKey: ArrayBuffer,
-		cleanCache: boolean,
-		apiCall: () => Promise<T>,
-	): Promise<T> {
-		if (cleanCache) {
-			await this.del(cacheKey);
-		} else {
-			const cachedResult = await this.get(cacheKey);
-			if (cachedResult) return cachedResult as T;
-		}
-
-		const result = await apiCall();
-		if (typeof result === "string") {
-			await this.set(cacheKey, result);
-		}
-		return result;
-	},
-
-	async *withStreamingCache(
-		cacheKey: ArrayBuffer,
-		cleanCache: boolean,
-		streamCall: () => AsyncGenerator<string>,
-	): AsyncGenerator<string> {
-		if (cleanCache) {
-			await this.del(cacheKey);
-		} else {
-			const cachedResult = await this.get(cacheKey);
-			if (cachedResult) {
-				yield cachedResult;
-				return;
-			}
-		}
-
-		let fullResult = "";
-		for await (const chunk of streamCall()) {
-			fullResult += chunk;
-			yield chunk;
-		}
-		await this.set(cacheKey, fullResult);
-	},
+const compilePrompt = (prompt: PromptSettings): CompiledPrompt => ({
+	input: prompt.input,
+	systemTokens: templateToTokens(prompt.systemPrompt),
+	steps: prompt.steps.map((step) => ({
+		output: step.output,
+		messageTokens: templateToTokens(step.message),
+	})),
 });
 
-/**
- * Execute unary translation with traditional service
- */
-const executeTraditionalUnary = async (
-	config: s.TraditionalTranslationConfig,
-	textContext: TextContext,
-	sourceLang: string,
-	targetLang: string,
-): Promise<string> => {
-	const { translatedText } = await traditionalTranslate(
-		config.apiSpec,
-		{
-			apiKey: config.apiKey || "",
-			apiUrl: config.baseUrl,
-		},
-		{ text: [textContext.content], sourceLang, targetLang },
+const normalizePromptInput = (
+	prompt: CompiledPrompt,
+	text: TranslatePayload,
+): TranslatePayload => {
+	if (prompt.input === "stringArray") {
+		if (Array.isArray(text)) return text;
+		return text ? [text] : [];
+	}
+	if (Array.isArray(text)) {
+		return text.join("\n\n");
+	}
+	return text;
+};
+
+const toTextArray = (text: TranslatePayload): string[] =>
+	Array.isArray(text) ? text : text ? [text] : [];
+
+const normalizeLLMStepOutput = (
+	step: CompiledStep,
+	output: unknown,
+): unknown => {
+	if (isStringArrayOutput(step.output) && typeof output === "string") {
+		const delimiter = step.output.delimiter ?? "\n";
+		return output
+			.split(delimiter)
+			.map((entry) => entry.trim())
+			.filter(Boolean);
+	}
+	return output;
+};
+
+const ensureServiceModel = (
+	service: Extract<ServiceSettings, { type: "llm" }>,
+): string => {
+	const model = service.model;
+	if (model) {
+		return model;
+	}
+	throw createTranslateError(
+		TranslateErrorType.VALIDATION_ERROR,
+		`Model not configured for ${service.name}`,
 	);
-	return translatedText[0];
 };
 
-/**
- * Execute unary translation with LLM service
- */
-const executeLLMUnary = async (
-	config: s.ModelConfig,
-	promptSettings: s.PromptSettings,
-	pageContext: PageContext | undefined,
-	textContext: TextContext,
-	sourceLang: string,
-	targetLang: string,
-): Promise<string> => {
-	const client = createLLMClient(config.apiSpec, {
-		apiKey: config.apiKey || "",
-		baseUrl: config.baseUrl,
-	});
+const createChatRequest = (
+	service: Extract<ServiceSettings, { type: "llm" }>,
+	messages: ChatRequest["messages"],
+	overrides?: Partial<Pick<ChatRequest, "stream">>,
+): ChatRequest => ({
+	model: ensureServiceModel(service),
+	messages,
+	temperature: service.temperature,
+	maxTokens: service.maxOutputTokens,
+	...overrides,
+});
 
-	const promptContext: PromptContext = {
-		targetLang,
-		sourceLang,
-		page: pageContext,
-		textContext,
-	};
-
-	const { system, user } = buildPrompt(promptSettings, promptContext);
-
-	const request: UnifiedChatRequest = {
-		model: config.model,
-		messages: [
-			{ role: "system", content: system },
-			{ role: "user", content: user },
-		],
-		temperature: config.temperature,
-		maxTokens: config.maxOutputTokens,
-	};
-
-	const response = await client.chat(request);
-	return response.content;
-};
-
-/**
- * Execute streaming translation with LLM service
- */
-async function* executeLLMStream(
-	config: s.ModelConfig,
-	promptSettings: s.PromptSettings,
-	pageContext: PageContext | undefined,
-	textContext: TextContext,
-	sourceLang: string,
-	targetLang: string,
-): AsyncGenerator<string> {
-	const client = createLLMClient(config.apiSpec, {
-		apiKey: config.apiKey || "",
-		baseUrl: config.baseUrl,
-	});
-
-	const promptContext: PromptContext = {
-		targetLang,
-		sourceLang,
-		page: pageContext,
-		textContext,
-	};
-
-	const { system, user } = buildPrompt(promptSettings, promptContext);
-
-	const request: UnifiedChatRequest = {
-		model: config.model,
-		messages: [
-			{ role: "system", content: system },
-			{ role: "user", content: user },
-		],
-		temperature: config.temperature,
-		maxTokens: config.maxOutputTokens,
-		stream: true,
-	};
-
-	const stream = client.chatStream(request);
-	for await (const chunk of stream) {
-		yield chunk.content;
-	}
-}
-
-/**
- * Execute batch translation with traditional service
- */
-const executeTraditionalBatch = async (
-	config: s.TraditionalTranslationConfig,
-	texts: string[],
-	sourceLang: string,
-	targetLang: string,
-): Promise<string[]> => {
-	const { translatedText } = await traditionalTranslate(
-		config.apiSpec,
-		{
-			apiKey: config.apiKey || "",
-			apiUrl: config.baseUrl,
-		},
-		{ text: texts, sourceLang, targetLang },
-	);
-
-	return translatedText;
-};
-
-/**
- * Execute batch translation with LLM service
- */
-const executeLLMBatch = async (
-	config: s.ModelConfig,
-	promptSettings: s.PromptSettings,
-	pageContext: PageContext | undefined,
-	texts: string[],
-	sourceLang: string,
-	targetLang: string,
-): Promise<string[]> => {
-	if (!isBatchPrompt(promptSettings)) {
-		throw createTranslateError(
-			TranslateErrorType.INVALID_PROMPT,
-			t("errors.promptNotBatch"),
-		);
-	}
-
-	const client = createLLMClient(config.apiSpec, {
-		apiKey: config.apiKey || "",
-		baseUrl: config.baseUrl,
-	});
-
-	const promptContext: PromptContext = {
-		targetLang,
-		sourceLang,
-		page: pageContext,
-		texts,
-	};
-
-	const { system, user } = buildPrompt(promptSettings, promptContext);
-
-	const request: UnifiedChatRequest = {
-		model: config.model,
-		messages: [
-			{ role: "system", content: system },
-			{ role: "user", content: user },
-		],
-		temperature: config.temperature,
-		maxTokens: config.maxOutputTokens,
-	};
-
-	const response = await client.chat(request);
-
-	// Parse the response to extract individual translations
-	const result = parseBatchResponse(response.content, promptSettings);
-
-	if (result.length !== texts.length) {
-		throw createTranslateError(
-			TranslateErrorType.API_ERROR,
-			t("errors.batchResponseMismatch", [texts.length, result.length]),
-		);
-	}
-
-	return result;
-};
-
-/**
- * Handle batch caching logic
- */
-const handleBatchCaching = async (
-	texts: string[],
-	options: TranslateOptions,
-	pageContext: PageContext | undefined,
-	cacheManager: ReturnType<typeof createCacheManager>,
-) => {
-	const results: string[] = [];
-	const uncachedIndices: number[] = [];
-	const uncachedTexts: string[] = [];
-
-	for (let i = 0; i < texts.length; i++) {
-		const text = texts[i];
-		const textContext: TextContext = {
-			content: text,
-			before: "",
-			after: "",
-		};
-
-		const cacheKey = await generateCacheKey(
-			options.promptId,
-			options.modelId,
-			textContext,
-			pageContext,
-		);
-
-		if (options.cleanCache) {
-			await cacheManager.del(cacheKey);
-			uncachedIndices.push(i);
-			uncachedTexts.push(text);
-			results.push(""); // Placeholder
-		} else {
-			const cachedResult = await cacheManager.get(cacheKey);
-			if (cachedResult) {
-				results.push(cachedResult);
-			} else {
-				uncachedIndices.push(i);
-				uncachedTexts.push(text);
-				results.push(""); // Placeholder
-			}
-		}
-	}
-
-	return { results, uncachedIndices, uncachedTexts };
-};
-
-/**
- * Cache batch results
- */
-const cacheBatchResults = async (
-	results: string[],
-	uncachedIndices: number[],
-	translatedTexts: string[],
-	texts: string[],
-	options: TranslateOptions,
-	pageContext: PageContext | undefined,
-	cacheManager: ReturnType<typeof createCacheManager>,
-) => {
-	for (let i = 0; i < uncachedIndices.length; i++) {
-		const originalIndex = uncachedIndices[i];
-		const translatedText = translatedTexts[i];
-		results[originalIndex] = translatedText;
-
-		const textContext: TextContext = {
-			content: texts[originalIndex],
-			before: "",
-			after: "",
-		};
-
-		const cacheKey = await generateCacheKey(
-			options.promptId,
-			options.modelId,
-			textContext,
-			pageContext,
-		);
-
-		await cacheManager.set(cacheKey, translatedText);
+const throwIfAborted = (signal?: AbortSignal) => {
+	if (signal?.aborted) {
+		throw new DOMException("Aborted", "AbortError");
 	}
 };
 
-/**
- * Main service factory
- */
 export const createTranslateService = async (): Promise<TranslateService> => {
-	const cacheStorage = createLRUStorage<string>(
+	let settings = await getSettings();
+	if (!settings) {
+		throw new Error("Settings not initialized");
+	}
+
+	const promptCache = new Map<string, CompiledPrompt>();
+	const clientCache = new Map<string, LLMClient>();
+	const resultCache = createLRUStorage<CachedValue>(
 		"translate-cache",
 		STORAGE_KEYS.cache,
-		(await getSettings()).translate.cacheSize,
+		settings.queue.cacheSize,
 	);
-	const cacheManager = createCacheManager(cacheStorage);
 
-	return {
-		unary: async (
-			context: [PageContext | undefined, TextContext],
-			options: TranslateOptions,
-		): Promise<string> => {
-			const [pageContext, textContext] = context;
-			const modelConfig = await getModelConfig(options.modelId);
-			const promptSettings = await getPromptSettings(options.promptId);
-
-			const cacheKey = await generateCacheKey(
-				options.promptId,
-				options.modelId,
-				textContext,
-				pageContext,
+	const resolveService = (modelId: string): ServiceSettings => {
+		const service = settings.services[modelId];
+		if (!service) {
+			throw createTranslateError(
+				TranslateErrorType.MODEL_NOT_FOUND,
+				`Model ${modelId} not found. Please check your settings.`,
 			);
+		}
+		return service;
+	};
 
+	const getPrompt = (promptId: string): CompiledPrompt => {
+		const cached = promptCache.get(promptId);
+		if (cached) return cached;
+		const prompt = settings.prompts[promptId];
+		if (!prompt) {
+			throw createTranslateError(
+				TranslateErrorType.INVALID_PROMPT,
+				`Prompt ${promptId} not found. Please check your settings.`,
+			);
+		}
+		const compiled = compilePrompt(prompt);
+		promptCache.set(promptId, compiled);
+		return compiled;
+	};
+
+	const getQueueConfig = (modelId: string) => {
+		const base = settings.queue;
+		const override = settings.services[modelId]?.queue;
+		return {
+			requestConcurrency:
+				override?.requestConcurrency ?? base.requestConcurrency,
+			tokensPerMinute: override?.tokensPerMinute ?? base.tokensPerMinute,
+		};
+	};
+
+	const ensureLLMClient = (
+		modelId: string,
+		service: Extract<ServiceSettings, { type: "llm" }>,
+	): LLMClient => {
+		const cached = clientCache.get(modelId);
+		if (cached) return cached;
+		const baseUrl = service.baseUrl;
+		const client = buildLLMClient(service.apiSpec, {
+			apiKey: service.apiKey,
+			baseUrl,
+		});
+		clientCache.set(modelId, client);
+		return client;
+	};
+
+	const queueHub = createQueueHub((modelId: string) => {
+		const config = getQueueConfig(modelId);
+		return {
+			requestConcurrency: config.requestConcurrency,
+			tokensPerMinute: config.tokensPerMinute,
+		};
+	});
+
+	listenSettings((next) => {
+		settings = next;
+		promptCache.clear();
+		clientCache.clear();
+		queueHub.refresh();
+		resultCache.resize(next.queue.cacheSize);
+	});
+
+	const runTraditional = async (
+		service: Extract<ServiceSettings, { type: "traditional" }>,
+		texts: string[],
+		srcLang: string,
+		dstLang: string,
+	): Promise<{ result: string[]; tokens: number }> => {
+		const runOnce = async (texts: string[]) => {
 			try {
-				return await cacheManager.withCache(
-					cacheKey,
-					options.cleanCache ?? false,
-					async () => {
-						if (modelConfig.type === "traditional") {
-							return await executeTraditionalUnary(
-								modelConfig.config,
-								textContext,
-								options.sourceLang,
-								options.targetLang,
-							);
-						}
-
-						return await executeLLMUnary(
-							modelConfig.config,
-							promptSettings,
-							pageContext,
-							textContext,
-							options.sourceLang,
-							options.targetLang,
-						);
+				const response = await runTraditionalService(
+					service.apiSpec,
+					service as TranslationConfig,
+					{
+						text: texts,
+						sourceLang: srcLang,
+						targetLang: dstLang,
 					},
 				);
+				return response;
 			} catch (error) {
-				handleApiError(error);
-				throw error; // Unreachable but satisfies TypeScript
+				throw convertFromTranslationError(error);
 			}
-		},
+		};
 
-		stream: async function* (
-			context: [PageContext | undefined, TextContext],
-			options: TranslateOptions,
-		): AsyncGenerator<string> {
-			const [pageContext, textContext] = context;
-			const modelConfig = await getModelConfig(options.modelId);
-			const promptSettings = await getPromptSettings(options.promptId);
+		if (SINGLE_TEXT_SERVICES.has(service.apiSpec)) {
+			const translated: string[] = [];
+			for (const text of texts) {
+				const response = await runOnce([text]);
+				translated.push(response.translatedText[0]);
+			}
+			return { result: translated, tokens: estimateTokens(texts) };
+		}
 
-			const cacheKey = await generateCacheKey(
-				options.promptId,
-				options.modelId,
-				textContext,
-				pageContext,
+		const response = await runOnce(texts);
+		return {
+			result: response.translatedText,
+			tokens: estimateTokens(texts),
+		};
+	};
+
+	const runTraditionalStream = (
+		service: Extract<ServiceSettings, { type: "traditional" }>,
+		payload: TranslatePayload,
+		srcLang: string,
+		dstLang: string,
+		onResult: (value: string[]) => void,
+	): StreamRunner => {
+		return async () => {
+			const texts = toTextArray(payload);
+			if (texts.length === 0) {
+				onResult([]);
+				return {
+					iterator: (async function* () {
+						yield { content: "" };
+					})(),
+					completion: Promise.resolve(0),
+				};
+			}
+			const { result, tokens } = await runTraditional(
+				service,
+				texts,
+				srcLang,
+				dstLang,
+			);
+			onResult(result);
+			const combined = result.join("\n");
+			return {
+				iterator: (async function* () {
+					yield { content: combined };
+				})(),
+				completion: Promise.resolve(tokens),
+			};
+		};
+	};
+
+	const runLLMSteps = async (
+		modelId: string,
+		service: Extract<ServiceSettings, { type: "llm" }>,
+		prompt: CompiledPrompt,
+		textPayload: TranslatePayload,
+		ctx: TranslateContext,
+		srcLang: string,
+		dstLang: string,
+		signal?: AbortSignal,
+	): Promise<{ result: unknown; tokens: number; reasoning?: string }> => {
+		const client = ensureLLMClient(modelId, service);
+		const promptCtx = buildContextWithTranslateParams(
+			ctx,
+			{ src: srcLang, dst: dstLang },
+			textPayload,
+		);
+		const outputs: unknown[] = [];
+		promptCtx.output = outputs;
+		const conversation = initializeConversation(prompt, promptCtx);
+		let totalTokens = 0;
+		let reasoning: string | undefined;
+		for (const step of prompt.steps) {
+			throwIfAborted(signal);
+			conversation.push({
+				role: "user",
+				content: tokensToString(promptCtx, step.messageTokens),
+			});
+			const request = createChatRequest(
+				service,
+				snapshotConversation(conversation),
+			);
+			try {
+				const schema = isStructuredOutput(step.output)
+					? (step.output.schema as JSONSchema)
+					: undefined;
+				const response = await client.chat(request, schema);
+				totalTokens +=
+					response.usage?.totalTokens ?? response.usage?.promptTokens ?? 0;
+				reasoning = appendReasoningContent(reasoning, response.reasoning);
+				const output = normalizeLLMStepOutput(step, response.output);
+				outputs.push(output);
+				conversation.push({
+					role: "assistant",
+					content: response.content ?? toStreamChunk(output),
+				});
+			} catch (error) {
+				throw convertFromLLMError(error);
+			}
+		}
+		return {
+			result: outputs.at(-1),
+			tokens: totalTokens,
+			reasoning,
+		};
+	};
+
+	const runLLMStream = (
+		modelId: string,
+		service: Extract<ServiceSettings, { type: "llm" }>,
+		prompt: CompiledPrompt,
+		textPayload: TranslatePayload,
+		ctx: TranslateContext,
+		srcLang: string,
+		dstLang: string,
+		signal?: AbortSignal,
+	): StreamRunner => {
+		return async () => {
+			const client = ensureLLMClient(modelId, service);
+			const promptCtx = buildContextWithTranslateParams(
+				ctx,
+				{ src: srcLang, dst: dstLang },
+				textPayload,
+			);
+			const outputs: unknown[] = [];
+			promptCtx.output = outputs;
+			const conversation = initializeConversation(prompt, promptCtx);
+			const lastIndex = prompt.steps.length - 1;
+			for (let index = 0; index < lastIndex; index++) {
+				const step = prompt.steps[index];
+				conversation.push({
+					role: "user",
+					content: tokensToString(promptCtx, step.messageTokens),
+				});
+				const request = createChatRequest(
+					service,
+					snapshotConversation(conversation),
+				);
+				try {
+					const schema = isStructuredOutput(step.output)
+						? (step.output.schema as JSONSchema)
+						: undefined;
+					const response = await client.chat(request, schema);
+					const output = normalizeLLMStepOutput(step, response.output);
+					outputs.push(output);
+					conversation.push({
+						role: "assistant",
+						content: response.content ?? toStreamChunk(output),
+					});
+				} catch (error) {
+					throw convertFromLLMError(error);
+				}
+			}
+			const finalStep = prompt.steps.at(-1);
+			if (!finalStep) {
+				throw createTranslateError(
+					TranslateErrorType.VALIDATION_ERROR,
+					"No steps available in the prompt. This should not happen.",
+				);
+			}
+			conversation.push({
+				role: "user",
+				content: tokensToString(promptCtx, finalStep.messageTokens),
+			});
+			const request = createChatRequest(
+				service,
+				snapshotConversation(conversation),
+				{ stream: true },
 			);
 
-			try {
-				if (modelConfig.type === "traditional") {
-					// Traditional services don't support streaming, yield full result
-					const result = await cacheManager.withCache(
-						cacheKey,
-						options.cleanCache ?? false,
-						async () => {
-							return await executeTraditionalUnary(
-								modelConfig.config,
-								textContext,
-								options.sourceLang,
-								options.targetLang,
-							);
+			const { promise: completion, resolve: resolveCompletion } =
+				Promise.withResolvers<number>();
+			const source = client.chatStream(request);
+			return {
+				iterator: (async function* () {
+					try {
+						while (true) {
+							throwIfAborted(signal);
+							const next = await source.next();
+							if (next.done) {
+								if (next.value.reasoning) {
+									yield { reasoning: next.value.reasoning };
+								}
+								resolveCompletion(next.value.usage?.completionTokens ?? 0);
+								return;
+							}
+							const chunk = next.value;
+							if (chunk.content || chunk.reasoning) {
+								yield chunk;
+							}
+						}
+					} finally {
+						await source.return({});
+						resolveCompletion(0);
+					}
+				})(),
+				completion,
+			};
+		};
+	};
+
+	const executeUnary = async (
+		ctx: TranslateContext,
+		options: TranslateOptions,
+		text: string | string[] | undefined,
+		// biome-ignore lint/suspicious/noExplicitAny: result can be any type
+	): Promise<UnaryResult<any>> => {
+		const modelId = options.modelId;
+		const promptId = options.promptId;
+		if (!promptId) {
+			throw createTranslateError(
+				TranslateErrorType.INVALID_PROMPT,
+				"Prompt ID is required",
+			);
+		}
+		const service = resolveService(modelId);
+		const payload = text ?? "";
+		const expectsArray = Array.isArray(payload);
+		const compiled = service.type === "llm" ? getPrompt(promptId) : undefined;
+		const payloadArray = Array.isArray(payload) ? payload : undefined;
+		const supportsThinCache =
+			Boolean(options.thinCache) &&
+			!!payloadArray &&
+			(service.type === "traditional" ||
+				(service.type === "llm" && compiled?.input === "stringArray"));
+
+		const cacheKey = await computeCacheKey(promptId, modelId, text, ctx);
+		let thinCacheState: ThinCacheState | undefined;
+
+		if (options.cleanCache) {
+			await resultCache.del(cacheKey);
+		}
+
+		if (supportsThinCache && payloadArray) {
+			const entryKeys = await Promise.all(
+				payloadArray.map((entry) =>
+					computeCacheKey(promptId, modelId, entry, ctx),
+				),
+			);
+			const cacheState: ThinCacheState = {
+				keys: entryKeys,
+				values: new Array(payloadArray.length),
+				missing: [],
+			};
+			thinCacheState = cacheState;
+			if (options.cleanCache) {
+				await Promise.all(entryKeys.map((key) => resultCache.del(key)));
+				cacheState.missing = payloadArray.map((_, index) => index);
+			} else {
+				const cachedEntries = await Promise.all(
+					entryKeys.map((key) => resultCache.get(key)),
+				);
+				cachedEntries.forEach((entry, index) => {
+					if (entry && typeof entry.output === "string") {
+						cacheState.values[index] = entry.output;
+					} else {
+						cacheState.missing.push(index);
+					}
+				});
+				if (cacheState.missing.length === 0) {
+					const cachedValue = cacheState.values.slice() as string[];
+					await resultCache.set(cacheKey, { output: cachedValue });
+					return {
+						value: {
+							output: cachedValue,
+							reasoning: undefined,
 						},
-					);
-					yield result;
-					return;
+						completionTokens: 0,
+					};
 				}
-
-				// Stream from LLM
-				yield* cacheManager.withStreamingCache(
-					cacheKey,
-					options.cleanCache ?? false,
-					() =>
-						executeLLMStream(
-							modelConfig.config,
-							promptSettings,
-							pageContext,
-							textContext,
-							options.sourceLang,
-							options.targetLang,
-						),
-				);
-			} catch (error) {
-				handleApiError(error);
 			}
-		},
+		} else if (!options.cleanCache) {
+			const cached = await resultCache.get(cacheKey);
+			if (cached) {
+				return {
+					value: cached,
+					completionTokens: 0,
+				};
+			}
+		}
 
-		batch: async (
-			context: [PageContext | undefined, string[]],
+		const executionPayload =
+			thinCacheState && payloadArray
+				? thinCacheState.missing.map((index) => payloadArray[index])
+				: payload;
+		const normalizedPayload =
+			service.type === "llm" && compiled
+				? normalizePromptInput(compiled, executionPayload)
+				: Array.isArray(executionPayload)
+					? executionPayload
+					: executionPayload;
+		let translationResult: unknown;
+		let completionTokens = 0;
+		let reasoning: string | undefined;
+
+		if (service.type === "traditional") {
+			const texts = toTextArray(
+				Array.isArray(normalizedPayload)
+					? normalizedPayload
+					: [normalizedPayload],
+			);
+			if (texts.length === 0) {
+				return {
+					value: {
+						output: expectsArray ? [] : "",
+						reasoning: undefined,
+					},
+					completionTokens: 0,
+				};
+			}
+			const traditionalResult = await runTraditional(
+				service,
+				texts,
+				options.srcLang,
+				options.dstLang,
+			);
+			translationResult = traditionalResult.result;
+			completionTokens = traditionalResult.tokens;
+		} else {
+			const compiledPrompt = compiled ?? getPrompt(promptId);
+			const llmResult = await runLLMSteps(
+				modelId,
+				service,
+				compiledPrompt,
+				normalizedPayload,
+				ctx,
+				options.srcLang,
+				options.dstLang,
+			);
+			translationResult = llmResult.result;
+			completionTokens = llmResult.tokens;
+			reasoning = llmResult.reasoning;
+		}
+
+		let finalValue = translationResult;
+		if (thinCacheState && payloadArray) {
+			if (!Array.isArray(translationResult)) {
+				throw createTranslateError(
+					TranslateErrorType.VALIDATION_ERROR,
+					"Thin cache requires translation results to be arrays.",
+				);
+			}
+			if (translationResult.length !== thinCacheState.missing.length) {
+				throw createTranslateError(
+					TranslateErrorType.VALIDATION_ERROR,
+					`Expected ${thinCacheState.missing.length} translations, but got ${translationResult.length}`,
+				);
+			}
+			const merged = thinCacheState.values.slice();
+			thinCacheState.missing.forEach((index, idx) => {
+				merged[index] = translationResult[idx];
+			});
+			finalValue = merged;
+			await Promise.all(
+				thinCacheState.missing.map((index) =>
+					(async () => {
+						const value = merged[index];
+						if (value === undefined) {
+							throw createTranslateError(
+								TranslateErrorType.VALIDATION_ERROR,
+								"Thin cache entry missing expected translation result.",
+							);
+						}
+						await resultCache.set(thinCacheState.keys[index], {
+							output: value,
+						});
+					})(),
+				),
+			);
+		}
+
+		await resultCache.set(cacheKey, {
+			output: finalValue,
+			reasoning,
+		});
+		return {
+			value: {
+				output: finalValue,
+				reasoning,
+			},
+			completionTokens,
+		};
+	};
+
+	return {
+		async unary(
+			ctx: TranslateContext,
 			options: TranslateOptions,
-		): Promise<string[]> => {
-			const [pageContext, texts] = context;
-			const modelConfig = await getModelConfig(options.modelId);
-			const promptSettings = await getPromptSettings(options.promptId);
-
-			const { results, uncachedIndices, uncachedTexts } =
-				await handleBatchCaching(texts, options, pageContext, cacheManager);
-
-			// If all texts are cached, return immediately
-			if (uncachedIndices.length === 0) {
-				return results;
-			}
-
-			try {
-				// Translate uncached texts
-				let translatedTexts: string[];
-
-				if (modelConfig.type === "traditional") {
-					translatedTexts = await executeTraditionalBatch(
-						modelConfig.config,
-						uncachedTexts,
-						options.sourceLang,
-						options.targetLang,
-					);
-				} else {
-					translatedTexts = await executeLLMBatch(
-						modelConfig.config,
-						promptSettings,
-						pageContext,
-						uncachedTexts,
-						options.sourceLang,
-						options.targetLang,
-					);
-				}
-
-				// Cache and update results
-				await cacheBatchResults(
-					results,
-					uncachedIndices,
-					translatedTexts,
-					texts,
-					options,
-					pageContext,
-					cacheManager,
-				);
-
-				return results;
-			} catch (error) {
-				handleApiError(error);
-				throw error; // Unreachable but satisfies TypeScript
-			}
+			text?: string | string[],
+		) {
+			const payload = text ?? "";
+			const service = resolveService(options.modelId);
+			const prompt =
+				service.type === "llm" ? getPrompt(options.promptId) : undefined;
+			const normalized = prompt
+				? normalizePromptInput(prompt, payload)
+				: (payload ?? "");
+			const estimated = estimateTokens(normalized);
+			const queue = queueHub.queue(options.modelId);
+			return queue.enqueueUnary(
+				() => executeUnary(ctx, options, payload),
+				estimated,
+			);
 		},
+		stream(
+			ctx: TranslateContext,
+			options: TranslateOptions,
+			text?: string | string[],
+			_meta?: unknown,
+			signal?: AbortSignal,
+		) {
+			const modelId = options.modelId;
+			const promptId = options.promptId;
+			const service = resolveService(modelId);
+			const payload = text ?? "";
+			const compiledPrompt =
+				service.type === "llm" ? getPrompt(promptId) : undefined;
+			const normalized =
+				service.type === "llm" && compiledPrompt
+					? normalizePromptInput(compiledPrompt, payload)
+					: payload;
 
-		clearCache: async () => {
-			try {
-				await cacheStorage.clear();
-			} catch (error) {
-				console.error("Error clearing cache:", error);
-				throw error;
-			}
+			return (async function* () {
+				const cacheKey = await computeCacheKey(modelId, promptId, text, ctx);
+				if (options.cleanCache) {
+					await resultCache.del(cacheKey);
+				} else {
+					const cached = await resultCache.get(cacheKey);
+					const cachedValue = cached?.output;
+					if (cachedValue !== undefined) {
+						yield {
+							content:
+								typeof cachedValue === "string"
+									? cachedValue
+									: toStreamChunk(cachedValue),
+						};
+						if (cached?.reasoning) {
+							yield { reasoning: cached.reasoning };
+						}
+						return;
+					}
+				}
+				const queue = queueHub.queue(modelId);
+				const estimated = estimateTokens(normalized);
+				let traditionalResult: string[] | undefined;
+				const streamRunner =
+					service.type === "llm"
+						? runLLMStream(
+								modelId,
+								service,
+								compiledPrompt ?? getPrompt(promptId),
+								normalized,
+								ctx,
+								options.srcLang,
+								options.dstLang,
+								signal,
+							)
+						: runTraditionalStream(
+								service,
+								normalized,
+								options.srcLang,
+								options.dstLang,
+								(result) => {
+									traditionalResult = result;
+								},
+							);
+				const iterator = await queue.enqueueStream(streamRunner, estimated);
+				let translationAggregate = "";
+				let reasoningAggregate = "";
+				try {
+					for await (const chunk of iterator) {
+						if (chunk.content) {
+							translationAggregate += chunk.content;
+						}
+						if (chunk.reasoning) {
+							reasoningAggregate += chunk.reasoning;
+						}
+						yield chunk;
+					}
+					if (service.type === "llm") {
+						await resultCache.set(cacheKey, {
+							output: translationAggregate,
+							reasoning: reasoningAggregate || undefined,
+						});
+					} else if (traditionalResult) {
+						await resultCache.set(cacheKey, {
+							output: Array.isArray(payload)
+								? traditionalResult
+								: traditionalResult[0],
+						});
+					}
+				} finally {
+					if (signal?.aborted) {
+						// @ts-expect-error This is fine, since no one is using the value.
+						await iterator.return();
+					}
+				}
+			})();
+		},
+		async clearCache() {
+			await resultCache.clear();
+		},
+		queueStatus(modelId: string) {
+			resolveService(modelId);
+			return queueHub.subscribe(modelId);
 		},
 	};
 };

@@ -1,6 +1,10 @@
 import { Languages, Lightbulb } from "lucide-solid";
-import { createEffect, createSignal } from "solid-js";
-import { getPageContext } from "../context/page";
+import { createEffect, createSignal, Show } from "solid-js";
+import { Button } from "~/components/Button";
+import { Menu } from "~/components/Menu";
+import { createAnimatedAppearance, onOuterClick } from "~/hooks/animation";
+import { useSettings } from "~/hooks/settings";
+import { t } from "~/utils/i18n";
 import { extractContextFromSelection } from "../context/select";
 import type { Position, SelectEvent } from "../types";
 import FloatTranslation from "./FloatTranslation";
@@ -39,16 +43,13 @@ export default (props: Props) => {
 
 		const selection = props.event.selection;
 		const textContext = extractContextFromSelection(selection);
-		if (!textContext || !textContext.content) return;
-		const pageContext = getPageContext();
+		if (!textContext || !textContext.text) return;
 
 		addPopup({
 			...pos,
 			pinned: settings.basic.autoPin,
 			content: () => (
-				<FloatTranslation
-					operation={{ type: action, textContext, pageContext }}
-				/>
+				<FloatTranslation mode={action} textContext={textContext} />
 			),
 		});
 	};

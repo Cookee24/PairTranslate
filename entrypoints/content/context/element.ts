@@ -1,3 +1,6 @@
+import { extractMarkdownContent } from "~/utils/markdown";
+import type { TextContext } from "~/utils/types";
+
 /**
  * Extracts the markdown content of an element and the surrounding text content.
  * @param element The HTML element to extract the context from.
@@ -19,8 +22,10 @@ export const extractTextContext = (element: HTMLElement): TextContext => {
 	}
 
 	return {
-		before,
-		after,
-		content: extractMarkdownContent(element),
+		text: extractMarkdownContent(element),
+		surr: {
+			before: before || undefined,
+			after: after || undefined,
+		},
 	};
 };

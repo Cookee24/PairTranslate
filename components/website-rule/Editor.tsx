@@ -1,11 +1,25 @@
 import { trackStore } from "@solid-primitives/deep";
 import { Plus, Trash2 } from "lucide-solid";
-import { createEffect, createMemo, For, Show } from "solid-js";
-import { createStore } from "solid-js/store";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	For,
+	on,
+	Show,
+} from "solid-js";
+import { createStore, reconcile } from "solid-js/store";
+import { Button } from "~/components/Button";
+import { Input } from "~/components/Input";
+import { Select } from "~/components/Select";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormField } from "~/components/settings/FormField";
 import type { SelectOption } from "~/components/settings/OptionSelect";
+import { useSettings } from "~/hooks/settings";
+import { SUPPORTED_LANGUAGES } from "~/utils/constants";
+import { t } from "~/utils/i18n";
 import type { WebsiteRuleSettings } from "~/utils/settings";
+import { selectServicesByType } from "~/utils/settings/services";
 
 export interface WebsiteRuleEditorRef {
 	getConfig: () => WebsiteRuleSettings;
@@ -62,12 +76,16 @@ export const WebsiteRuleEditor = (props: Props) => {
 	);
 
 	const modelOptions = createMemo<SelectOption[]>(() => {
+		trackStore(settings.services);
 		const options: SelectOption[] = [
 			{ value: "default", label: t("common.globalDefault") },
 		];
 
-		const llmServices = settings.services.llmServices;
-		const traditionalServices = settings.services.traditionalServices;
+		const llmServices = selectServicesByType(settings.services, "llm");
+		const traditionalServices = selectServicesByType(
+			settings.services,
+			"traditional",
+		);
 
 		for (const [uuid, service] of Object.entries(llmServices)) {
 			options.push({

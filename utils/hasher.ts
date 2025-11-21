@@ -1,20 +1,22 @@
-import type { PageContext, TextContext } from "./types";
+import type { TranslateContext } from "./types";
 
 const encoder = new TextEncoder();
-export const generateCacheKey = async (
-	operation: string,
+export const computeCacheKey = async (
+	promptId: string,
 	modelId: string,
-	textContext: TextContext,
-	pageContext?: PageContext,
+	text: string | string[] = "",
+	ctx: TranslateContext,
 ) => {
-	let str = `${operation}|${modelId}|`;
-	if (textContext.before) str += `${textContext.before}♇`;
-	str += `${textContext.content}♇`;
-	if (textContext.after) str += `${textContext.after}♇`;
+	const D = "\u200C"; // Zero-width non-joiner to separate fields
+	let str = `${promptId}${modelId}${D}${Array.isArray(text) ? text.join(D) : text}${D}`;
+	if (ctx.surr) {
+		if (ctx.surr.before) str += `${ctx.surr.before}${D}`;
+		if (ctx.surr.after) str += `${ctx.surr.after}${D}`;
+	}
 
-	if (pageContext) {
+	if (ctx.page) {
 		// For hit rate, we only hash the domain of the page context
-		str += pageContext.domain;
+		str += ctx.page.domain;
 	}
 
 	const buf = await crypto.subtle.digest("SHA-256", encoder.encode(str));

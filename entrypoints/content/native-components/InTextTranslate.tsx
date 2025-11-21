@@ -1,7 +1,23 @@
 import { CircleX, Languages } from "lucide-solid";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	For,
+	on,
+	onCleanup,
+} from "solid-js";
+import { estimateTokens } from "@/utils/token-estimate";
+import { Md } from "~/components/MD/Md";
+import { InTextPortal } from "~/components/MPortal";
+import { useSettings } from "~/hooks/settings";
+import { createBatchTranslation, createTranslation } from "~/hooks/translation";
+import { useWebsiteRule } from "~/hooks/website-rule";
+import { ELEMENT_TRANSLATED } from "~/utils/constants";
+import { copyToClipboard } from "~/utils/copy";
+import { extractMarkdownContent } from "~/utils/markdown";
 import InTextTooltip from "../components/InTextTooltip";
 import { extractTextContext } from "../context/element";
-import { getPageContext } from "../context/page";
 import { NativeLoading } from "./Loading";
 
 interface SingleProps {
@@ -10,30 +26,12 @@ interface SingleProps {
 export const SingleInTextTranslation = (props: SingleProps) => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
-	const [operation, setOperation] = createSignal<Operation>();
-	const [text, { loading, error, retry }] = useTranslation(operation, {
-		stream: false,
-		floating: false,
-	});
 
-	createEffect(() => {
-		const el = props.element;
-		const pageContext = getPageContext();
-		const textContext = extractTextContext(el);
-		setOperation({
-			type: "translate",
-			textContext,
-			pageContext,
-		});
-		onCleanup(() => setOperation(undefined));
-	});
+	const context = createMemo(() => extractTextContext(props.element));
+	const [data, retry] = createTranslation(() => context().text);
 
 	const handleRetry = () => {
-		if (error() && !loading()) {
-			retry({ cleanCache: false });
-		} else if (!error() && !loading()) {
-			retry({ cleanCache: true });
-		}
+		retry();
 	};
 
 	const hideOriginal = () =>
@@ -42,9 +40,9 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 
 	return (
 		<TranslationRender
-			text={text()}
-			loading={loading()}
-			error={error()}
+			text={data()}
+			loading={data.loading}
+			error={data.error?.message}
 			element={props.element}
 			hideOriginal={hideOriginal()}
 			onRetry={handleRetry}
@@ -52,13 +50,16 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 	);
 };
 
+type ElementTextPair = [HTMLElement, string];
+
 interface BatchProps {
 	elements: Set<HTMLElement>;
 	onDelete?: (element: HTMLElement) => void;
 }
 export const BatchInTextTranslation = (props: BatchProps) => {
 	const { settings } = useSettings();
-	const [renderList, setRenderList] = createSignal([] as HTMLElement[][], {
+	const websiteRule = useWebsiteRule();
+	const [renderList, setRenderList] = createSignal([] as ElementTextPair[][], {
 		equals: false,
 	});
 
@@ -100,25 +101,48 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 			[() => props.elements],
 			([currentElements]) => {
 				throttle(() => {
-					const maxBatchSize = settings.translate.maxBatchSize;
+					const currentModelQueueSettings =
+						settings.services[
+							websiteRule.inTextTranslateModel ||
+								settings.translate.inTextTranslateModel ||
+								""
+						]?.queue;
+					const maxBatchSize =
+						currentModelQueueSettings?.maxBatchSize ||
+						settings.queue.maxBatchSize;
 
 					if (currentElements.size === 0) clear();
 
 					setRenderList((prev) => {
+						const maxTokensPerBatch =
+							currentModelQueueSettings?.maxTokensPerBatch ||
+							settings.queue.maxTokensPerBatch;
+
 						let last = prev.length; // Force a new batch
 						for (const element of currentElements) {
 							const batchId = batchIds.get(element);
+							const current = [
+								element,
+								extractMarkdownContent(element),
+							] as ElementTextPair;
 							if (batchId === undefined) {
 								const lastBatch = prev[last];
 								if (lastBatch !== undefined) {
-									if (lastBatch.length < maxBatchSize) {
-										prev[last] = [...lastBatch, element];
+									const estimatedTokens = estimateTokens([
+										...lastBatch.map(([, text]) => text),
+										current[1],
+									]);
+									if (
+										lastBatch.length < maxBatchSize &&
+										estimatedTokens <= maxTokensPerBatch
+									) {
+										prev[last] = [...lastBatch, current];
 									} else {
-										prev.push([element]);
+										prev.push([current]);
 										last++;
 									}
 								} else {
-									prev.push([element]);
+									prev.push([current]);
 								}
 								batchIds.set(element, last);
 							} else {
@@ -129,7 +153,11 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 						for (const [element, batchId] of batchIds.entries()) {
 							if (!currentElements.has(element)) {
 								const batch = prev[batchId];
-								const index = batch.indexOf(element);
+								if (!batch) {
+									batchIds.delete(element);
+									continue;
+								}
+								const index = batch.findIndex(([el]) => el === element);
 								if (index !== -1) {
 									prev[batchId] = [
 										...batch.slice(0, index),
@@ -160,32 +188,30 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 };
 
 interface BatchRenderProps {
-	elements: HTMLElement[];
+	elements: ElementTextPair[];
 	onDelete?: (element: HTMLElement) => void;
 }
 const BatchRender = (props: BatchRenderProps) => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
-	const texts = createMemo(() =>
-		props.elements.map((el) => extractMarkdownContent(el)),
-	);
-	const [store, retry] = useBatchTranslation(texts, getPageContext());
+	const texts = createMemo(() => props.elements.map(([, text]) => text));
+	const [getter, retry] = createBatchTranslation(texts);
 
 	const hideOriginal = () =>
 		(websiteRule.translateMode ?? settings.translate.translationMode) ===
 		"replace";
 
 	return (
-		<For each={store}>
+		<For each={getter()}>
 			{(item, index) => (
 				<TranslationRender
-					text={item.result}
+					text={item()}
 					loading={item.loading}
-					error={item.error}
-					element={props.elements[index()]}
+					error={item.error?.message}
+					element={props.elements[index()][0]}
 					hideOriginal={hideOriginal()}
-					onRetry={() => retry.single(index(), { cleanCache: true })}
-					onDelete={() => props.onDelete?.(props.elements[index()])}
+					onRetry={() => retry(index())}
+					onDelete={() => props.onDelete?.(props.elements[index()][0])}
 				/>
 			)}
 		</For>
@@ -223,8 +249,8 @@ const TranslationRender = (props: TranslationRenderProps) => {
 			x = e.clientX;
 			y = e.clientY;
 		} else {
-			x = e.touches[0].clientX;
-			y = e.touches[0].clientY;
+			x = e.changedTouches[0].clientX;
+			y = e.changedTouches[0].clientY;
 		}
 		setTooltipPos({
 			x,
@@ -263,15 +289,15 @@ const TranslationRender = (props: TranslationRenderProps) => {
 				{!props.loading && !props.error && !props.hideOriginal && <br />}
 				<span
 					on:mouseenter={createTooltip}
-					on:touchstart={createTooltip}
+					on:touchend={createTooltip}
 					style={{ display: "inline-block" }}
 				>
 					{props.loading ? (
 						<NativeLoading />
-					) : !props.loading && !props.error ? (
-						<Languages style={ICON_STYLE} size="12px" />
-					) : (
+					) : props.error ? (
 						<CircleX style={ERROR_ICON_STYLE} size="12px" />
+					) : (
+						<Languages style={ICON_STYLE} size="12px" />
 					)}
 				</span>
 				{!props.loading && !props.error && <Md text={props.text || ""} />}

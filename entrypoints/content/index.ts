@@ -1,3 +1,5 @@
+import { defineContentScript } from "#imports";
+import { waitRpc } from "~/utils/rpc/wxt-def";
 import { listenEnabled } from "~/utils/settings/helper";
 import App from "./App";
 import "~/utils/rpc/wxt-def";

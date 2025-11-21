@@ -1,5 +1,6 @@
-import { createSignal, onCleanup } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
 import { formatShortcut, isValidShortcut } from "~/hooks/keyboard-shortcut";
+import { t } from "~/utils/i18n";
 
 interface ShortcutInputProps {
 	value: string;

@@ -2,6 +2,7 @@ import { mergeRefs } from "@solid-primitives/refs";
 import { Check, CircleX, Info, TriangleAlert, X } from "lucide-solid";
 import { type Component, type JSX, Show, splitProps } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
+import { animateClose } from "~/hooks/animation";
 import { cn } from "~/utils/cn";
 
 const alertVariants = tv({
@@ -95,7 +96,7 @@ export const Alert: Component<AlertProps> = (props) => {
 			}, local.ref)}
 		>
 			<Show when={variantIcon()}>
-				<div class="flex-shrink-0">{variantIcon()}</div>
+				<div class="shrink-0">{variantIcon()}</div>
 			</Show>
 			<div class="flex-1">
 				<Show when={local.title}>

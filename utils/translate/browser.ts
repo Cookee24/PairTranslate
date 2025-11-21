@@ -1,3 +1,4 @@
+import { t } from "~/utils/i18n";
 import {
 	createBrowserLanguageDetector,
 	createBrowserTranslator,
@@ -37,7 +38,7 @@ export async function browserTranslate(
 			if (firstDetection) {
 				sourceLang = firstDetection.detectedLanguage;
 			} else {
-				throw new Error("Failed to detect language");
+				throw new Error(t("errors.additional.browserLanguageDetectionFailed"));
 			}
 		}
 
@@ -64,7 +65,7 @@ export async function browserTranslate(
 			message:
 				error instanceof Error
 					? error.message
-					: "Browser translation API error",
+					: t("errors.additional.browserApiError"),
 			service: "browser" as const,
 			details: error,
 		};

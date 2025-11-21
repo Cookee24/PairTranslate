@@ -57,6 +57,7 @@ export function createClient<
 		{},
 		{
 			get(_target, prop, _receiver) {
+				if (prop === "then") return undefined; // Allow await on the proxy itself
 				const method = String(prop);
 				return (...payload: unknown[]) => {
 					const { state } = stateController;
@@ -109,6 +110,12 @@ export function createClient<
 									return;
 								}
 							}
+						},
+						return: (val?: unknown) => {
+							responseMessages.return(val);
+						},
+						throw: (error: E) => {
+							responseMessages.throw(error);
 						},
 					};
 				};

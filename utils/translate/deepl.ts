@@ -1,3 +1,4 @@
+import { t } from "~/utils/i18n";
 import type {
 	TranslationConfig,
 	TranslationError,
@@ -9,7 +10,7 @@ export const deepLTranslate = async (
 	config: TranslationConfig,
 	params: TranslationParams,
 ): Promise<TranslationResult> => {
-	const apiUrl = config.apiUrl || "https://api-free.deepl.com/v2/translate";
+	const apiUrl = config.baseUrl || "https://api-free.deepl.com/v2/translate";
 
 	let sourceLang: string | undefined = params.sourceLang.toUpperCase();
 	if (sourceLang === "AUTO") {
@@ -32,7 +33,9 @@ export const deepLTranslate = async (
 
 		if (!response.ok) {
 			const errorData = await response.text();
-			let errorMessage = `DeepL API error: ${response.statusText}`;
+			let errorMessage = t("errors.additional.deeplApiError", [
+				response.statusText,
+			]);
 
 			try {
 				const parsedError = JSON.parse(errorData);
@@ -71,7 +74,7 @@ export const deepLTranslate = async (
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
 			const networkError: TranslationError = {
 				type: "NETWORK_ERROR",
-				message: "Network error: Failed to connect to DeepL API",
+				message: t("errors.additional.deeplNetworkError"),
 				service: "deepl",
 			};
 			throw networkError;

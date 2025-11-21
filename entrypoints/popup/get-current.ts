@@ -1,3 +1,5 @@
+import { browser } from "#imports";
+
 export const getCurrentDomain = () =>
 	browser.tabs
 		.query({ active: true, currentWindow: true })
