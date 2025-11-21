@@ -28,6 +28,7 @@ edit = "编辑"
 delete = "删除"
 close = "关闭"
 loading = "加载中..."
+processing = "处理中..."
 enabled = "已启用"
 disabled = "已禁用"
 configure = "配置"
@@ -39,6 +40,7 @@ selectModel = "选择模型"
 modelsLoaded = "已加载 $1 个模型"
 retry = "重试"
 confirm = "确认"
+clear = "清除"
 positionLeft = "左侧"
 positionRight = "右侧"
 floatingBallIcon = "悬浮球图标"
@@ -347,11 +349,38 @@ mean = "含义"
 fetchModels = "获取模型"
 copyAsMarkdown = "复制为 Markdown"
 
+[dictionary.tabs]
+overview = "概览"
+definitions = "释义"
+
+[dictionary.labels]
+source = "来源"
+meaning = "第 $1 个释义"
+meaningShort = "第$1义"
+examplePrefix = "例"
+example = "例句"
+synonyms = "同义词"
+antonyms = "反义词"
+
+[dictionary.sections]
+meanings = "释义"
+
+[dictionary.messages]
+noDefinitions = "未找到相关释义。"
+
+[floatingTranslator.sections]
+dictionary = "词典"
+contextExplanation = "上下文说明"
+textExplanation = "文本说明"
+examples = "示例"
+translation = "翻译"
+
 [prompts.defaultNames]
 translate = "翻译"
 batchTranslate = "批量翻译"
 inputTranslate = "输入框翻译"
 explain = "解释"
+dictionaryTranslate = "词典释义翻译"
 
 # Error Messages
 
@@ -376,6 +405,7 @@ explainOnlyLlm = "解释功能仅支持 LLM 模型"
 explanationFailed = "解释失败"
 streamingExplanationFailed = "流式解释失败"
 noTranslationModel = "未配置翻译模型"
+translationModelRequired = "尚未配置模型。请在设置中选择翻译模型。"
 noExplanationModel = "未配置解释模型"
 batchResponseMismatch = "批处理响应数量不匹配，预期 $1 项但收到 $2 项"
 promptNotFound = "在设置中找不到 ID 为 '$1' 的提示词"

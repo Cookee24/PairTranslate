@@ -4,6 +4,7 @@ import { getTargetLanguage } from "~/utils/language";
 import {
 	BATCH,
 	BATCH_SCHEMA,
+	DICTIONARY,
 	EXPLAIN,
 	EXPLAIN_SCHEMA,
 	INPUT,
@@ -128,6 +129,18 @@ export function generatePromptSettings(): s.PromptsSettings {
 			steps: [
 				{
 					message: INPUT.user,
+					output: "string",
+				},
+			],
+		},
+		[PROMPT_ID.dictionaryTranslate]: {
+			name: t("prompts.defaultNames.dictionaryTranslate"),
+			systemPrompt: DICTIONARY.system,
+			input: "string",
+			output: "string",
+			steps: [
+				{
+					message: DICTIONARY.user,
 					output: "string",
 				},
 			],

@@ -721,7 +721,10 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					if (service.type === "llm") {
 						await resultCache.set(cacheKey, aggregate);
 					} else if (traditionalResult) {
-						await resultCache.set(cacheKey, traditionalResult);
+						await resultCache.set(
+							cacheKey,
+							Array.isArray(payload) ? traditionalResult : traditionalResult[0],
+						);
 					}
 				} finally {
 					if (signal?.aborted) {

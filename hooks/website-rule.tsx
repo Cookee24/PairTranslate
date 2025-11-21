@@ -3,6 +3,7 @@ import {
 	createEffect,
 	createSignal,
 	type JSX,
+	on,
 	Show,
 	useContext,
 } from "solid-js";
@@ -23,19 +24,24 @@ export function WebsiteRuleProvider(props: { children: JSX.Element }) {
 	const [initialized, setInitialized] = createSignal(false);
 	const domain = window.location.hostname;
 
+	const fetchOnce = () => window.rpc.matchWebsiteRule(domain).then(setIdx);
+
 	createEffect(async () => {
 		const idx_ = idx();
 		if (idx_ === null) return;
-		createEffect(() => {
-			settings.websiteRules.length; // track length
-			Object.values(settings.websiteRules[idx_]).forEach(() => {}); // track current rule
-
-			fetchOnce();
-		});
+		createEffect(
+			on(
+				[
+					() => settings.websiteRules.length,
+					() => Object.values(settings.websiteRules[idx_]).forEach(() => {}),
+				],
+				fetchOnce,
+				{ defer: true },
+			),
+		);
 		setWebsiteRule(settings.websiteRules[idx_]);
 	});
 
-	const fetchOnce = () => window.rpc.matchWebsiteRule(domain).then(setIdx);
 	fetchOnce().then(() => setInitialized(true));
 
 	return (

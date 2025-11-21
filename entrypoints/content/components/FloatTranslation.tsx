@@ -1,10 +1,34 @@
+import {
+	BookOpen,
+	BookText,
+	Cpu,
+	Languages,
+	Newspaper,
+	RotateCcw,
+	ScrollText,
+} from "lucide-solid";
 import type { JSX } from "solid-js";
-import { createMemo, splitProps } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	Index,
+	Show,
+	splitProps,
+} from "solid-js";
+import { Badge } from "@/components/Badge";
+import Dict from "@/components/Dict";
+import { MdStyled } from "@/components/MD";
+import { createAnimatedAppearance } from "@/hooks/animation";
+import { createDictionary } from "@/hooks/dictionary";
+import { Button } from "~/components/Button";
+import { Loading } from "~/components/Loading";
 import { useSettings } from "~/hooks/settings";
 import { createTranslation } from "~/hooks/translation";
 import { cn } from "~/utils/cn";
 import { PROMPT_ID } from "~/utils/constants";
-import { jsonAutocomplete } from "~/utils/json-autocomplete";
+import { t } from "~/utils/i18n";
+import { autoParseJson, jsonAutocomplete } from "~/utils/json-autocomplete";
 import { getPageContext } from "~/utils/page-context";
 import type { ExplainOutput } from "~/utils/prompt";
 import type { TextContext } from "~/utils/types";
@@ -19,6 +43,20 @@ export default (props: Props) => {
 
 	return (
 		<div class={cn("w-full h-full", local.class)} {...rest}>
+			<div class="align-middle font-mono text-sm h-24 bg-linear-to-b from-primary to-transparent whitespace-break-spaces overflow-y-auto">
+				<span>{props.textContext.surr?.before}</span>
+				<span
+					class="font-bold bg-accent"
+					ref={(ref) => {
+						setTimeout(() => {
+							ref.scrollIntoView({ behavior: "smooth", block: "center" });
+						}, 300);
+					}}
+				>
+					{props.textContext.text}
+				</span>
+				<span>{props.textContext.surr?.after}</span>
+			</div>
 			{local.mode === "translate" ? (
 				<Translate textContext={local.textContext} />
 			) : (
@@ -30,7 +68,7 @@ export default (props: Props) => {
 
 const Explain = (props: { textContext: TextContext }) => {
 	const { settings } = useSettings();
-	const [data, _retry] = createTranslation(() => props.textContext.text, {
+	const [data, retry] = createTranslation(() => props.textContext.text, {
 		promptId: PROMPT_ID.explain,
 		modelId: () => settings.translate.floatingExplainModel,
 		ctx: () => ({
@@ -39,17 +77,119 @@ const Explain = (props: { textContext: TextContext }) => {
 		}),
 		stream: true,
 	});
-	const _completeData = createMemo(
+	const [completeData, setCompleteData] =
+		createSignal<Partial<ExplainOutput> | null>(null);
+
+	createEffect(() => {
+		const result = data();
+		if (!result) return;
+
+		setCompleteData(
+			(prev) =>
+				autoParseJson<Partial<ExplainOutput>>(jsonAutocomplete(result)) || prev,
+		);
+	});
+
+	const dict = createDictionary(() => props.textContext.text);
+
+	const currentModelName = createMemo(
 		() =>
-			JSON.parse(jsonAutocomplete(data() || "{}")) as Partial<ExplainOutput>,
+			settings.services[settings.translate.floatingExplainModel ?? ""]?.name ||
+			"",
 	);
 
-	return null; // TODO: implement explain UI
+	return (
+		<div class="p-2 py-4 space-y-2">
+			<Show when={dict()}>
+				{(data) => (
+					<ExplainSection
+						title={t("floatingTranslator.sections.dictionary")}
+						icon={<BookOpen size={16} />}
+					>
+						<Dict {...data()[0]} />
+					</ExplainSection>
+				)}
+			</Show>
+			<Show when={completeData()?.context_explanation}>
+				{(data) => (
+					<ExplainSection
+						title={t("floatingTranslator.sections.contextExplanation")}
+						icon={<Newspaper size={16} />}
+					>
+						<MdStyled text={data()} />
+					</ExplainSection>
+				)}
+			</Show>
+			<Show when={completeData()?.text_explanation}>
+				{(data) => (
+					<ExplainSection
+						title={t("floatingTranslator.sections.textExplanation")}
+						icon={<ScrollText size={16} />}
+					>
+						<MdStyled text={data()} />
+					</ExplainSection>
+				)}
+			</Show>
+			<Show when={completeData()?.examples}>
+				{(data) => (
+					<ExplainSection
+						title={t("floatingTranslator.sections.examples")}
+						icon={<BookText size={16} />}
+					>
+						<ul class="list space-y-2">
+							<Index each={data()}>
+								{(item, index) => (
+									<li class="list-item bg-base-200 p-2 rounded-box">
+										<Badge class="mb-1" size="xs">
+											{index + 1}
+										</Badge>
+										<MdStyled text={item().text} />
+										<MdStyled text={item().translation} />
+									</li>
+								)}
+							</Index>
+						</ul>
+					</ExplainSection>
+				)}
+			</Show>
+			<div class="w-full flex items-center justify-end mt-2 gap-2">
+				{data.error && (
+					<span class=" font-mono text-xs text-error">
+						{data.error.message}
+					</span>
+				)}
+				<Cpu size={12} />
+				<span class="mr-4 text-xs text-base-content/60 max-w-32 truncate">
+					{currentModelName()}
+				</span>
+				<Button
+					size="sm"
+					onClick={() => {
+						setCompleteData(null);
+						retry();
+					}}
+					disabled={data.loading || data.streaming}
+				>
+					{data.len !== null && data.streaming ? (
+						<>
+							<Loading size="xs" />
+							{data.len}
+						</>
+					) : (
+						<>
+							<RotateCcw size={12} />
+							<span>{t("common.retry")}</span>
+						</>
+					)}
+				</Button>
+			</div>
+		</div>
+	);
 };
 
 const Translate = (props: { textContext: TextContext }) => {
 	const { settings } = useSettings();
-	const [_data, _retry] = createTranslation(() => props.textContext.text, {
+	const [data, retry] = createTranslation(() => props.textContext.text, {
 		promptId: PROMPT_ID.translate,
 		modelId: () => settings.translate.floatingTranslateModel,
 		ctx: () => ({
@@ -59,13 +199,61 @@ const Translate = (props: { textContext: TextContext }) => {
 		stream: true,
 	});
 
+	const currentModelName = createMemo(
+		() =>
+			settings.services[settings.translate.floatingTranslateModel ?? ""]
+				?.name || "",
+	);
+
 	return (
-		<div>
-			<div class="font-mono text-sm max-h-28 whitespace-break-spaces overflow-y-auto">
-				<span>{props.textContext.surr?.before}</span>
-				<span>{props.textContext.text}</span>
-				<span>{props.textContext.surr?.after}</span>
+		<div class="m-2 p-4 bg-base-200 rounded-md">
+			<div class="flex items-center gap-2 mb-2 text-sm text-base-content/80">
+				<Languages size={16} />
+				{t("floatingTranslator.sections.translation")}
 			</div>
+			{data() && <div>{data()}</div>}
+			<div class="w-full flex items-center justify-end mt-2 gap-2">
+				<Cpu size={12} />
+				<span class="mr-4 text-xs text-base-content/60 max-w-32 truncate">
+					{currentModelName()}
+				</span>
+				<Button
+					size="sm"
+					onClick={retry}
+					disabled={data.loading || data.streaming}
+				>
+					{data.len !== null && data.streaming ? (
+						<>
+							<Loading size="xs" />
+							{data.len}
+						</>
+					) : (
+						<>
+							<RotateCcw size={12} />
+							<span>{t("common.retry")}</span>
+						</>
+					)}
+				</Button>
+			</div>
+		</div>
+	);
+};
+
+const ExplainSection = (props: {
+	title: string;
+	icon: JSX.Element;
+	children: JSX.Element;
+}) => {
+	const [ref, setRef] = createSignal<HTMLDivElement>();
+	createAnimatedAppearance(ref);
+
+	return (
+		<div class="p-2 bg-base-100 rounded-box" ref={setRef}>
+			<div class="flex items-center gap-2 mb-2 text-sm text-base-content/80">
+				{props.icon}
+				{props.title}
+			</div>
+			<div>{props.children}</div>
 		</div>
 	);
 };

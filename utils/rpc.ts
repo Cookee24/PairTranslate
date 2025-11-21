@@ -52,8 +52,17 @@ export interface AllServices
 		MatchService,
 		DictionaryService {}
 
+export interface AudioService extends RpcService {
+	play(url: string): Promise<void>;
+	stop(): Promise<void>;
+}
+
+export interface IframeServices extends AudioService {}
+
 export * from "./rpc/core";
 export * from "./rpc/factory";
+export * from "./rpc/iframe";
+export * from "./rpc/iframe-def";
 export * from "./rpc/logger";
 export * from "./rpc/wxt";
 export * from "./rpc/wxt-def";

@@ -48,10 +48,12 @@ export default function ProgressIndicator() {
 		return status.queued.toString();
 	});
 
-	const visible = () =>
-		settings.basic.progressIndicationEnabled &&
-		progress.counter() > 0 &&
-		Boolean(modelLabel());
+	const visible = createMemo(
+		() =>
+			settings.basic.progressIndicationEnabled &&
+			progress.counter() > 0 &&
+			Boolean(modelLabel()),
+	);
 	const shouldRender = createAnimatedAppearance(ref, visible);
 
 	return (

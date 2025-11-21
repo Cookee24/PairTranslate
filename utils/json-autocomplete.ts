@@ -77,15 +77,20 @@ export function autoStripMarkdown<T>(maybeMarkdownJson: string): T {
 	throw er;
 }
 
-export function autoParseJson<T>(maybePartialJson: string): T | null {
+export function autoParseJson<T>(maybePartialJson?: string): T | null {
+	if (!maybePartialJson) return null;
+
 	try {
 		return JSON.parse(maybePartialJson) as T;
+	} catch {}
+
+	try {
+		let cleaned = maybePartialJson.replace(/^\s*```(?:\w+)?\s*/, "");
+		cleaned = cleaned.replace(/\s*```\s*$/, "");
+
+		const completedJson = jsonAutocomplete(cleaned);
+		return JSON.parse(completedJson) as T;
 	} catch {
-		try {
-			const completedJson = jsonAutocomplete(maybePartialJson);
-			return JSON.parse(completedJson) as T;
-		} catch {
-			return null;
-		}
+		return null;
 	}
 }

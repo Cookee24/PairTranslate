@@ -9,6 +9,7 @@ import {
 	type TranslateError,
 	TranslateErrorType,
 } from "~/utils/errors";
+import { t } from "~/utils/i18n";
 import { getPageContext } from "~/utils/page-context";
 import type { TranslateContext } from "~/utils/types";
 import { useProgressIndicator } from "./progress-indicator";
@@ -38,7 +39,7 @@ type BatchReturn = readonly [
 const noModelError = () =>
 	createTranslateError(
 		TranslateErrorType.MODEL_NOT_FOUND,
-		"In-text model not configured",
+		t("errors.translationModelRequired"),
 	);
 const batchMismatchError = (exp: number, got: number) =>
 	createTranslateError(
@@ -52,9 +53,10 @@ const useTranslationContext = (modelIdOverride?: () => string | undefined) => {
 	const { settings } = useSettings();
 
 	const modelId = () =>
-		modelIdOverride?.() ||
-		websiteRule.inTextTranslateModel ||
-		settings.translate.inTextTranslateModel;
+		modelIdOverride
+			? modelIdOverride()
+			: websiteRule.inTextTranslateModel ||
+				settings.translate.inTextTranslateModel;
 
 	const srcLang = () => websiteRule.sourceLang || settings.translate.sourceLang;
 	const dstLang = () => websiteRule.targetLang || settings.translate.targetLang;
@@ -233,7 +235,7 @@ export function createBatchTranslation(
 
 type SingleReturn<T> = readonly [Result<T>, retry: () => void];
 type SingleStreamReturn<T> = readonly [
-	Result<T> & { len: () => number },
+	Result<T> & { len: number; streaming: boolean },
 	retry: () => void,
 ];
 
@@ -273,7 +275,11 @@ export function createTranslation<T>(
 
 	const [result, setResult] = createSignal<T>();
 	const [error, setError] = createSignal<TranslateError>();
-	const [len, setLen] = createSignal(0);
+
+	const [len, setLen] = options.stream ? createSignal(0) : [() => 0, () => {}];
+	const [streaming, setStreaming] = options.stream
+		? createSignal(false)
+		: [() => false, () => {}];
 
 	const setLoading = () =>
 		batch(() => {
@@ -317,6 +323,7 @@ export function createTranslation<T>(
 			);
 			onCleanup(() => listener.return());
 			setLen(0);
+			setStreaming(true);
 			for await (const chunk of listener) {
 				batch(() => {
 					setError(undefined);
@@ -329,6 +336,7 @@ export function createTranslation<T>(
 			setErrorVal(convertGenericError(e));
 		} finally {
 			endTracking();
+			setStreaming(false);
 		}
 	};
 
@@ -395,7 +403,7 @@ export function createTranslation<T>(
 			},
 		},
 		loading: {
-			get() {
+			get: () => {
 				// Access each signal explicitly to track reactivity
 				const hasResult = result() !== undefined;
 				const hasError = error() !== undefined;
@@ -404,9 +412,10 @@ export function createTranslation<T>(
 		},
 		...(options.stream && {
 			len: {
-				get() {
-					return len();
-				},
+				get: len,
+			},
+			streaming: {
+				get: streaming,
 			},
 		}),
 	});

@@ -168,4 +168,5 @@ export const PROMPT_ID = {
 	batchTranslate: "99337c6e-3cc2-4b57-a8ce-aed530ecd97f",
 	explain: "c39b8ab4-5656-4887-8b48-d5eb86fa0b8f",
 	inputTranslate: "4a87e959-cab4-4b8d-bc8f-1079dc2c4c86",
+	dictionaryTranslate: "d736a0f9-6f61-4f34-9d54-2c7ec49c70d7",
 };

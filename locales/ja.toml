@@ -28,6 +28,7 @@ edit = "編集"
 delete = "削除"
 close = "閉じる"
 loading = "読み込み中..."
+processing = "処理中..."
 enabled = "有効"
 disabled = "無効"
 configure = "設定"
@@ -39,6 +40,7 @@ selectModel = "モデルを選択"
 modelsLoaded = "$1個のモデルを読み込みました"
 retry = "再試行"
 confirm = "確認"
+clear = "クリア"
 positionLeft = "左"
 positionRight = "右"
 floatingBallIcon = "フローティングボールアイコン"
@@ -347,11 +349,38 @@ mean = "意味"
 fetchModels = "モデルを取得"
 copyAsMarkdown = "Markdownとしてコピー"
 
+[dictionary.tabs]
+overview = "概要"
+definitions = "定義"
+
+[dictionary.labels]
+source = "ソース"
+meaning = "第$1義"
+meaningShort = "第$1義"
+examplePrefix = "例"
+example = "例文"
+synonyms = "類義語"
+antonyms = "反意語"
+
+[dictionary.sections]
+meanings = "意味"
+
+[dictionary.messages]
+noDefinitions = "定義が見つかりませんでした。"
+
+[floatingTranslator.sections]
+dictionary = "辞書"
+contextExplanation = "文脈の説明"
+textExplanation = "本文の説明"
+examples = "例文"
+translation = "翻訳"
+
 [prompts.defaultNames]
 translate = "翻訳"
 batchTranslate = "一括翻訳"
 inputTranslate = "入力欄翻訳"
 explain = "説明"
+dictionaryTranslate = "辞書訳"
 
 # Error Messages
 
@@ -376,6 +405,7 @@ explainOnlyLlm = "説明機能はLLMモデルのみをサポートしていま�
 explanationFailed = "説明に失敗しました"
 streamingExplanationFailed = "ストリーミング説明に失敗しました"
 noTranslationModel = "翻訳モデルが設定されていません"
+translationModelRequired = "モデルが未設定です。設定画面で翻訳モデルを設定してください。"
 noExplanationModel = "説明モデルが設定されていません"
 batchResponseMismatch = "バッチ応答の不一致、$1項を期待しましたが$2項を取得しました"
 promptNotFound = "設定にID '$1' のプロンプトが見つかりません"

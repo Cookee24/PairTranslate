@@ -28,6 +28,7 @@ edit = "편집"
 delete = "삭제"
 close = "닫기"
 loading = "로딩 중..."
+processing = "처리 중..."
 enabled = "활성화"
 disabled = "비활성화"
 configure = "구성"
@@ -39,6 +40,7 @@ selectModel = "모델 선택"
 modelsLoaded = "$1개의 모델을 로드했습니다"
 retry = "재시도"
 confirm = "확인"
+clear = "지우기"
 positionLeft = "왼쪽"
 positionRight = "오른쪽"
 floatingBallIcon = "플로팅 볼 아이콘"
@@ -347,11 +349,38 @@ mean = "의미"
 fetchModels = "모델 가져오기"
 copyAsMarkdown = "Markdown으로 복사"
 
+[dictionary.tabs]
+overview = "개요"
+definitions = "정의"
+
+[dictionary.labels]
+source = "출처"
+meaning = "$1번째 의미"
+meaningShort = "$1번째 의미"
+examplePrefix = "예"
+example = "예문"
+synonyms = "동의어"
+antonyms = "반의어"
+
+[dictionary.sections]
+meanings = "의미"
+
+[dictionary.messages]
+noDefinitions = "정의를 찾을 수 없습니다."
+
+[floatingTranslator.sections]
+dictionary = "사전"
+contextExplanation = "문맥 설명"
+textExplanation = "본문 설명"
+examples = "예시"
+translation = "번역"
+
 [prompts.defaultNames]
 translate = "번역"
 batchTranslate = "일괄 번역"
 inputTranslate = "입력창 번역"
 explain = "설명"
+dictionaryTranslate = "사전 뜻 번역"
 
 # Error Messages
 
@@ -376,6 +405,7 @@ explainOnlyLlm = "설명 기능은 LLM 모델만 지원합니다"
 explanationFailed = "설명에 실패했습니다"
 streamingExplanationFailed = "스트리밍 설명에 실패했습니다"
 noTranslationModel = "번역 모델이 구성되지 않았습니다"
+translationModelRequired = "모델이 설정되지 않았습니다. 설정에서 번역 모델을 구성하세요."
 noExplanationModel = "설명 모델이 구성되지 않았습니다"
 batchResponseMismatch = "배치 응답 불일치, $1항을 예상했지만 $2항을 받았습니다"
 promptNotFound = "설정에서 ID '$1' 프롬프트를 찾을 수 없습니다"

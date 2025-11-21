@@ -28,6 +28,7 @@ edit = "Edit"
 delete = "Delete"
 close = "Close"
 loading = "Loading..."
+processing = "Processing..."
 enabled = "Enabled"
 disabled = "Disabled"
 configure = "Configure"
@@ -39,6 +40,7 @@ selectModel = "Select Model"
 modelsLoaded = "Loaded $1 models"
 retry = "Retry"
 confirm = "Confirm"
+clear = "Clear"
 positionLeft = "Left"
 positionRight = "Right"
 floatingBallIcon = "Floating Ball Icon"
@@ -347,11 +349,38 @@ mean = "Meaning"
 fetchModels = "Fetch Models"
 copyAsMarkdown = "Copy as Markdown"
 
+[dictionary.tabs]
+overview = "Overview"
+definitions = "Definitions"
+
+[dictionary.labels]
+source = "Source"
+meaning = "Meaning $1"
+meaningShort = "M$1"
+examplePrefix = "Ex"
+example = "Example"
+synonyms = "Synonyms"
+antonyms = "Antonyms"
+
+[dictionary.sections]
+meanings = "Meanings"
+
+[dictionary.messages]
+noDefinitions = "No definitions found."
+
+[floatingTranslator.sections]
+dictionary = "Dictionary"
+contextExplanation = "Context Explanation"
+textExplanation = "Text Explanation"
+examples = "Examples"
+translation = "Translation"
+
 [prompts.defaultNames]
 translate = "Translate"
 batchTranslate = "Batch Translate"
 inputTranslate = "Input Translate"
 explain = "Explain"
+dictionaryTranslate = "Dictionary Translate"
 
 # Error Messages
 
@@ -376,6 +405,7 @@ explainOnlyLlm = "Explain feature only supports LLM models"
 explanationFailed = "Explanation failed"
 streamingExplanationFailed = "Streaming explanation failed"
 noTranslationModel = "No translation model configured"
+translationModelRequired = "Model not configured. Please set up a translation model in the settings."
 noExplanationModel = "No explanation model configured"
 batchResponseMismatch = "Batch response mismatch, expected $1 items but got $2"
 promptNotFound = "Prompt with ID '$1' not found in settings"

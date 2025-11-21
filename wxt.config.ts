@@ -21,7 +21,7 @@ export default defineConfig({
 		default_locale: "en",
 		web_accessible_resources: [
 			{
-				resources: ["katex/*", "icons/*"],
+				resources: ["katex/*", "icons/*", "iframe.html"],
 				matches: ["<all_urls>"],
 			},
 		],
