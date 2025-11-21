@@ -118,11 +118,15 @@ const ScrollableReasoning = (props: { text: string }) => {
 
 	return (
 		<div class="w-full flex flex-col">
-			<span class="w-full text-end align-middle text-xs">{showTop() ? "↑" : "•"}</span>
+			<span class="w-full text-end align-middle text-xs">
+				{showTop() ? "↑" : "•"}
+			</span>
 			<div ref={setContainerRef} class="max-h-32 overflow-y-auto">
 				<MdStyled text={props.text} />
 			</div>
-			<span class="w-full text-end align-middle text-xs">{showBottom() ? "↓" : "•"}</span>
+			<span class="w-full text-end align-middle text-xs">
+				{showBottom() ? "↓" : "•"}
+			</span>
 		</div>
 	);
 };

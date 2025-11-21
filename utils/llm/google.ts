@@ -23,7 +23,7 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 		apiKey: config.apiKey,
 		httpOptions: {
 			baseUrl: config.baseUrl,
-		}
+		},
 	});
 
 	const convertMessages = (
