@@ -238,12 +238,11 @@ export default (props: DictionaryEntry) => {
 									<For each={props.sourceUrls}>
 										{(url, index) => (
 											<div class="indicator">
-												<div class="indicator-item badge badge-soft badge-xs badge-secondary">
+												<div class="indicator-item badge badge-ghost badge-xs">
 													{index() + 1}
 												</div>
 												<Button
 													class="btn-circle tooltip tooltip-top"
-													outline
 													size="xs"
 													on:click={() => {
 														const a = document.createElement("a");

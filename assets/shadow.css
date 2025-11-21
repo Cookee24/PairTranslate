@@ -2,8 +2,8 @@
 @plugin "daisyui" {
 	root: ":host";
 	themes:
-		nord --default,
-		dracula --prefersdark;
+		lemonade --default,
+		dim --prefersdark;
 }
 
 :host {

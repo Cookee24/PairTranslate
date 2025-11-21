@@ -43,10 +43,10 @@ export default (props: Props) => {
 
 	return (
 		<div class={cn("w-full h-full", local.class)} {...rest}>
-			<div class="align-middle font-mono text-sm h-24 bg-linear-to-b from-primary to-transparent whitespace-break-spaces overflow-y-auto">
+			<div class="align-middle font-mono text-sm h-24 bg-linear-to-b from-primary to-transparent text-primary-content whitespace-break-spaces overflow-y-auto">
 				<span>{props.textContext.surr?.before}</span>
 				<span
-					class="font-bold bg-accent"
+					class="font-bold bg-accent text-accent-content"
 					ref={(ref) => {
 						setTimeout(() => {
 							ref.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -248,7 +248,7 @@ const ExplainSection = (props: {
 	createAnimatedAppearance(ref);
 
 	return (
-		<div class="p-2 bg-base-100 rounded-box" ref={setRef}>
+		<div class="p-2 bg-base-100 text-base-content rounded-box" ref={setRef}>
 			<div class="flex items-center gap-2 mb-2 text-sm text-base-content/80">
 				{props.icon}
 				{props.title}
