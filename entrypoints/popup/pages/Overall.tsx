@@ -206,56 +206,59 @@ export default () => {
 					</div>
 				</Card.Body>
 			</Card.Root>
-			<Card.Root class="w-full" variant="border">
-				<Card.Body>
-					<span class="flex items-center gap-2">
-						<Link class="inline" size={16} />
-						<span class="font-mono text-sm">
-							{(domain() || "").split(".").slice(-2).join(".")}
+			{domain() && (
+				<Card.Root class="w-full" variant="border">
+					<Card.Body>
+						<span class="flex items-center gap-2">
+							<Link class="inline" size={16} />
+							<span class="font-mono text-sm">
+								{(domain() || "").split(".").slice(-2).join(".")}
+							</span>
 						</span>
-					</span>
-					<div class="flex gap-2 items-center">
-						<span class="text-sm font-bold">
-							{t("popup.domainTimer.keepUntil")}
-						</span>
-						<select
-							id="domain-timer-select"
-							class="select select-sm max-w-32"
-							on:change={(e) => {
-								const value = e.target.value;
-								switch (value) {
-									case "close":
-										setTimer(1e99);
-										break;
-									case "":
-										break;
-									default:
-										setTimer(parseInt(value, 10));
-										break;
-								}
-							}}
-						>
-							<option value="" disabled selected>
-								{remainingDisplay() || t("popup.domainTimer.selectPlaceholder")}
-							</option>
-							<For each={timerOptions()}>
-								{(option) => (
-									<option value={option.value}>{option.label}</option>
-								)}
-							</For>
-						</select>
-						<Button
-							class="ml-auto"
-							size="xs"
-							variant="error"
-							on:click={() => setTimer(0)}
-							disabled={remaining() === undefined}
-						>
-							<Trash2 size={16} />
-						</Button>
-					</div>
-				</Card.Body>
-			</Card.Root>
+						<div class="flex gap-2 items-center">
+							<span class="text-sm font-bold">
+								{t("popup.domainTimer.keepUntil")}
+							</span>
+							<select
+								id="domain-timer-select"
+								class="select select-sm max-w-32"
+								on:change={(e) => {
+									const value = e.target.value;
+									switch (value) {
+										case "close":
+											setTimer(1e99);
+											break;
+										case "":
+											break;
+										default:
+											setTimer(parseInt(value, 10));
+											break;
+									}
+								}}
+							>
+								<option value="" disabled selected>
+									{remainingDisplay() ||
+										t("popup.domainTimer.selectPlaceholder")}
+								</option>
+								<For each={timerOptions()}>
+									{(option) => (
+										<option value={option.value}>{option.label}</option>
+									)}
+								</For>
+							</select>
+							<Button
+								class="ml-auto"
+								size="xs"
+								variant="error"
+								on:click={() => setTimer(0)}
+								disabled={remaining() === undefined}
+							>
+								<Trash2 size={16} />
+							</Button>
+						</div>
+					</Card.Body>
+				</Card.Root>
+			)}
 		</div>
 	);
 };
