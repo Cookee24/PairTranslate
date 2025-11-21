@@ -7,6 +7,8 @@ A browser extension to translate text on web pages, append the translated text t
 
 Supports major translation platforms and LLMs, including Google Translate, Bing, DeepL, ChatGPT, Claude, Gemini, etc.
 
+[Architecture Overview (DeepWiki)](https://deepwiki.com/Cookee24/PairTranslate)
+
 ### Features
 
 - **Private & Secure**: All translations are processed locally in your browser. No data is collected or stored.
