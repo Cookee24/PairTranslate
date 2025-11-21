@@ -1,4 +1,5 @@
 import { createTokenBucket } from "~/utils/flow-control/token-bucket";
+import type { StreamChunk } from "~/utils/llm";
 import type { TranslateQueueStatus } from "~/utils/types";
 
 export type QueueLimits = {
@@ -12,7 +13,7 @@ export type UnaryResult<T> = {
 };
 
 type StreamHandle = {
-	iterator: AsyncGenerator<string>;
+	iterator: AsyncGenerator<StreamChunk>;
 	completion: Promise<number>;
 };
 
@@ -31,7 +32,7 @@ type PendingTask =
 			kind: "stream";
 			estimatedTokens: number;
 			run: StreamRunner;
-			onReady: (iterator: AsyncGenerator<string>) => void;
+			onReady: (iterator: AsyncGenerator<StreamChunk>) => void;
 			reject: (reason: unknown) => void;
 	  };
 
@@ -42,7 +43,7 @@ export type ModelQueue = {
 	enqueueStream(
 		runner: StreamRunner,
 		estimatedTokens: number,
-	): Promise<AsyncGenerator<string>>;
+	): Promise<AsyncGenerator<StreamChunk>>;
 };
 
 export const createModelQueue = (

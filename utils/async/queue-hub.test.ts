@@ -6,6 +6,7 @@ import type {
 	StreamRunner,
 	UnaryRunner,
 } from "../flow-control/model-queue";
+import type { StreamChunk } from "../llm/types";
 import { createQueueHub } from "./queue-hub";
 
 test("subscribe yields initial status and subsequent updates", async () => {
@@ -31,7 +32,7 @@ test("subscribe yields initial status and subsequent updates", async () => {
 			_estimatedTokens: number,
 		) => "noop" as T,
 		enqueueStream: async (_runner: StreamRunner, _estimatedTokens: number) =>
-			(async function* generator(): AsyncGenerator<string> {})(),
+			(async function* generator(): AsyncGenerator<StreamChunk> {})(),
 	};
 
 	const hub = createQueueHub(() => limits, {

@@ -9,6 +9,11 @@ import type {
 } from "./types";
 import { LLMError, LLMErrorType } from "./types";
 
+type MaybeReasoning = {
+	reasoning?: string;
+	reasoning_content?: string;
+};
+
 export function createOpenAIClient(config: ClientConfig): LLMClient {
 	const client = new OpenAI({
 		apiKey: config.apiKey,
@@ -89,12 +94,18 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 					}),
 				});
 
-				const content = response.choices[0]?.message?.content || "";
+				const message = response.choices[0]?.message;
+				const content = message?.content || "";
 				const output = (schema ? autoStripMarkdown(content) : content) as O;
+				const reasoning =
+					message &&
+					((message as MaybeReasoning).reasoning ||
+						(message as MaybeReasoning).reasoning_content);
 
 				return {
 					output,
-					rawOutput: content,
+					content,
+					reasoning,
 					...(response.usage && {
 						usage: {
 							promptTokens: response.usage.prompt_tokens,
@@ -136,9 +147,16 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 				});
 
 				for await (const chunk of stream) {
-					const content = chunk.choices[0]?.delta?.content;
+					const delta = chunk.choices[0]?.delta;
+					const content = delta.content;
+					const reasoning =
+						(delta as MaybeReasoning).reasoning ||
+						(delta as MaybeReasoning).reasoning_content;
 					if (content) {
 						yield { content };
+					}
+					if (reasoning) {
+						yield { reasoning };
 					}
 					if (chunk.usage) {
 						return {

@@ -36,6 +36,30 @@ type BatchReturn = readonly [
 	retry: (index: number | undefined) => void,
 ];
 
+type TranslateUnaryPayload<T> =
+	| T
+	| {
+			output: T;
+			reasoning?: string;
+	  };
+
+const normalizeUnaryResponse = <T>(
+	resp: TranslateUnaryPayload<T>,
+): { output: T; reasoning?: string } => {
+	if (resp && typeof resp === "object" && "output" in resp) {
+		return resp as { output: T; reasoning?: string };
+	}
+	return {
+		output: resp as T,
+		reasoning: undefined,
+	};
+};
+
+type TranslationStreamChunk = {
+	content?: string;
+	reasoning?: string;
+};
+
 const noModelError = () =>
 	createTranslateError(
 		TranslateErrorType.MODEL_NOT_FOUND,
@@ -122,14 +146,21 @@ export function createBatchTranslation(
 				},
 				texts,
 			);
-			setResultTexts(resp);
-			resp.length < texts.length &&
+			const normalized = normalizeUnaryResponse<string[]>(resp);
+			const translated = Array.isArray(normalized.output)
+				? normalized.output
+				: [normalized.output];
+			setResultTexts(translated);
+			translated.length < texts.length &&
 				batch(() => {
 					setError(
-						{ from: resp.length, to: texts.length - 1 },
-						batchMismatchError(resp.length, texts.length),
+						{ from: translated.length, to: texts.length - 1 },
+						batchMismatchError(translated.length, texts.length),
 					);
-					setTextResult({ from: resp.length, to: texts.length - 1 }, undefined);
+					setTextResult(
+						{ from: translated.length, to: texts.length - 1 },
+						undefined,
+					);
 				});
 		} catch (e) {
 			setAllError(convertGenericError(e), texts.length);
@@ -166,9 +197,13 @@ export function createBatchTranslation(
 				},
 				text_,
 			);
+			const normalized = normalizeUnaryResponse<string | string[]>(resp);
+			const value = Array.isArray(normalized.output)
+				? normalized.output[0]
+				: normalized.output;
 			batch(() => {
 				setError(index, undefined);
-				setTextResult(index, Array.isArray(resp) ? resp[0] : resp);
+				setTextResult(index, value);
 			});
 		} catch (e) {
 			batch(() => {
@@ -233,9 +268,10 @@ export function createBatchTranslation(
 	return [ret, retry];
 }
 
-type SingleReturn<T> = readonly [Result<T>, retry: () => void];
+type ResultWithReasoning<T> = Result<T> & { reasoning?: string };
+type SingleReturn<T> = readonly [ResultWithReasoning<T>, retry: () => void];
 type SingleStreamReturn<T> = readonly [
-	Result<T> & { len: number; streaming: boolean },
+	ResultWithReasoning<T> & { len: number; streaming: boolean },
 	retry: () => void,
 ];
 
@@ -275,6 +311,7 @@ export function createTranslation<T>(
 
 	const [result, setResult] = createSignal<T>();
 	const [error, setError] = createSignal<TranslateError>();
+	const [reasoning, setReasoning] = createSignal<string>();
 
 	const [len, setLen] = options.stream ? createSignal(0) : [() => 0, () => {}];
 	const [streaming, setStreaming] = options.stream
@@ -285,18 +322,21 @@ export function createTranslation<T>(
 		batch(() => {
 			setError(undefined);
 			setResult(undefined);
+			setReasoning(undefined);
 		});
 
-	const setResultVal = (val: T) =>
+	const setResultVal = (val: T, reasoning?: string) =>
 		batch(() => {
 			setError(undefined);
 			setResult(() => val);
+			setReasoning(reasoning);
 		});
 
 	const setErrorVal = (e: TranslateError) =>
 		batch(() => {
 			setError(e);
 			setResult(undefined);
+			setReasoning(undefined);
 		});
 
 	const translateStream = async (text_: string, cleanCache?: boolean) => {
@@ -324,12 +364,20 @@ export function createTranslation<T>(
 			onCleanup(() => listener.return());
 			setLen(0);
 			setStreaming(true);
-			for await (const chunk of listener) {
+			for await (const chunk of listener as AsyncGenerator<TranslationStreamChunk>) {
 				batch(() => {
 					setError(undefined);
-					// @ts-ignore stream request must return string chunks
-					setResult((prev) => (prev || "") + chunk);
-					setLen((prev: number) => prev + chunk.length);
+					const content = chunk.content;
+					const reasoning = chunk.reasoning;
+					if (content) {
+						// @ts-ignore stream request must return string chunks
+						setResult((prev) => (prev || "") + content);
+						setLen((prev: number) => prev + content.length);
+					}
+					if (reasoning) {
+						setReasoning((prev) => (prev || "") + reasoning);
+						setLen((prev: number) => prev + reasoning.length);
+					}
 				});
 			}
 		} catch (e) {
@@ -361,7 +409,8 @@ export function createTranslation<T>(
 				},
 				text_,
 			);
-			setResultVal(resp);
+			const normalized = normalizeUnaryResponse<T>(resp);
+			setResultVal(normalized.output, normalized.reasoning);
 		} catch (e) {
 			setErrorVal(convertGenericError(e));
 		} finally {
@@ -380,6 +429,7 @@ export function createTranslation<T>(
 			batch(() => {
 				setError(undefined);
 				setResult(undefined);
+				setReasoning(undefined);
 			});
 			return;
 		}
@@ -398,9 +448,10 @@ export function createTranslation<T>(
 
 	Object.defineProperties(read, {
 		error: {
-			get() {
-				return error();
-			},
+			get: error,
+		},
+		reasoning: {
+			get: reasoning,
 		},
 		loading: {
 			get: () => {
@@ -420,5 +471,5 @@ export function createTranslation<T>(
 		}),
 	});
 
-	return [read as Result<T>, retry];
+	return [read as ResultWithReasoning<T>, retry];
 }

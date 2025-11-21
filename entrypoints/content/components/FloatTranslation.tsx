@@ -1,6 +1,7 @@
 import {
 	BookOpen,
 	BookText,
+	Brain,
 	Cpu,
 	Languages,
 	Newspaper,
@@ -13,6 +14,7 @@ import {
 	createMemo,
 	createSignal,
 	Index,
+	onCleanup,
 	Show,
 	splitProps,
 } from "solid-js";
@@ -66,6 +68,65 @@ export default (props: Props) => {
 	);
 };
 
+// Shared ResizeObserver instance
+let sharedResizeObserver: ResizeObserver | null = null;
+const resizeCallbacks = new WeakMap<Element, () => void>();
+
+const getSharedResizeObserver = () => {
+	if (!sharedResizeObserver) {
+		sharedResizeObserver = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				const callback = resizeCallbacks.get(entry.target);
+				callback?.();
+			}
+		});
+	}
+	return sharedResizeObserver;
+};
+
+const ScrollableReasoning = (props: { text: string }) => {
+	const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
+	const [showTop, setShowTop] = createSignal(false);
+	const [showBottom, setShowBottom] = createSignal(false);
+
+	const checkScroll = () => {
+		const el = containerRef();
+		if (!el) return;
+
+		const { scrollTop, scrollHeight, clientHeight } = el;
+		setShowTop(scrollTop > 0);
+		setShowBottom(scrollTop + clientHeight < scrollHeight - 1);
+	};
+
+	createEffect(() => {
+		const el = containerRef();
+		if (!el) return;
+
+		checkScroll();
+		el.addEventListener("scroll", checkScroll);
+
+		const observer = getSharedResizeObserver();
+		resizeCallbacks.set(el, checkScroll);
+		observer.observe(el);
+
+		onCleanup(() => {
+			el.removeEventListener("scroll", checkScroll);
+			observer.unobserve(el);
+			resizeCallbacks.delete(el);
+		});
+	});
+
+	return (
+		<div class="w-full flex flex-col">
+			<span class="w-full text-end align-middle text-xs">{showTop() ? "↑" : "•"}</span>
+			<div ref={setContainerRef} class="max-h-32 overflow-y-auto">
+				<MdStyled text={props.text} />
+			</div>
+			<span class="w-full text-end align-middle text-xs">{showBottom() ? "↓" : "•"}</span>
+		</div>
+	);
+};
+
 const Explain = (props: { textContext: TextContext }) => {
 	const { settings } = useSettings();
 	const [data, retry] = createTranslation(() => props.textContext.text, {
@@ -107,6 +168,16 @@ const Explain = (props: { textContext: TextContext }) => {
 						icon={<BookOpen size={16} />}
 					>
 						<Dict {...data()[0]} />
+					</ExplainSection>
+				)}
+			</Show>
+			<Show when={data.reasoning}>
+				{(reasoning) => (
+					<ExplainSection
+						title={t("floatingTranslator.sections.reasoning")}
+						icon={<Brain size={16} />}
+					>
+						<ScrollableReasoning text={reasoning() || ""} />
 					</ExplainSection>
 				)}
 			</Show>
@@ -212,6 +283,17 @@ const Translate = (props: { textContext: TextContext }) => {
 				{t("floatingTranslator.sections.translation")}
 			</div>
 			{data() && <div>{data()}</div>}
+			<Show when={data.reasoning}>
+				{(reasoning) => (
+					<div class="mt-3 rounded-md border border-base-300 bg-base-100 p-3">
+						<div class="mb-1 flex items-center gap-2 text-xs text-base-content/70">
+							<Brain size={14} />
+							{t("floatingTranslator.sections.reasoning")}
+						</div>
+						<ScrollableReasoning text={reasoning() || ""} />
+					</div>
+				)}
+			</Show>
 			<div class="w-full flex items-center justify-end mt-2 gap-2">
 				<Cpu size={12} />
 				<span class="mr-4 text-xs text-base-content/60 max-w-32 truncate">

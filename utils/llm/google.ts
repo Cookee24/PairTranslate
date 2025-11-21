@@ -1,8 +1,4 @@
-import {
-	type Content,
-	GoogleGenerativeAI,
-	type Part,
-} from "@google/generative-ai";
+import { type Content, GoogleGenAI, type Part } from "@google/genai";
 import { autoStripMarkdown } from "../json-autocomplete";
 import type {
 	ChatRequest,
@@ -23,7 +19,12 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 		);
 	}
 
-	const client = new GoogleGenerativeAI(config.apiKey);
+	const client = new GoogleGenAI({
+		apiKey: config.apiKey,
+		httpOptions: {
+			baseUrl: config.baseUrl,
+		}
+	});
 
 	const convertMessages = (
 		messages: Message[],
@@ -94,14 +95,18 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 			try {
 				const [systemInstruction, contents] = convertMessages(request.messages);
 
-				const model = client.getGenerativeModel({
+				const response = await client.models.generateContent({
 					model: request.model,
-					systemInstruction,
-					generationConfig: {
+					contents,
+					config: {
+						systemInstruction,
 						temperature: request.temperature,
 						maxOutputTokens: request.maxTokens,
 						topP: request.topP,
 						topK: request.topK,
+						thinkingConfig: {
+							includeThoughts: true,
+						},
 						...(schema && {
 							responseMimeType: "application/json",
 							// biome-ignore lint/suspicious/noExplicitAny: Bypass type check for SDK compatibility
@@ -110,17 +115,17 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 					},
 				});
 
-				const result = await model.generateContent({
-					contents,
-				});
-
-				const response = result.response;
-				const content = response.text();
+				const content = response.text || "";
 				const output = (schema ? autoStripMarkdown(content) : content) as O;
+				const reasoning = response.candidates?.[0]?.content?.parts
+					?.filter((part) => part.thought)
+					.map((part) => part.text)
+					.join();
 
 				return {
 					output,
-					rawOutput: content,
+					content,
+					reasoning,
 					...(response.usageMetadata && {
 						usage: {
 							promptTokens: response.usageMetadata.promptTokenCount || 0,
@@ -142,23 +147,23 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 		): AsyncGenerator<StreamChunk, EndResponse> {
 			try {
 				const [systemInstruction, contents] = convertMessages(request.messages);
-				const model = client.getGenerativeModel({
+				const stream = await client.models.generateContentStream({
 					model: request.model,
-					systemInstruction,
-					generationConfig: {
+					config: {
+						systemInstruction,
 						temperature: request.temperature,
 						maxOutputTokens: request.maxTokens,
 						topP: request.topP,
 						topK: request.topK,
+						thinkingConfig: {
+							includeThoughts: true,
+						},
 						...(schema && {
 							responseMimeType: "application/json",
 							// biome-ignore lint/suspicious/noExplicitAny: Bypass type check for SDK compatibility
 							responseSchema: schema as any,
 						}),
 					},
-				});
-
-				const result = await model.generateContentStream({
 					contents,
 				});
 
@@ -168,18 +173,25 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 					totalTokens: 0,
 				};
 
-				for await (const chunk of result.stream) {
-					const content = chunk.text();
+				for await (const chunk of stream) {
+					const content = chunk.text;
+					const reasoning = chunk.candidates?.[0]?.content?.parts
+						?.filter((part) => part.thought)
+						.map((part) => part.text)
+						.join();
 					if (content) {
 						yield { content };
+					}
+					if (reasoning) {
+						yield { reasoning };
 					}
 
 					// Update usage from each chunk
 					if (chunk.usageMetadata) {
 						usage = {
-							promptTokens: chunk.usageMetadata.promptTokenCount,
-							completionTokens: chunk.usageMetadata.candidatesTokenCount,
-							totalTokens: chunk.usageMetadata.totalTokenCount,
+							promptTokens: chunk.usageMetadata.promptTokenCount || 0,
+							completionTokens: chunk.usageMetadata.candidatesTokenCount || 0,
+							totalTokens: chunk.usageMetadata.totalTokenCount || 0,
 						};
 					}
 				}

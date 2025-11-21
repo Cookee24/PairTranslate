@@ -374,6 +374,7 @@ contextExplanation = "文脈の説明"
 textExplanation = "本文の説明"
 examples = "例文"
 translation = "翻訳"
+reasoning = "推論"
 
 [prompts.defaultNames]
 translate = "翻訳"

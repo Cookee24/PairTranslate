@@ -108,10 +108,15 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 				const content =
 					response.content[0]?.type === "text" ? response.content[0].text : "";
 				const output = (schema ? autoStripMarkdown(content) : content) as O;
+				const reasoning = response.content
+					.filter((block) => block.type === "thinking")
+					.map((block) => block.thinking)
+					.join();
 
 				return {
 					output,
-					rawOutput: content,
+					content,
+					reasoning,
 					usage: {
 						promptTokens: response.usage.input_tokens,
 						completionTokens: response.usage.output_tokens,
@@ -158,6 +163,9 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 						case "content_block_delta":
 							if (chunk.delta.type === "text_delta") {
 								yield { content: chunk.delta.text };
+							}
+							if (chunk.delta.type === "thinking_delta") {
+								yield { reasoning: chunk.delta.thinking };
 							}
 							break;
 						case "message_start":

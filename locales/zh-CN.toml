@@ -374,6 +374,7 @@ contextExplanation = "上下文说明"
 textExplanation = "文本说明"
 examples = "示例"
 translation = "翻译"
+reasoning = "思考过程"
 
 [prompts.defaultNames]
 translate = "翻译"

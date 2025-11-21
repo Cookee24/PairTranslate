@@ -31,6 +31,8 @@ export interface EndResponse {
 		completionTokens: number;
 		totalTokens: number;
 	};
+	/** Optional reasoning or thinking traces returned by the provider. */
+	reasoning?: string;
 	/** The original, raw response from the provider for debugging or provider-specific data. */
 	providerResponse?: unknown;
 }
@@ -40,14 +42,15 @@ export interface EndResponse {
  */
 export interface ChatResponse<O = string> extends EndResponse {
 	output: O;
-	rawOutput?: string;
+	content: string;
 }
 
 /**
  * A single chunk of data from a streaming chat response.
  */
 export interface StreamChunk {
-	content: string;
+	content?: string;
+	reasoning?: string;
 }
 
 /**

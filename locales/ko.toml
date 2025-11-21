@@ -374,6 +374,7 @@ contextExplanation = "문맥 설명"
 textExplanation = "본문 설명"
 examples = "예시"
 translation = "번역"
+reasoning = "추론"
 
 [prompts.defaultNames]
 translate = "번역"

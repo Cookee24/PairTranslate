@@ -374,6 +374,7 @@ contextExplanation = "Context Explanation"
 textExplanation = "Text Explanation"
 examples = "Examples"
 translation = "Translation"
+reasoning = "Reasoning"
 
 [prompts.defaultNames]
 translate = "Translate"

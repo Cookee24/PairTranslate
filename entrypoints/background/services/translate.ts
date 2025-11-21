@@ -21,6 +21,7 @@ import type {
 	LLMProvider,
 } from "~/utils/llm";
 import { createLLMClient } from "~/utils/llm";
+import { appendReasoningContent } from "~/utils/llm/reasoning";
 import {
 	buildContextWithTranslateParams,
 	templateToTokens,
@@ -43,8 +44,13 @@ type ThinCacheKey = Awaited<ReturnType<typeof computeCacheKey>>;
 
 type ThinCacheState = {
 	keys: ThinCacheKey[];
-	values: unknown[];
+	values: (string | undefined)[];
 	missing: number[];
+};
+
+type CachedValue<T = unknown> = {
+	output: T;
+	reasoning?: string;
 };
 
 type CompiledStep = {
@@ -197,7 +203,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 
 	const promptCache = new Map<string, CompiledPrompt>();
 	const clientCache = new Map<string, LLMClient>();
-	const resultCache = createLRUStorage(
+	const resultCache = createLRUStorage<CachedValue>(
 		"translate-cache",
 		STORAGE_KEYS.cache,
 		settings.queue.cacheSize,
@@ -322,7 +328,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				onResult([]);
 				return {
 					iterator: (async function* () {
-						yield "";
+						yield { content: "" };
 					})(),
 					completion: Promise.resolve(0),
 				};
@@ -337,7 +343,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			const combined = result.join("\n");
 			return {
 				iterator: (async function* () {
-					yield combined;
+					yield { content: combined };
 				})(),
 				completion: Promise.resolve(tokens),
 			};
@@ -353,7 +359,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		srcLang: string,
 		dstLang: string,
 		signal?: AbortSignal,
-	): Promise<{ result: unknown; tokens: number }> => {
+	): Promise<{ result: unknown; tokens: number; reasoning?: string }> => {
 		const client = ensureLLMClient(modelId, service);
 		const promptCtx = buildContextWithTranslateParams(
 			ctx,
@@ -364,6 +370,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		promptCtx.output = outputs;
 		const conversation = initializeConversation(prompt, promptCtx);
 		let totalTokens = 0;
+		let reasoning: string | undefined;
 		for (const step of prompt.steps) {
 			throwIfAborted(signal);
 			conversation.push({
@@ -381,11 +388,12 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				const response = await client.chat(request, schema);
 				totalTokens +=
 					response.usage?.totalTokens ?? response.usage?.promptTokens ?? 0;
+				reasoning = appendReasoningContent(reasoning, response.reasoning);
 				const output = normalizeLLMStepOutput(step, response.output);
 				outputs.push(output);
 				conversation.push({
 					role: "assistant",
-					content: response.rawOutput ?? toStreamChunk(output),
+					content: response.content ?? toStreamChunk(output),
 				});
 			} catch (error) {
 				throw convertFromLLMError(error);
@@ -394,6 +402,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		return {
 			result: outputs.at(-1),
 			tokens: totalTokens,
+			reasoning,
 		};
 	};
 
@@ -437,7 +446,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					outputs.push(output);
 					conversation.push({
 						role: "assistant",
-						content: response.rawOutput ?? toStreamChunk(output),
+						content: response.content ?? toStreamChunk(output),
 					});
 				} catch (error) {
 					throw convertFromLLMError(error);
@@ -468,16 +477,21 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					try {
 						while (true) {
 							throwIfAborted(signal);
-							const { done, value } = await source.next();
-							if (done) {
-								resolveCompletion(value.usage?.completionTokens ?? 0);
+							const next = await source.next();
+							if (next.done) {
+								if (next.value.reasoning) {
+									yield { reasoning: next.value.reasoning };
+								}
+								resolveCompletion(next.value.usage?.completionTokens ?? 0);
 								return;
 							}
-							yield value.content;
+							const chunk = next.value;
+							if (chunk.content || chunk.reasoning) {
+								yield chunk;
+							}
 						}
 					} finally {
-						// @ts-expect-error This is fine, since no one is using the value.
-						await source.return();
+						await source.return({});
 						resolveCompletion(0);
 					}
 				})(),
@@ -537,25 +551,28 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				const cachedEntries = await Promise.all(
 					entryKeys.map((key) => resultCache.get(key)),
 				);
-				cachedEntries.forEach((value, index) => {
-					if (value !== undefined) {
-						cacheState.values[index] = value;
+				cachedEntries.forEach((entry, index) => {
+					if (entry && typeof entry.output === "string") {
+						cacheState.values[index] = entry.output;
 					} else {
 						cacheState.missing.push(index);
 					}
 				});
 				if (cacheState.missing.length === 0) {
-					const cachedValue = cacheState.values.slice();
-					await resultCache.set(cacheKey, cachedValue);
+					const cachedValue = cacheState.values.slice() as string[];
+					await resultCache.set(cacheKey, { output: cachedValue });
 					return {
-						value: cachedValue,
+						value: {
+							output: cachedValue,
+							reasoning: undefined,
+						},
 						completionTokens: 0,
 					};
 				}
 			}
 		} else if (!options.cleanCache) {
 			const cached = await resultCache.get(cacheKey);
-			if (cached !== undefined) {
+			if (cached) {
 				return {
 					value: cached,
 					completionTokens: 0,
@@ -575,6 +592,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					: executionPayload;
 		let translationResult: unknown;
 		let completionTokens = 0;
+		let reasoning: string | undefined;
 
 		if (service.type === "traditional") {
 			const texts = toTextArray(
@@ -583,7 +601,13 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					: [normalizedPayload],
 			);
 			if (texts.length === 0) {
-				return { value: expectsArray ? [] : "", completionTokens: 0 };
+				return {
+					value: {
+						output: expectsArray ? [] : "",
+						reasoning: undefined,
+					},
+					completionTokens: 0,
+				};
 			}
 			const traditionalResult = await runTraditional(
 				service,
@@ -606,6 +630,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			);
 			translationResult = llmResult.result;
 			completionTokens = llmResult.tokens;
+			reasoning = llmResult.reasoning;
 		}
 
 		let finalValue = translationResult;
@@ -629,13 +654,33 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			finalValue = merged;
 			await Promise.all(
 				thinCacheState.missing.map((index) =>
-					resultCache.set(thinCacheState.keys[index], merged[index]),
+					(async () => {
+						const value = merged[index];
+						if (value === undefined) {
+							throw createTranslateError(
+								TranslateErrorType.VALIDATION_ERROR,
+								"Thin cache entry missing expected translation result.",
+							);
+						}
+						await resultCache.set(thinCacheState.keys[index], {
+							output: value,
+						});
+					})(),
 				),
 			);
 		}
 
-		await resultCache.set(cacheKey, finalValue);
-		return { value: finalValue, completionTokens };
+		await resultCache.set(cacheKey, {
+			output: finalValue,
+			reasoning,
+		});
+		return {
+			value: {
+				output: finalValue,
+				reasoning,
+			},
+			completionTokens,
+		};
 	};
 
 	return {
@@ -682,8 +727,17 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					await resultCache.del(cacheKey);
 				} else {
 					const cached = await resultCache.get(cacheKey);
-					if (cached) {
-						yield toStreamChunk(cached);
+					const cachedValue = cached?.output;
+					if (cachedValue !== undefined) {
+						yield {
+							content:
+								typeof cachedValue === "string"
+									? cachedValue
+									: toStreamChunk(cachedValue),
+						};
+						if (cached?.reasoning) {
+							yield { reasoning: cached.reasoning };
+						}
 						return;
 					}
 				}
@@ -712,19 +766,29 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 								},
 							);
 				const iterator = await queue.enqueueStream(streamRunner, estimated);
-				let aggregate = "";
+				let translationAggregate = "";
+				let reasoningAggregate = "";
 				try {
 					for await (const chunk of iterator) {
-						aggregate += chunk;
+						if (chunk.content) {
+							translationAggregate += chunk.content;
+						}
+						if (chunk.reasoning) {
+							reasoningAggregate += chunk.reasoning;
+						}
 						yield chunk;
 					}
 					if (service.type === "llm") {
-						await resultCache.set(cacheKey, aggregate);
+						await resultCache.set(cacheKey, {
+							output: translationAggregate,
+							reasoning: reasoningAggregate || undefined,
+						});
 					} else if (traditionalResult) {
-						await resultCache.set(
-							cacheKey,
-							Array.isArray(payload) ? traditionalResult : traditionalResult[0],
-						);
+						await resultCache.set(cacheKey, {
+							output: Array.isArray(payload)
+								? traditionalResult
+								: traditionalResult[0],
+						});
 					}
 				} finally {
 					if (signal?.aborted) {

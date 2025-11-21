@@ -42,16 +42,16 @@ test("handles stream tasks and completes after iterator finishes", async () => {
 	const queue = createModelQueue("model", createLimits(), () => {});
 	const iterator = await queue.enqueueStream(async () => {
 		async function* chunks() {
-			yield "a";
-			yield "b";
+			yield { content: "a" };
+			yield { content: "b" };
 		}
 		return { iterator: chunks(), completion: Promise.resolve(2) };
 	}, 10);
 
 	const first = await iterator.next();
-	expect(first).toEqual({ value: "a", done: false });
+	expect(first).toEqual({ value: { content: "a" }, done: false });
 	const second = await iterator.next();
-	expect(second).toEqual({ value: "b", done: false });
+	expect(second).toEqual({ value: { content: "b" }, done: false });
 	const end = await iterator.next();
 	expect(end.done).toBe(true);
 });
