@@ -26,14 +26,14 @@ const Root = (props: RootProps) => {
 	return (
 		<div
 			class={cn(
-				"flex flex-col items-center fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-lg shadow-lg shadow-base-200",
+				"flex flex-col items-center fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-box shadow-lg shadow-base-200 overflow-hidden",
 				local.class,
 			)}
 			{...rest}
 		>
 			<Status />
 			<Menu.Root
-				class="max-w-96 md:max-w-lg gap-2 bg-secondary/60 backdrop-blur-md text-secondary-content border-base-300 rounded-b-lg flex-nowrap overflow-x-auto"
+				class="max-w-96 md:max-w-lg gap-2 bg-secondary/60 backdrop-blur-md text-secondary-content border-base-300 flex-nowrap overflow-x-auto"
 				orientation="horizontal"
 			>
 				{local.children}
@@ -109,7 +109,7 @@ const Status = () => {
 	const { loading, error } = useSettings();
 	return (
 		<div
-			class="w-full p-2 flex items-center content-center gap-2 font-mono text-xs backdrop-blur-md rounded-t-lg"
+			class="w-full p-2 flex items-center content-center gap-2 font-mono text-xs backdrop-blur-md"
 			classList={{
 				"bg-success/60": !loading() && !error(),
 				"bg-accent/60": loading(),

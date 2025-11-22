@@ -214,7 +214,7 @@ export default (props: BrowserTranslatorModalProps) => {
 
 				{/* Language Detector Results */}
 				<Show when={!isChecking() && languageDetectorResult()}>
-					<div class="border border-base-300 rounded-lg p-4">
+					<div class="border border-base-300 rounded-box p-4">
 						<h3 class="font-semibold text-lg mb-3 flex items-center gap-2">
 							{t("settings.browserTranslator.languageDetector")}
 							{languageDetectorResult()?.isSupported
@@ -275,7 +275,7 @@ export default (props: BrowserTranslatorModalProps) => {
 
 				{/* Translator Results */}
 				<Show when={!isChecking() && translatorResults().size > 0}>
-					<div class="border border-base-300 rounded-lg p-4 max-h-96 overflow-y-auto">
+					<div class="border border-base-300 rounded-box p-4 max-h-96 overflow-y-auto">
 						<h3 class="font-semibold text-lg mb-3">
 							{t("settings.browserTranslator.translator")}
 						</h3>

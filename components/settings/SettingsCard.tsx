@@ -10,7 +10,7 @@ export interface SettingsCardProps {
 
 export const SettingsCard: Component<SettingsCardProps> = (props) => {
 	return (
-		<Card.Root class="bg-base-200 rounded-xl shadow-sm" data-nav={props.navId}>
+		<Card.Root class="bg-base-200 rounded-box shadow-sm" data-nav={props.navId}>
 			<Card.Body>
 				<Card.Title>{props.title}</Card.Title>
 				{props.children}

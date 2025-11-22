@@ -138,7 +138,7 @@ export default (props: Props) => {
 			/>
 			<Show when={shouldRenderBox()}>
 				<div
-					class="pointer-events-none fixed border-2 border-base-300 bg-secondary/50 rounded-md"
+					class="pointer-events-none fixed border-2 border-base-300 bg-secondary/50 rounded-field"
 					ref={setBoxRef}
 				/>
 			</Show>

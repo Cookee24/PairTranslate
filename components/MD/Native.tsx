@@ -30,7 +30,7 @@ const styles: Record<string, string> = {
 	br: "", // No styles needed for line breaks
 
 	// Code: Monospace + light background (standard for snippets)
-	code: "text-xs bg-base-100 px-1 py-0.5 rounded font-mono",
+	code: "text-xs bg-base-100 px-1 py-0.5 rounded-field font-mono",
 	pre: "bg-base-100 p-3 overflow-x-auto text-xs font-mono",
 
 	// Inline text styles
@@ -42,7 +42,7 @@ const styles: Record<string, string> = {
 	hr: "border-base-300 my-2",
 
 	// Images: Responsive + centered (academic layout)
-	img: "max-w-full h-auto mx-auto my-2 rounded-sm",
+	img: "max-w-full h-auto mx-auto my-2 rounded-box",
 
 	// Lists: Indented + consistent spacing
 	li: "mb-1 text-[0.9375rem] leading-relaxed text-base-content/80",

@@ -86,7 +86,7 @@ export const Modal: Component<ModalProps> = (props) => {
 					</div>
 				)}
 
-				<div class="flex-1 overflow-y-auto px-6 py-4">{local.children}</div>
+				<div class="flex-1 overflow-y-auto">{local.children}</div>
 
 				{local.actions && (
 					<div class="modal-action sticky bottom-0 border-t border-base-200 bg-base-100 px-6 py-4">

@@ -78,7 +78,7 @@ export default (props: Props) => {
 	return (
 		<Show when={shouldRender()}>
 			<Menu.Root
-				class="fixed bg-accent rounded-md shadow-lg gap-1"
+				class="fixed bg-accent text-accent-content rounded-box shadow-lg gap-1"
 				orientation="vertical"
 				size="sm"
 				ref={setRef}

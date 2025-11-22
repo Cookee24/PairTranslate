@@ -103,7 +103,7 @@ const TranslateElement = (props: {
 	return (
 		<div class="p-4 w-full h-full flex flex-col" ref={ref}>
 			<pre
-				class="p-4 rounded-md grow whitespace-pre-wrap wrap-break-word overflow-auto"
+				class="p-4 rounded-box grow whitespace-pre-wrap wrap-break-word overflow-auto"
 				classList={{
 					"bg-error/10": !!data.error,
 					"text-error-content": !!data.error,

@@ -281,7 +281,7 @@ const Translate = (props: { textContext: TextContext }) => {
 	);
 
 	return (
-		<div class="m-2 p-4 bg-base-200 rounded-md">
+		<div class="p-2 py-4 bg-base-100 rounded-box">
 			<div class="flex items-center gap-2 mb-2 text-sm text-base-content/80">
 				<Languages size={16} />
 				{t("floatingTranslator.sections.translation")}
@@ -289,7 +289,7 @@ const Translate = (props: { textContext: TextContext }) => {
 			{data() && <div>{data()}</div>}
 			<Show when={data.reasoning}>
 				{(reasoning) => (
-					<div class="mt-3 rounded-md border border-base-300 bg-base-100 p-3">
+					<div class="mt-3 rounded-box border border-base-300 p-3">
 						<div class="mb-1 flex items-center gap-2 text-xs text-base-content/70">
 							<Brain size={14} />
 							{t("floatingTranslator.sections.reasoning")}

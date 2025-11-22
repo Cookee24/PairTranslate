@@ -66,7 +66,7 @@ export default (props: { navId: string }) => {
 	};
 
 	return (
-		<Card.Root class="bg-base-200 rounded-xl shadow-sm" data-nav={props.navId}>
+		<Card.Root class="bg-base-200 rounded-box shadow-sm" data-nav={props.navId}>
 			<Card.Body>
 				<Card.Title>{t("settings.advanced.title")}</Card.Title>
 				<div class="space-y-6">

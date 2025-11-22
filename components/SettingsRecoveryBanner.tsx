@@ -80,7 +80,7 @@ export const SettingsRecoveryBanner: Component<SettingsRecoveryBannerProps> = (
 		<Show when={errorInfo()}>
 			<div
 				class={cn(
-					"rounded-2xl border border-error/40 bg-error/10 p-4 space-y-3",
+					"rounded-box border border-error/40 bg-error/10 p-4 space-y-3",
 					props.class,
 				)}
 			>

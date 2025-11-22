@@ -34,7 +34,7 @@ const innerDivVariants = tv({
 		},
 		shape: {
 			circle: "rounded-full",
-			square: "rounded-lg",
+			square: "rounded-field",
 		},
 		variant: {
 			default: "",

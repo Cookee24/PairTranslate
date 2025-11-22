@@ -329,7 +329,7 @@ const PopupImpl = (props: ImplProps) => {
 		<Show when={shouldRender()}>
 			<div
 				ref={setRef}
-				class="fixed bg-base-200/90 backdrop-blur-md text-base-content rounded-lg pt-0 shadow-md shadow-base-200 flex flex-col"
+				class="fixed bg-base-200/90 backdrop-blur-md text-base-content rounded-box pt-0 shadow-md shadow-base-200 flex flex-col"
 				onMouseDown={props.onBringToFront}
 				onTouchStart={props.onBringToFront}
 				style={{
@@ -340,7 +340,7 @@ const PopupImpl = (props: ImplProps) => {
 					"z-index": props.zIndex,
 				}}
 			>
-				<div class="w-full h-6 rounded-t-lg bg-primary/90 backdrop-blur-md text-primary-content flex items-center justify-center relative">
+				<div class="w-full h-6 bg-primary/90 backdrop-blur-md text-primary-content flex items-center justify-center relative rounded-tl-(--radius-box) rounded-tr-(--radius-box)">
 					<div
 						ref={dragRef}
 						class="absolute inset-0 flex justify-center items-center touch-none"
@@ -354,7 +354,7 @@ const PopupImpl = (props: ImplProps) => {
 						<GripHorizontal class="color-base-content" size={16} />
 					</div>
 					<Button
-						class="z-10 rounded-none rounded-tl-lg"
+						class="z-10 rounded-none rounded-tl-(--radius-box)"
 						variant={props.pinned ? "success" : "ghost"}
 						size="xs"
 						onClick={() => props.setState("pinned", (p) => !p)}
@@ -363,7 +363,7 @@ const PopupImpl = (props: ImplProps) => {
 					</Button>
 					<div class="flex-1" />
 					<Button
-						class="z-10 rounded-none rounded-tr-lg"
+						class="z-10 rounded-none rounded-tr-(--radius-box)"
 						variant="ghost"
 						size="xs"
 						onClick={() => props.setState("visible", false)}

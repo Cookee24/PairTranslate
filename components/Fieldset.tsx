@@ -18,9 +18,9 @@ const fieldsetVariants = tv({
 		},
 		rounded: {
 			none: "",
-			sm: "rounded",
-			md: "rounded-md",
-			lg: "rounded-lg",
+			sm: "rounded-selector",
+			md: "rounded-field",
+			lg: "rounded-box",
 			box: "rounded-box",
 		},
 	},

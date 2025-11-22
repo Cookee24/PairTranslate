@@ -195,7 +195,7 @@ export default (props: DictionaryEntry) => {
 								<div class="flex flex-col gap-1">
 									<For each={props.phonetics}>
 										{(item, index) => (
-											<div class="flex items-center gap-1 rounded-lg p-2">
+											<div class="flex items-center gap-1 rounded-field p-2">
 												<Button
 													class="btn-circle"
 													size="xs"
@@ -266,7 +266,7 @@ export default (props: DictionaryEntry) => {
 					</Match>
 					<Match when={section() === "definitions"}>
 						<div class="flex flex-col gap-2">
-							<div class="flex items-center gap-2 rounded-lg bg-base-200/30 p-2">
+							<div class="flex items-center gap-2 rounded-field bg-base-200/30 p-2">
 								<p class="text-xs font-semibold uppercase tracking-wide text-base-content/70">
 									{t("dictionary.sections.meanings")}
 								</p>
@@ -316,7 +316,7 @@ export default (props: DictionaryEntry) => {
 							</div>
 
 							<Show when={shouldTranslate()}>
-								<div class="rounded-lg bg-primary/5 p-2">
+								<div class="rounded-box bg-primary/5 p-2">
 									<Show when={translation.error}>
 										{(error) => (
 											<div class="flex items-center gap-2 text-xs text-error">
@@ -348,7 +348,7 @@ export default (props: DictionaryEntry) => {
 
 							<Show when={!shouldTranslate()}>
 								<Show when={!props.meanings?.length}>
-									<div class="rounded-lg p-3 text-center text-xs text-base-content/70">
+									<div class="rounded-box p-3 text-center text-xs text-base-content/70">
 										{t("dictionary.messages.noDefinitions")}
 									</div>
 								</Show>
@@ -356,7 +356,7 @@ export default (props: DictionaryEntry) => {
 								<For each={props.meanings}>
 									{(meaning, meaningIndex) => (
 										<section
-											class="space-y-2 rounded-lg p-2"
+											class="space-y-2 rounded-box p-2"
 											aria-label={t("dictionary.labels.meaning", [
 												String(meaningIndex() + 1),
 											])}

@@ -22,7 +22,7 @@ export default (props: Props) => {
 				_ref = r;
 			}, props.ref)}
 			class={cn(
-				"min-h-8 p-2 rounded-md flex items-center justify-center",
+				"min-h-8 p-2 rounded-field flex items-center justify-center",
 				local.class,
 				local.error
 					? "bg-error text-error-content"
