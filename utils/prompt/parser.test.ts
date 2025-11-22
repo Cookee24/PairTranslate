@@ -47,7 +47,6 @@ describe("isEmpty", () => {
 	});
 });
 
-
 describe("intoTokens", () => {
 	describe("basic tokens", () => {
 		test("parses plain text", () => {

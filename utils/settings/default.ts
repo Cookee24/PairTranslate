@@ -3,7 +3,6 @@ import { t } from "~/utils/i18n";
 import { getTargetLanguage } from "~/utils/language";
 import {
 	BATCH,
-	BATCH_SCHEMA,
 	DICTIONARY,
 	EXPLAIN,
 	EXPLAIN_SCHEMA,
@@ -96,66 +95,71 @@ export function generatePromptSettings(): s.PromptsSettings {
 	return {
 		[PROMPT_ID.translate]: {
 			name: t("prompts.defaultNames.translate"),
-			systemPrompt: UNARY.system,
+			systemPrompt: UNARY().system,
 			input: "string",
 			output: "string",
 			steps: [
 				{
-					message: UNARY.user,
+					message: UNARY().user,
 					output: "string",
 				},
 			],
 		},
 		[PROMPT_ID.batchTranslate]: {
 			name: t("prompts.defaultNames.batchTranslate"),
-			systemPrompt: BATCH.system,
+			systemPrompt: BATCH().system,
 			input: "stringArray",
 			output: "structured",
 			steps: [
 				{
-					message: BATCH.user,
+					message: BATCH().user,
 					output: {
-						type: "structured",
-						schema: BATCH_SCHEMA,
+						type: "stringArray",
+						// %% Paragraph <index>
+						delimiter: {
+							type: "regex",
+							pattern: "^%% Paragraph \\d+",
+							flags: "gm",
+						},
 					},
 				},
 			],
 		},
 		[PROMPT_ID.inputTranslate]: {
 			name: t("prompts.defaultNames.inputTranslate"),
-			systemPrompt: INPUT.system,
+			systemPrompt: INPUT().system,
 			input: "string",
 			output: "string",
 			steps: [
 				{
-					message: INPUT.user,
+					message: INPUT().user,
 					output: "string",
 				},
 			],
 		},
 		[PROMPT_ID.dictionaryTranslate]: {
 			name: t("prompts.defaultNames.dictionaryTranslate"),
-			systemPrompt: DICTIONARY.system,
+			systemPrompt: DICTIONARY().system,
 			input: "string",
 			output: "string",
 			steps: [
 				{
-					message: DICTIONARY.user,
+					message: DICTIONARY().user,
 					output: "string",
 				},
 			],
 		},
 		[PROMPT_ID.explain]: {
 			name: t("prompts.defaultNames.explain"),
-			systemPrompt: EXPLAIN.system,
+			systemPrompt: EXPLAIN().system,
 			input: "string",
 			output: "structured",
 			steps: [
 				{
-					message: EXPLAIN.user,
+					message: EXPLAIN().user,
 					output: {
 						type: "structured",
-						schema: EXPLAIN_SCHEMA,
+						schema: EXPLAIN_SCHEMA(),
 					},
 				},
 			],

@@ -23,6 +23,12 @@ import type {
 import { createLLMClient } from "~/utils/llm";
 import { appendReasoningContent } from "~/utils/llm/reasoning";
 import {
+	isStringArrayOutput,
+	type PromptStepOutput,
+	resolveStringArrayDelimiter,
+	splitWithDelimiter,
+} from "~/utils/prompt/delimiter";
+import {
 	buildContextWithTranslateParams,
 	templateToTokens,
 	tokensToString,
@@ -56,6 +62,7 @@ type CachedValue<T = unknown> = {
 type CompiledStep = {
 	messageTokens: ReturnType<typeof templateToTokens>;
 	output: PromptSettings["steps"][number]["output"];
+	stringArrayDelimiter?: string | RegExp;
 };
 
 type CompiledPrompt = {
@@ -65,6 +72,16 @@ type CompiledPrompt = {
 };
 
 type PromptContext = ReturnType<typeof buildContextWithTranslateParams>;
+
+const normalizeStreamAggregate = (
+	step: CompiledStep | undefined,
+	value: string,
+): string | string[] => {
+	if (!step?.stringArrayDelimiter) {
+		return value;
+	}
+	return splitWithDelimiter(value, step.stringArrayDelimiter);
+};
 
 const initializeConversation = (
 	prompt: CompiledPrompt,
@@ -109,20 +126,12 @@ const buildLLMClient = (
 };
 
 const isStructuredOutput = (
-	output: PromptSettings["steps"][number]["output"],
+	output: PromptStepOutput,
 ): output is { type: "structured"; schema: object } =>
 	typeof output === "object" &&
 	output !== null &&
 	"type" in output &&
 	output.type === "structured";
-
-const isStringArrayOutput = (
-	output: PromptSettings["steps"][number]["output"],
-): output is { type: "stringArray"; delimiter: string } =>
-	typeof output === "object" &&
-	output !== null &&
-	"type" in output &&
-	output.type === "stringArray";
 
 const compilePrompt = (prompt: PromptSettings): CompiledPrompt => ({
 	input: prompt.input,
@@ -130,6 +139,9 @@ const compilePrompt = (prompt: PromptSettings): CompiledPrompt => ({
 	steps: prompt.steps.map((step) => ({
 		output: step.output,
 		messageTokens: templateToTokens(step.message),
+		stringArrayDelimiter: isStringArrayOutput(step.output)
+			? resolveStringArrayDelimiter(step.output)
+			: undefined,
 	})),
 });
 
@@ -154,14 +166,13 @@ const normalizeLLMStepOutput = (
 	step: CompiledStep,
 	output: unknown,
 ): unknown => {
-	if (isStringArrayOutput(step.output) && typeof output === "string") {
-		const delimiter = step.output.delimiter ?? "\n";
-		return output
-			.split(delimiter)
-			.map((entry) => entry.trim())
-			.filter(Boolean);
+	if (typeof output !== "string") {
+		return output;
 	}
-	return output;
+	if (!step.stringArrayDelimiter) {
+		return output;
+	}
+	return splitWithDelimiter(output, step.stringArrayDelimiter);
 };
 
 const ensureServiceModel = (
@@ -743,6 +754,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				}
 				const queue = queueHub.queue(modelId);
 				const estimated = estimateTokens(normalized);
+				const finalStep = compiledPrompt?.steps.at(-1);
 				let traditionalResult: string[] | undefined;
 				const streamRunner =
 					service.type === "llm"
@@ -779,8 +791,12 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 						yield chunk;
 					}
 					if (service.type === "llm") {
+						const normalizedOutput = normalizeStreamAggregate(
+							finalStep,
+							translationAggregate,
+						);
 						await resultCache.set(cacheKey, {
-							output: translationAggregate,
+							output: normalizedOutput,
 							reasoning: reasoningAggregate || undefined,
 						});
 					} else if (traditionalResult) {

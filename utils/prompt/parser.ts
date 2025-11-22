@@ -98,7 +98,8 @@ export const buildContextWithTranslateParams = (
 	lang?: { src?: string; dst: string },
 	text?: string | string[],
 ): PromptContext => {
-	const src = lang?.src && getNativeName(lang.src);
+	const src =
+		lang?.src && (lang.src !== "auto" || undefined) && getNativeName(lang.src);
 	const dst = lang?.dst && getNativeName(lang.dst);
 	const merged: PromptContext = {
 		...ctx,
@@ -704,9 +705,7 @@ export const tokensToString = (ctx: PromptContext, tokens: Token[]): string => {
 					if (Array.isArray(collection)) {
 						iterate(collection.map((value, idx) => [idx, value] as const));
 					} else if (typeof collection === "object" && collection !== null) {
-						iterate(
-							Object.entries(collection as Record<string, unknown>),
-						);
+						iterate(Object.entries(collection as Record<string, unknown>));
 					} else if (collection !== undefined && collection !== null) {
 						throw new TemplateParseError(
 							`'${token.collection}' is not iterable`,

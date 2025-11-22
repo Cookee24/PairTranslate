@@ -112,8 +112,19 @@ const PromptStep = z.object({
 			z.literal("string"),
 			z.object({
 				type: z.literal("stringArray"),
-				// Regexp
-				delimiter: z.string().default("\n"),
+				delimiter: z.union([
+					z.string(),
+					z.object({
+						type: z.literal("regex"),
+						pattern: z.string(),
+						flags: z
+							.string()
+							.regex(/^[dgimsuvy]*$/, {
+								message: "Invalid regex flags. Allowed flags: d g i m s u v y.",
+							})
+							.optional(),
+					}),
+				]),
 			}),
 			z.object({
 				type: z.literal("structured"),
