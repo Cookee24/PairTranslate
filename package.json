@@ -2,7 +2,7 @@
 	"name": "pair-translate",
 	"description": "A browser extension for translating text on webpages.",
 	"private": true,
-	"version": "1.1.2",
+	"version": "2.0.0-beta.1",
 	"type": "module",
 	"scripts": {
 		"dev": "wxt",
