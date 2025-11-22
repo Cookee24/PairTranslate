@@ -14,26 +14,59 @@ import type {
 	State,
 } from "./types";
 
-// Indicate if a element is excluded
+// Combine for better performance
+const COMMON_SKIP_PATTERNS = new RegExp(
+	[
+		// Email addresses
+		/^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.source,
+		// Social media handles (@username)
+		/^@\w+$/.source,
+		// URLs and domains
+		/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)\/?$/.source,
+		// Version numbers
+		/^v?\d+\.\d+(\.\d+)?(-\w+)?$/.source,
+		// Currency symbols only
+		/^[$€£¥₹₽¢]+$/.source,
+		// Time formats
+		/^\d{1,2}:\d{2}(:\d{2})?(\s?(AM|PM))?$/i.source,
+		// Dates (basic patterns)
+		/^\d{1,4}[/\-.]\d{1,2}[/\-.]\d{1,4}$/.source,
+		// Repeated characters (like "...")
+		/^(.)\1{2,}$/.source,
+	].join("|"),
+	"i",
+);
+
+const createTreeWalker = (element: Node) => {
+	return document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+};
+
+const hasDirectText = (el?: Element | null) => {
+	if (!el) return false;
+	let node = el.firstChild;
+	while (node) {
+		const text = node.nodeValue;
+		if (node.nodeType === Node.TEXT_NODE && text && /\S/.test(text))
+			return true;
+		node = node.nextSibling;
+	}
+	return false;
+};
+
 export async function* textWalker(state: State): ElementGenerator {
-	// Cache
+	// Cache for elements confirmed to be excluded to avoid expensive .closest() calls
 	const excludedElements = new WeakSet<HTMLElement>();
 
-	const createTreeWalker = (element: Node) => {
-		return document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-	};
-
-	const hasMeaningfulText = (node: Node) => {
-		return hasMeaningfulChars(node.textContent);
-	};
-
 	const judge = (el: HTMLElement) => {
-		if (!el.matches(state.textSelector)) {
+		if (!el.matches(state.textSelector)) return false;
+
+		const parent = el.parentElement;
+		if (parent && excludedElements.has(parent)) {
+			excludedElements.add(el);
 			return false;
-		} else if (
-			(el.parentElement && excludedElements.has(el.parentElement)) ||
-			el.closest(state.excludedSelector)
-		) {
+		}
+
+		if (el.closest(state.excludedSelector)) {
 			excludedElements.add(el);
 			return false;
 		}
@@ -49,16 +82,35 @@ export async function* textWalker(state: State): ElementGenerator {
 	};
 
 	const walker = createTreeWalker(state.root);
-	for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-		if (!hasMeaningfulText(node)) continue;
-		const parent = node.parentElement;
-		if (parent && judge(parent)) yield parent;
+
+	let node = walker.nextNode();
+	while (node) {
+		if (!hasMeaningfulChars(node.nodeValue)) {
+			node = walker.nextNode();
+			continue;
+		}
+
+		const element = node.parentElement;
+		if (element) {
+			const parent = element.parentElement;
+			if (parent && parent.firstChild === element && hasDirectText(parent)) {
+				// Skip this element, the parent container will be picked up by the walker later
+				node = walker.nextNode();
+				continue;
+			}
+
+			if (judge(element)) {
+				yield element;
+			}
+		}
+		node = walker.nextNode();
 	}
 
 	if (!state.listenNew) return;
 
 	const elementSet = new Set<WeakRef<HTMLElement>>();
 	const notifier = createNotifier();
+
 	const observer = new MutationObserver((mutations) => {
 		for (const fn of state.mutationObserverCallbacks) {
 			fn(mutations, observer);
@@ -66,21 +118,26 @@ export async function* textWalker(state: State): ElementGenerator {
 	});
 
 	const handler: MutationCallback = (mutations) => {
+		let hasUpdates = false;
 		for (const mutation of mutations) {
 			for (const node of mutation.addedNodes) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
 					const el = node as HTMLElement;
 					if (el.getAttribute(ELEMENT_CONTAINER) !== null) continue;
+
 					const walker = createTreeWalker(node);
 					for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-						if (!hasMeaningfulText(node)) continue;
+						if (!hasMeaningfulChars(node.nodeValue)) continue;
 						const parent = node.parentElement;
-						if (parent && judge(parent)) elementSet.add(new WeakRef(parent));
+						if (parent && judge(parent)) {
+							elementSet.add(new WeakRef(parent));
+							hasUpdates = true;
+						}
 					}
 				}
 			}
 		}
-		if (elementSet.size > 0) notifier.notify();
+		if (hasUpdates) notifier.notify();
 	};
 	state.mutationObserverCallbacks.add(handler);
 
@@ -106,43 +163,11 @@ export async function* textWalker(state: State): ElementGenerator {
 	}
 }
 
-// Filter out child elements of already yielded elements
-// e.g. for <p>text <b>bold</b> text</p>, only return <p>
-export async function* childFilter(
-	state: State,
-	prev: ElementGenerator,
-): ElementGenerator {
-	var parentStore = new WeakSet<HTMLElement>();
-
-	const climb = (el: HTMLElement) => {
-		// At most climb 8 levels to avoid deep traversal
-		for (let i = 0; i < 8 && el !== state.root && el.parentElement; i++) {
-			if (parentStore.has(el.parentElement)) {
-				return false;
-			}
-			el = el.parentElement;
-		}
-		return true;
-	};
-
-	for await (const element of prev) {
-		// TreeWalker goes through nodes in depth first order,
-		// so the parent is guaranteed to be processed before the child.
-		// You do can insert elements between the parent and child while
-		// the gap of walking the DOM tree, but this situation is quite rare.
-		// We assume this kind of operation does not exist.
-		if (climb(element)) {
-			parentStore.add(element);
-			yield element;
-		}
-	}
-}
-
 export async function* emittedFilter(
 	_state: State,
 	prev: ElementGenerator,
 ): ElementGenerator {
-	var emittedElements = new WeakSet<HTMLElement>();
+	const emittedElements = new WeakSet<HTMLElement>();
 
 	for await (const element of prev) {
 		if (!emittedElements.has(element)) {
@@ -157,45 +182,60 @@ export async function* textContentFilter(
 	prev: ElementGenerator,
 ): ElementGenerator {
 	for await (const element of prev) {
-		const text = element.textContent?.trim() || "";
+		// If element has no Element children, getting nodeValue of firstChild is
+		// much faster than .textContent (which causes serialization of the tree).
+		let text: string;
+		if (element.firstElementChild === null && element.firstChild) {
+			text = element.firstChild.nodeValue || "";
+		} else {
+			text = element.textContent || "";
+		}
 
-		// Skip if text is too short or empty
-		if (text.length < 2 || !hasMeaningfulChars(text)) {
+		const trimmed = text.trim();
+		if (COMMON_SKIP_PATTERNS.test(trimmed)) {
 			continue;
 		}
 
-		// Skip common untranslatable patterns
-		if (
-			// Email addresses
-			/^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(text) ||
-			// Social media handles (@username)
-			/^@\w+$/.test(text) ||
-			// URLs and domains
-			/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)\/?$/.test(text) ||
-			// Version numbers
-			/^v?\d+\.\d+(\.\d+)?(-\w+)?$/.test(text) ||
-			// Currency symbols only
-			/^[$€£¥₹₽¢]+$/.test(text) ||
-			// Time formats
-			/^\d{1,2}:\d{2}(:\d{2})?(\s?(AM|PM))?$/i.test(text) ||
-			// Dates (basic patterns)
-			/^\d{1,4}[/\-.]\d{1,2}[/\-.]\d{1,4}$/.test(text) ||
-			// Repeated characters (like "...")
-			/^(.)\1{2,}$/.test(text)
-		) {
-			continue;
-		}
-
-		let flag = false;
+		let isInvalid = false;
 		for (const regex of state.extraTextFilters) {
-			if (regex.test(text)) {
-				flag = true;
+			if (regex.test(trimmed)) {
+				isInvalid = true;
 				break;
 			}
 		}
-		if (flag) continue;
+		if (isInvalid) continue;
 
 		yield element;
+	}
+}
+
+export async function* childFilter(
+	state: State,
+	prev: ElementGenerator,
+): ElementGenerator {
+	const parentStore = new WeakSet<HTMLElement>();
+
+	const MAX_DEPTH = 8;
+
+	const climb = (el: HTMLElement) => {
+		let current: HTMLElement | null = el;
+		let depth = 0;
+		while (depth < MAX_DEPTH && current && current !== state.root) {
+			const parent: HTMLElement | null = current.parentElement;
+			if (parent && parentStore.has(parent)) {
+				return false;
+			}
+			current = parent;
+			depth++;
+		}
+		return true;
+	};
+
+	for await (const element of prev) {
+		if (climb(element)) {
+			parentStore.add(element);
+			yield element;
+		}
 	}
 }
 
@@ -231,10 +271,11 @@ export function getState(options: Options = {}): State {
 
 export function domListener(options: Options = {}): ElementGenerator {
 	const state = getState(options);
+
 	const defaultGenerators: ChainedGeneratorFn[] = [
-		childFilter,
 		emittedFilter,
 		textContentFilter,
+		childFilter,
 	];
 	const appendGenerators = options.appendGenerators || [];
 

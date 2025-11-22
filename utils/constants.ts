@@ -135,6 +135,7 @@ export const EXCLUDED_SELECTORS = [
 	"img",
 	'[role="img"]',
 	"[contenteditable=true]",
+	".monaco-editor",
 	// Exclude math elements
 	'[class^="MathJax"]',
 	'[class^="katex"]',
