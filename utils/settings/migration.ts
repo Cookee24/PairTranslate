@@ -1,6 +1,10 @@
 import type { ServicesSettings } from "./def";
 import { SETTINGS_VERSION, SettingsSchema } from "./def";
-import { generatePromptSettings } from "./default";
+import {
+	generatePromptSettings,
+	generateQueueControlSettings,
+	generateTranslateSettings,
+} from "./default";
 
 type LegacyLLMService = {
 	name: string;
@@ -32,6 +36,13 @@ type LegacyTranslateSettings = {
 	concurrentRequests: number;
 	maxBatchSize: number;
 	cacheSize: number;
+	translationMode: "parallel" | "replace";
+	translateFullPage: boolean;
+	inTextTranslateModel?: string;
+	floatingTranslateModel?: string;
+	floatingExplainModel?: string;
+	inputTranslateModel?: string;
+	inputTranslateLang: string;
 };
 
 type LegacySettingsV0 = Omit<SettingsSchema, "services" | "prompts" | "__v"> & {
@@ -69,23 +80,13 @@ export const migrateSettings = (raw: unknown): SettingsSchema => {
 
 function migrateV0ToV1(oldSettings: LegacySettingsV0): SettingsSchema {
 	const services = convertLegacyServices(oldSettings.services);
-	const translate = {
-		...oldSettings.translate,
-		concurrentRequests: undefined,
-		maxBatchSize: undefined,
-		cacheSize: undefined,
-	};
+	const translate = getModernTranslateSettings(oldSettings.translate);
+	const queue = buildQueueSettings(oldSettings.translate);
 	return {
 		basic: oldSettings.basic,
 		translate: translate,
 		websiteRules: oldSettings.websiteRules ?? [],
-		queue: {
-			requestConcurrency: oldSettings.translate?.concurrentRequests,
-			tokensPerMinute: 80000,
-			maxBatchSize: oldSettings.translate?.maxBatchSize,
-			maxTokensPerBatch: 4000,
-			cacheSize: oldSettings.translate?.cacheSize,
-		},
+		queue,
 		services,
 		prompts: oldSettings.prompts ?? generatePromptSettings(),
 		__v: 1,
@@ -121,6 +122,35 @@ function convertLegacyServices(legacy?: LegacyServices): ServicesSettings {
 	});
 
 	return next;
+}
+
+function getModernTranslateSettings(
+	legacy?: LegacyTranslateSettings,
+): SettingsSchema["translate"] {
+	if (!legacy) {
+		return generateTranslateSettings();
+	}
+
+	const { concurrentRequests, maxBatchSize, cacheSize, ...rest } = legacy;
+	void concurrentRequests;
+	void maxBatchSize;
+	void cacheSize;
+	return rest;
+}
+
+function buildQueueSettings(
+	legacy?: LegacyTranslateSettings,
+): SettingsSchema["queue"] {
+	const defaults = generateQueueControlSettings();
+
+	return {
+		requestConcurrency:
+			legacy?.concurrentRequests ?? defaults.requestConcurrency,
+		tokensPerMinute: defaults.tokensPerMinute,
+		maxBatchSize: legacy?.maxBatchSize ?? defaults.maxBatchSize,
+		maxTokensPerBatch: defaults.maxTokensPerBatch,
+		cacheSize: legacy?.cacheSize ?? defaults.cacheSize,
+	};
 }
 
 function getSettingsVersion(raw: unknown): number {
