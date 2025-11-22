@@ -1,7 +1,8 @@
 import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
-import { createEffect, For, Show } from "solid-js";
+import { createEffect, For, Match, Switch } from "solid-js";
 import { createStore, reconcile } from "solid-js/store";
+import { Dynamic } from "solid-js/web";
 import { unified } from "unified";
 import { fixMarkdown } from "~/utils/markdown";
 import NativeMapping from "./Native";
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const parser = unified().use(remarkParse).use(remarkMath).freeze();
+
 // In production, setting props can be wrapped in requestIdleCallback
 // to avoid blocking the main thread during hydration.
 export const Md = (props: Props) => {
@@ -31,195 +33,203 @@ export const Md = (props: Props) => {
 };
 
 const Native = NativeMapping();
+
 const RenderNode = (props: import("mdast").RootContent) => {
 	return (
-		<Show when={props} keyed>
-			{(node) => {
-				switch (node.type) {
-					case "heading": {
-						const Component = Native[`h${node.depth}` as keyof typeof Native];
-						return (
-							<Component>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Component>
-						);
-					}
+		<Switch>
+			<Match when={props.type === "heading" && props}>
+				{(node) => (
+					<Dynamic
+						component={Native[`h${node().depth}` as keyof typeof Native]}
+					>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Dynamic>
+				)}
+			</Match>
 
-					case "paragraph": {
-						// This renderer is intended to used in-text, so we set `display: contents` on the container
-						return (
-							<Native.p style={{ display: "contents" }}>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.p>
-						);
-					}
+			<Match when={props.type === "paragraph" && props}>
+				{(node) => (
+					<Native.p style={{ display: "contents" }}>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.p>
+				)}
+			</Match>
 
-					case "text": {
-						return <>{node.value}</>;
-					}
+			<Match when={props.type === "text" && props}>
+				{(node) => <>{node().value}</>}
+			</Match>
 
-					case "emphasis": {
-						return (
-							<Native.em>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.em>
-						);
-					}
+			<Match when={props.type === "emphasis" && props}>
+				{(node) => (
+					<Native.em>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.em>
+				)}
+			</Match>
 
-					case "strong": {
-						return (
-							<Native.strong>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.strong>
-						);
-					}
+			<Match when={props.type === "strong" && props}>
+				{(node) => (
+					<Native.strong>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.strong>
+				)}
+			</Match>
 
-					case "inlineCode": {
-						return <Native.code>{node.value}</Native.code>;
-					}
+			<Match when={props.type === "inlineCode" && props}>
+				{(node) => <Native.code>{node().value}</Native.code>}
+			</Match>
 
-					case "code": {
-						return (
-							<Native.pre>
-								<Native.code>{node.value}</Native.code>
-							</Native.pre>
-						);
-					}
+			<Match when={props.type === "code" && props}>
+				{(node) => (
+					<Native.pre>
+						<Native.code>{node().value}</Native.code>
+					</Native.pre>
+				)}
+			</Match>
 
-					case "link": {
-						return (
-							<Native.a href={node.url} title={node.title || undefined}>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.a>
-						);
-					}
+			<Match when={props.type === "link" && props}>
+				{(node) => (
+					<Native.a href={node().url} title={node().title || undefined}>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.a>
+				)}
+			</Match>
 
-					case "image": {
-						return (
-							<Native.img
-								src={node.url}
-								alt={node.alt || undefined}
-								title={node.title || undefined}
-							/>
-						);
-					}
+			<Match when={props.type === "image" && props}>
+				{(node) => (
+					<Native.img
+						src={node().url}
+						alt={node().alt || undefined}
+						title={node().title || undefined}
+					/>
+				)}
+			</Match>
 
-					case "blockquote": {
-						return (
-							<Native.blockquote>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.blockquote>
-						);
-					}
+			<Match when={props.type === "blockquote" && props}>
+				{(node) => (
+					<Native.blockquote>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.blockquote>
+				)}
+			</Match>
 
-					case "list": {
-						const Component = node.ordered ? Native.ol : Native.ul;
-						return (
-							<Component>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Component>
-						);
-					}
+			<Match when={props.type === "list" && props}>
+				{(node) => (
+					<Dynamic component={node().ordered ? Native.ol : Native.ul}>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Dynamic>
+				)}
+			</Match>
 
-					case "listItem": {
-						return (
-							<Native.li>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.li>
-						);
-					}
+			<Match when={props.type === "listItem" && props}>
+				{(node) => (
+					<Native.li>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.li>
+				)}
+			</Match>
 
-					case "thematicBreak": {
-						return <Native.hr />;
-					}
+			<Match when={props.type === "thematicBreak"}>
+				<Native.hr />
+			</Match>
 
-					case "break": {
-						return <Native.br />;
-					}
+			<Match when={props.type === "break"}>
+				<Native.br />
+			</Match>
 
-					case "html": {
-						// For security reasons, raw HTML is not rendered
-						return <Native.code>{node.value}</Native.code>;
-					}
+			<Match when={props.type === "html" && props}>
+				{(node) => (
+					// For security reasons, raw HTML is not rendered
+					<Native.code>{node().value}</Native.code>
+				)}
+			</Match>
 
-					case "table": {
-						return (
-							<Native.table>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.table>
-						);
-					}
+			<Match when={props.type === "table" && props}>
+				{(node) => (
+					<Native.table>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.table>
+				)}
+			</Match>
 
-					case "tableRow": {
-						return (
-							<Native.tr>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.tr>
-						);
-					}
+			<Match when={props.type === "tableRow" && props}>
+				{(node) => (
+					<Native.tr>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.tr>
+				)}
+			</Match>
 
-					case "tableCell": {
-						return (
-							<Native.td>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.td>
-						);
-					}
+			<Match when={props.type === "tableCell" && props}>
+				{(node) => (
+					<Native.td>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.td>
+				)}
+			</Match>
 
-					case "delete": {
-						return (
-							<Native.del>
-								<For each={node.children}>
-									{(child) => <RenderNode {...child} />}
-								</For>
-							</Native.del>
-						);
-					}
+			<Match when={props.type === "delete" && props}>
+				{(node) => (
+					<Native.del>
+						<For each={node().children}>
+							{(child) => <RenderNode {...child} />}
+						</For>
+					</Native.del>
+				)}
+			</Match>
 
-					case "math":
-						return <Native.math content={node.value} center />;
-					case "inlineMath":
-						return <Native.math content={node.value} />;
+			<Match when={props.type === "math" && props}>
+				{(node) => <Native.math content={node().value} center />}
+			</Match>
 
-					case "linkReference":
-					case "imageReference":
-					case "footnoteReference":
-					case "footnoteDefinition":
-					case "definition": {
-						// These require a reference resolution system
-						console.warn(`Reference nodes not yet implemented: ${node.type}`);
-						return null;
-					}
+			<Match when={props.type === "inlineMath" && props}>
+				{(node) => <Native.math content={node().value} />}
+			</Match>
 
-					case "yaml": {
-						// Frontmatter - typically not rendered
-						return null;
-					}
+			<Match
+				when={
+					[
+						"linkReference",
+						"imageReference",
+						"footnoteReference",
+						"footnoteDefinition",
+						"definition",
+					].includes(props.type) && props
 				}
-			}}
-		</Show>
+			>
+				{(node) => {
+					console.warn(`Reference nodes not yet implemented: ${node().type}`);
+					return null;
+				}}
+			</Match>
+
+			<Match when={props.type === "yaml"}>
+				{/* Frontmatter - typically not rendered */}
+				{null}
+			</Match>
+		</Switch>
 	);
 };
 
@@ -244,191 +254,199 @@ export const MdStyled = (props: Props) => {
 const Styled = NativeMapping(true, true);
 const RenderStyledNode = (props: import("mdast").RootContent) => {
 	return (
-		<Show when={props} keyed>
-			{(node) => {
-				switch (node.type) {
-					case "heading": {
-						const Component = Styled[`h${node.depth}` as keyof typeof Styled];
-						return (
-							<Component>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Component>
-						);
-					}
+		<Switch>
+			<Match when={props.type === "heading" && props}>
+				{(node) => (
+					<Dynamic
+						component={Styled[`h${node().depth}` as keyof typeof Styled]}
+					>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Dynamic>
+				)}
+			</Match>
 
-					case "paragraph": {
-						return (
-							<Styled.p>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.p>
-						);
-					}
+			<Match when={props.type === "paragraph" && props}>
+				{(node) => (
+					<Styled.p>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.p>
+				)}
+			</Match>
 
-					case "text": {
-						return <>{node.value}</>;
-					}
+			<Match when={props.type === "text" && props}>
+				{(node) => <>{node().value}</>}
+			</Match>
 
-					case "emphasis": {
-						return (
-							<Styled.em>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.em>
-						);
-					}
+			<Match when={props.type === "emphasis" && props}>
+				{(node) => (
+					<Styled.em>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.em>
+				)}
+			</Match>
 
-					case "strong": {
-						return (
-							<Styled.strong>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.strong>
-						);
-					}
+			<Match when={props.type === "strong" && props}>
+				{(node) => (
+					<Styled.strong>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.strong>
+				)}
+			</Match>
 
-					case "inlineCode": {
-						return <Styled.code>{node.value}</Styled.code>;
-					}
+			<Match when={props.type === "inlineCode" && props}>
+				{(node) => <Styled.code>{node().value}</Styled.code>}
+			</Match>
 
-					case "code": {
-						return (
-							<Styled.pre>
-								<Styled.code>{node.value}</Styled.code>
-							</Styled.pre>
-						);
-					}
+			<Match when={props.type === "code" && props}>
+				{(node) => (
+					<Styled.pre>
+						<Styled.code>{node().value}</Styled.code>
+					</Styled.pre>
+				)}
+			</Match>
 
-					case "link": {
-						return (
-							<Styled.a href={node.url} title={node.title || undefined}>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.a>
-						);
-					}
+			<Match when={props.type === "link" && props}>
+				{(node) => (
+					<Styled.a href={node().url} title={node().title || undefined}>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.a>
+				)}
+			</Match>
 
-					case "image": {
-						return (
-							<Styled.img
-								src={node.url}
-								alt={node.alt || undefined}
-								title={node.title || undefined}
-							/>
-						);
-					}
+			<Match when={props.type === "image" && props}>
+				{(node) => (
+					<Styled.img
+						src={node().url}
+						alt={node().alt || undefined}
+						title={node().title || undefined}
+					/>
+				)}
+			</Match>
 
-					case "blockquote": {
-						return (
-							<Styled.blockquote>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.blockquote>
-						);
-					}
+			<Match when={props.type === "blockquote" && props}>
+				{(node) => (
+					<Styled.blockquote>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.blockquote>
+				)}
+			</Match>
 
-					case "list": {
-						const Component = node.ordered ? Styled.ol : Styled.ul;
-						return (
-							<Component>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Component>
-						);
-					}
+			<Match when={props.type === "list" && props}>
+				{(node) => (
+					<Dynamic component={node().ordered ? Styled.ol : Styled.ul}>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Dynamic>
+				)}
+			</Match>
 
-					case "listItem": {
-						return (
-							<Styled.li>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.li>
-						);
-					}
+			<Match when={props.type === "listItem" && props}>
+				{(node) => (
+					<Styled.li>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.li>
+				)}
+			</Match>
 
-					case "thematicBreak": {
-						return <Styled.hr />;
-					}
+			<Match when={props.type === "thematicBreak"}>
+				<Styled.hr />
+			</Match>
 
-					case "break": {
-						return <Styled.br />;
-					}
+			<Match when={props.type === "break"}>
+				<Styled.br />
+			</Match>
 
-					case "html": {
-						// For security reasons, raw HTML is not rendered
-						return <Styled.code>{node.value}</Styled.code>;
-					}
+			<Match when={props.type === "html" && props}>
+				{(node) => (
+					// For security reasons, raw HTML is not rendered
+					<Styled.code>{node().value}</Styled.code>
+				)}
+			</Match>
 
-					case "table": {
-						return (
-							<Styled.table>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.table>
-						);
-					}
+			<Match when={props.type === "table" && props}>
+				{(node) => (
+					<Styled.table>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.table>
+				)}
+			</Match>
 
-					case "tableRow": {
-						return (
-							<Styled.tr>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.tr>
-						);
-					}
+			<Match when={props.type === "tableRow" && props}>
+				{(node) => (
+					<Styled.tr>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.tr>
+				)}
+			</Match>
 
-					case "tableCell": {
-						return (
-							<Styled.td>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.td>
-						);
-					}
+			<Match when={props.type === "tableCell" && props}>
+				{(node) => (
+					<Styled.td>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.td>
+				)}
+			</Match>
 
-					case "delete": {
-						return (
-							<Styled.del>
-								<For each={node.children}>
-									{(child) => <RenderStyledNode {...child} />}
-								</For>
-							</Styled.del>
-						);
-					}
+			<Match when={props.type === "delete" && props}>
+				{(node) => (
+					<Styled.del>
+						<For each={node().children}>
+							{(child) => <RenderStyledNode {...child} />}
+						</For>
+					</Styled.del>
+				)}
+			</Match>
 
-					case "math":
-						return <Styled.math content={node.value} center />;
-					case "inlineMath":
-						return <Styled.math content={node.value} />;
+			<Match when={props.type === "math" && props}>
+				{(node) => <Styled.math content={node().value} center />}
+			</Match>
 
-					case "linkReference":
-					case "imageReference":
-					case "footnoteReference":
-					case "footnoteDefinition":
-					case "definition": {
-						// These require a reference resolution system
-						console.warn(`Reference nodes not yet implemented: ${node.type}`);
-						return null;
-					}
+			<Match when={props.type === "inlineMath" && props}>
+				{(node) => <Styled.math content={node().value} />}
+			</Match>
 
-					case "yaml": {
-						// Frontmatter - typically not rendered
-						return null;
-					}
+			<Match
+				when={
+					[
+						"linkReference",
+						"imageReference",
+						"footnoteReference",
+						"footnoteDefinition",
+						"definition",
+					].includes(props.type) && props
 				}
-			}}
-		</Show>
+			>
+				{(node) => {
+					console.warn(`Reference nodes not yet implemented: ${node().type}`);
+					return null;
+				}}
+			</Match>
+
+			<Match when={props.type === "yaml"}>
+				{/* Frontmatter - typically not rendered */}
+				{null}
+			</Match>
+		</Switch>
 	);
 };
