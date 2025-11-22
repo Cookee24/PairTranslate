@@ -47,115 +47,6 @@ describe("isEmpty", () => {
 	});
 });
 
-// TODO: fix these tests
-// describe("toVariableContext", () => {
-// 	test("converts PromptContext to VariableContext with basic fields", () => {
-// 		const promptCtx: PromptContext = {
-// 			targetLang: "en",
-// 			text: "Hello",
-// 		};
-
-// 		const varCtx = toVariableContext(promptCtx);
-
-// 		expect(varCtx.text).toBe("Hello");
-// 		expect(varCtx.lang!.dst).toBe("English");
-// 		expect(varCtx.lang!.src).toBeUndefined();
-// 	});
-
-// 	test("handles sourceLang when provided", () => {
-// 		const promptCtx: PromptContext = {
-// 			sourceLang: "zh-CN",
-// 			targetLang: "en",
-// 			text: "你好",
-// 		};
-
-// 		const varCtx = toVariableContext(promptCtx);
-
-// 		expect(varCtx.lang!.src).toBe("简体中文");
-// 		expect(varCtx.lang!.dst).toBe("English");
-// 	});
-
-// 	test("handles auto sourceLang", () => {
-// 		const promptCtx: PromptContext = {
-// 			sourceLang: "auto",
-// 			targetLang: "en",
-// 			text: "Hello",
-// 		};
-
-// 		const varCtx = toVariableContext(promptCtx);
-
-// 		expect(varCtx.lang!.src).toBeUndefined();
-// 	});
-
-// 	test("handles array text", () => {
-// 		const promptCtx: PromptContext = {
-// 			targetLang: "en",
-// 			text: ["Hello", "World"],
-// 		};
-
-// 		const varCtx = toVariableContext(promptCtx);
-
-// 		expect(varCtx.text).toEqual(["Hello", "World"]);
-// 	});
-
-// 	test("handles page context", () => {
-// 		const promptCtx: PromptContext = {
-// 			targetLang: "en",
-// 			text: "Hello",
-// 			ctx: {
-// 				page: {
-// 					title: "Test Page",
-// 					domain: "example.com",
-// 				},
-// 			},
-// 		};
-
-// 		const varCtx = toVariableContext(promptCtx);
-
-// 		expect(varCtx.page).toEqual({
-// 			title: "Test Page",
-// 			domain: "example.com",
-// 		});
-// 	});
-
-// 	test("handles surrounding text context", () => {
-// 		const promptCtx: PromptContext = {
-// 			targetLang: "en",
-// 			text: "middle",
-// 			ctx: {
-// 				surr: {
-// 					before: "before text",
-// 					after: "after text",
-// 				},
-// 			},
-// 		};
-
-// 		const varCtx = toVariableContext(promptCtx);
-
-// 		// surr field is copied directly from ctx.surr
-// 		expect(varCtx.surr).toBeDefined();
-// 		expect(varCtx.surr?.before).toBe("before text");
-// 		expect(varCtx.surr?.after).toBe("after text");
-// 		// text is separate from surr
-// 		expect(varCtx.text).toBe("middle");
-// 	});
-
-// 	test("spreads additional context properties", () => {
-// 		const promptCtx: PromptContext = {
-// 			targetLang: "en",
-// 			text: "Hello",
-// 			ctx: {
-// 				customField: "custom value",
-// 				another: 123,
-// 			},
-// 		};
-
-// 		const varCtx = toVariableContext(promptCtx);
-
-// 		expect(varCtx.customField).toBe("custom value");
-// 		expect(varCtx.another).toBe(123);
-// 	});
-// });
 
 describe("intoTokens", () => {
 	describe("basic tokens", () => {
@@ -632,9 +523,9 @@ describe("serializeToString", () => {
 			expect(result).toBe("a b c ");
 		});
 
-		test("provides access to loop index via @key", () => {
+		test("provides access to loop key when declared", () => {
 			const tokens = templateToTokens(
-				"{{#for item:items}}{{@key}}: {{item}} {{/for}}",
+				"{{#for idx, item:items}}{{idx}}: {{item}} {{/for}}",
 			);
 			const ctx = { items: ["a", "b"], lang: { dst: "English" } };
 			const result = tokensToString(ctx, tokens);
@@ -643,7 +534,7 @@ describe("serializeToString", () => {
 
 		test("iterates over object properties", () => {
 			const tokens = templateToTokens(
-				"{{#for val:obj}}{{@key}}={{val}} {{/for}}",
+				"{{#for key, val:obj}}{{key}}={{val}} {{/for}}",
 			);
 			const ctx = { obj: { x: 1, y: 2 }, lang: { dst: "English" } };
 			const result = tokensToString(ctx, tokens);
@@ -793,7 +684,7 @@ describe("serializeToString", () => {
 
 		test("processes array text field", () => {
 			const tokens = templateToTokens(
-				"{{#for item:text}}{{@key}}. {{item}}\n{{/for}}",
+				"{{#for idx, item:text}}{{idx}}. {{item}}\n{{/for}}",
 			);
 			const ctx = {
 				text: ["First", "Second", "Third"],
@@ -801,6 +692,36 @@ describe("serializeToString", () => {
 			};
 			const result = tokensToString(ctx, tokens);
 			expect(result).toBe("0. First\n1. Second\n2. Third\n");
+		});
+	});
+
+	describe("internal functions", () => {
+		test("serializes objects via @toJSON", () => {
+			const tokens = templateToTokens("{{@toJSON page}}");
+			const page = { title: "Test", domain: "example.com" };
+			const ctx = {
+				page,
+				lang: { dst: "English" },
+			};
+			const result = tokensToString(ctx, tokens);
+			expect(result).toBe(JSON.stringify(page));
+		});
+
+		test("serializes with indentation via @toJSONPretty", () => {
+			const tokens = templateToTokens("{{@toJSONPretty page}}");
+			const page = { title: "Test", domain: "example.com" };
+			const ctx = {
+				page,
+				lang: { dst: "English" },
+			};
+			const result = tokensToString(ctx, tokens);
+			expect(result).toBe(JSON.stringify(page, null, 2));
+		});
+
+		test("throws for unknown internal function", () => {
+			const tokens = templateToTokens("{{@unknown page}}");
+			const ctx = { page: {}, lang: { dst: "English" } };
+			expect(() => tokensToString(ctx, tokens)).toThrow(TemplateParseError);
 		});
 	});
 
@@ -919,7 +840,7 @@ describe("integration tests", () => {
 {{/if}}
 
 {{#if text}}Text to translate:
-{{#for line:text}}{{@key}}. {{line}}
+{{#for idx, line:text}}{{idx}}. {{line}}
 {{/for}}{{/if}}
 
 {{#if surr}}Surrounding context:

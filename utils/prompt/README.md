@@ -4,10 +4,15 @@
 - `{{#else}}...{{/else}}`: Else block for the preceding `if`.
 - `{{#elif CONDITION}}...{{/elif}}`: Else-if block for the preceding `if`.
 - `{{#for ITEM:COLLECTION}}...{{/for}}`: Loop over each `ITEM` in `COLLECTION`.
-    - `{{@key}}`: Current key in the loop (for array, it's the index).
+- `{{#for KEY, ITEM: COLLECTION}}...{{/for}}`: Loop with access to both `KEY` (index/property name) and `ITEM`.
 - `{{variable}}`: Access the value of `variable`.
 - `{{variable[N]}}`: Access the N-th element of `variable` if it's an array (0-based).
 - `{{variable.key}}`: Access the property `key` of `variable`.
+
+## Internal Functions
+
+- `{{@toJSON value}}`: Stringify `value` into compact JSON.
+- `{{@toJSONPretty value}}`: Stringify `value` into pretty-printed JSON.
 
 ## Variables
 - `page`: An object containing key-value pairs for page-level context. Note: this is not predefined in implementation, but frontend will add that to context when available.

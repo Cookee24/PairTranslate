@@ -42,6 +42,10 @@ type StringToken = TokenBase & {
 type VariableToken = TokenBase & {
 	type: TokenType.Variable;
 	expr: Expr;
+	internalFn?: {
+		name: string;
+		arg?: Expr;
+	};
 };
 
 type ConditionalToken = TokenBase & {
@@ -54,6 +58,7 @@ type ConditionalToken = TokenBase & {
 type LoopToken = TokenBase & {
 	type: TokenType.Loop;
 	item: string;
+	key?: string;
 	collection: Expr;
 	body: Token[];
 };
@@ -168,7 +173,7 @@ export const parseExpr = (exprStr: string): Expr => {
 		let name = "";
 		while (
 			i < exprStr.length &&
-			/[a-zA-Z0-9_@]/.test(exprStr[i]) &&
+			/[a-zA-Z0-9_]/.test(exprStr[i]) &&
 			exprStr[i] !== "[" &&
 			exprStr[i] !== "."
 		) {
@@ -420,9 +425,44 @@ export const templateToTokens = (template: string): Token[] => {
 			// Loop: {{#for ITEM:COLLECTION}}
 			if (expr.startsWith("#for ")) {
 				const forExpr = expr.slice(5).trim();
-				const [item, collectionStr] = forExpr.split(":").map((s) => s.trim());
-				if (!item || !collectionStr)
+				const colonIndex = forExpr.indexOf(":");
+				if (colonIndex === -1)
 					throw new TemplateParseError("Invalid {{#for}} syntax", {
+						type: TokenType.Loop,
+						item: "",
+						collection: [],
+						body: [],
+						start,
+						end,
+					});
+				const itemPart = forExpr.slice(0, colonIndex).trim();
+				const collectionStr = forExpr.slice(colonIndex + 1).trim();
+				if (!itemPart || !collectionStr)
+					throw new TemplateParseError("Invalid {{#for}} syntax", {
+						type: TokenType.Loop,
+						item: "",
+						collection: [],
+						body: [],
+						start,
+						end,
+					});
+				const parts = itemPart
+					.split(",")
+					.map((s) => s.trim())
+					.filter(Boolean);
+				if (parts.length === 0 || parts.length > 2)
+					throw new TemplateParseError("Invalid loop variable declaration", {
+						type: TokenType.Loop,
+						item: "",
+						collection: [],
+						body: [],
+						start,
+						end,
+					});
+				const loopItem = parts.length === 2 ? parts[1] : parts[0];
+				const loopKey = parts.length === 2 ? parts[0] : undefined;
+				if (!loopItem)
+					throw new TemplateParseError("Missing loop variable", {
 						type: TokenType.Loop,
 						item: "",
 						collection: [],
@@ -456,7 +496,7 @@ export const templateToTokens = (template: string): Token[] => {
 				if (forEnd === -1)
 					throw new TemplateParseError("Unclosed {{#for}}", {
 						type: TokenType.Loop,
-						item,
+						item: loopItem,
 						collection,
 						body: [],
 						start,
@@ -466,7 +506,8 @@ export const templateToTokens = (template: string): Token[] => {
 				const body = templateToTokens(template.slice(end, forEnd));
 				tokens.push({
 					type: TokenType.Loop,
-					item,
+					item: loopItem,
+					key: loopKey,
 					collection,
 					body,
 					start,
@@ -476,13 +517,34 @@ export const templateToTokens = (template: string): Token[] => {
 				continue;
 			}
 
-			// Variable: {{variable}}
-			tokens.push({
-				type: TokenType.Variable,
-				expr: parseExpr(expr),
-				start,
-				end,
-			});
+			// Variable or internal function
+			if (expr.startsWith("@")) {
+				const [fn, argExpr] = expr.split(/\s+/, 2);
+				if (!fn)
+					throw new TemplateParseError("Missing internal function name", {
+						type: TokenType.Variable,
+						expr: [],
+						start,
+						end,
+					});
+				tokens.push({
+					type: TokenType.Variable,
+					expr: [],
+					internalFn: {
+						name: fn,
+						arg: argExpr ? parseExpr(argExpr) : undefined,
+					},
+					start,
+					end,
+				});
+			} else {
+				tokens.push({
+					type: TokenType.Variable,
+					expr: parseExpr(expr),
+					start,
+					end,
+				});
+			}
 			i = end;
 			continue;
 		}
@@ -544,6 +606,38 @@ export const tokensToString = (ctx: PromptContext, tokens: Token[]): string => {
 	};
 
 	const processTokens = (tokenList: Token[]): string => {
+		const stringifyValue = (
+			value: unknown,
+			token: Token,
+			space?: number,
+		): string => {
+			try {
+				const serialized = JSON.stringify(value, null, space);
+				return serialized ?? "null";
+			} catch (error) {
+				throw new TemplateParseError(
+					`Failed to stringify value: ${(error as Error).message}`,
+					token,
+				);
+			}
+		};
+		const callInternal = (token: VariableToken): string => {
+			if (!token.internalFn) return "";
+			const argValue = token.internalFn.arg
+				? getValue(token.internalFn.arg, token)
+				: undefined;
+			switch (token.internalFn.name) {
+				case "@toJSON":
+					return stringifyValue(argValue, token);
+				case "@toJSONPretty":
+					return stringifyValue(argValue, token, 2);
+				default:
+					throw new TemplateParseError(
+						`Unknown internal function ${token.internalFn.name}`,
+						token,
+					);
+			}
+		};
 		let output = "";
 
 		for (const token of tokenList) {
@@ -553,14 +647,18 @@ export const tokensToString = (ctx: PromptContext, tokens: Token[]): string => {
 					break;
 
 				case TokenType.Variable: {
-					const value = getValue(token.expr, token);
-					if (value !== undefined && value !== null) {
-						if (Array.isArray(value)) {
-							output += value.join(", ");
-						} else if (typeof value === "object") {
-							output += JSON.stringify(value);
+					if (token.internalFn) {
+						output += callInternal(token);
+						break;
+					}
+					const resolved = getValue(token.expr, token);
+					if (resolved !== undefined && resolved !== null) {
+						if (Array.isArray(resolved)) {
+							output += resolved.join(", ");
+						} else if (typeof resolved === "object") {
+							output += stringifyValue(resolved, token);
 						} else {
-							output += String(value);
+							output += String(resolved);
 						}
 					}
 					break;
@@ -578,55 +676,37 @@ export const tokensToString = (ctx: PromptContext, tokens: Token[]): string => {
 
 				case TokenType.Loop: {
 					const collection = getValue(token.collection, token);
-					if (Array.isArray(collection)) {
-						for (let idx = 0; idx < collection.length; idx++) {
-							const loopCtx: PromptContext = {
-								...ctx,
-								[token.item]: collection[idx],
-								"@key": idx,
-							};
-							const savedValue = ctx[token.item as keyof PromptContext];
-							const savedKey = ctx["@key" as keyof PromptContext];
-							Object.assign(ctx, loopCtx);
-							output += processTokens(token.body);
-							// Restore original values
-							if (savedValue === undefined) {
-								delete ctx[token.item as keyof PromptContext];
-							} else {
-								ctx[token.item as keyof PromptContext] = savedValue;
-							}
-							if (savedKey === undefined) {
-								delete ctx["@key" as keyof PromptContext];
-							} else {
-								ctx["@key" as keyof PromptContext] = savedKey;
-							}
-						}
-					} else if (typeof collection === "object" && collection !== null) {
-						const entries = Object.entries(
-							collection as Record<string, unknown>,
-						);
+					const iterate = (
+						entries: Iterable<[string | number, unknown]>,
+					): void => {
 						for (const [key, value] of entries) {
-							const loopCtx: PromptContext = {
-								...ctx,
-								[token.item]: value,
-								"@key": key,
-							};
 							const savedValue = ctx[token.item as keyof PromptContext];
-							const savedKey = ctx["@key" as keyof PromptContext];
-							Object.assign(ctx, loopCtx);
+							const savedKey = token.key
+								? ctx[token.key as keyof PromptContext]
+								: undefined;
+							ctx[token.item as keyof PromptContext] = value;
+							if (token.key) ctx[token.key as keyof PromptContext] = key;
 							output += processTokens(token.body);
-							// Restore original values
 							if (savedValue === undefined) {
 								delete ctx[token.item as keyof PromptContext];
 							} else {
 								ctx[token.item as keyof PromptContext] = savedValue;
 							}
-							if (savedKey === undefined) {
-								delete ctx["@key" as keyof PromptContext];
-							} else {
-								ctx["@key" as keyof PromptContext] = savedKey;
+							if (token.key) {
+								if (savedKey === undefined) {
+									delete ctx[token.key as keyof PromptContext];
+								} else {
+									ctx[token.key as keyof PromptContext] = savedKey;
+								}
 							}
 						}
+					};
+					if (Array.isArray(collection)) {
+						iterate(collection.map((value, idx) => [idx, value] as const));
+					} else if (typeof collection === "object" && collection !== null) {
+						iterate(
+							Object.entries(collection as Record<string, unknown>),
+						);
 					} else if (collection !== undefined && collection !== null) {
 						throw new TemplateParseError(
 							`'${token.collection}' is not iterable`,

@@ -281,45 +281,47 @@ const Translate = (props: { textContext: TextContext }) => {
 	);
 
 	return (
-		<div class="p-2 py-4 bg-base-100 rounded-box">
-			<div class="flex items-center gap-2 mb-2 text-sm text-base-content/80">
-				<Languages size={16} />
-				{t("floatingTranslator.sections.translation")}
-			</div>
-			{data() && <div>{data()}</div>}
-			<Show when={data.reasoning}>
-				{(reasoning) => (
-					<div class="mt-3 rounded-box border border-base-300 p-3">
-						<div class="mb-1 flex items-center gap-2 text-xs text-base-content/70">
-							<Brain size={14} />
-							{t("floatingTranslator.sections.reasoning")}
+		<div class="p-2 py-4">
+			<div class="p-2 bg-base-100 rounded-box">
+				<div class="flex items-center gap-2 mb-2 text-sm text-base-content/80">
+					<Languages size={16} />
+					{t("floatingTranslator.sections.translation")}
+				</div>
+				{data() && <span class="text-sm font-s">{data()}</span>}
+				<Show when={data.reasoning}>
+					{(reasoning) => (
+						<div class="mt-3 rounded-box border border-base-300 p-3">
+							<div class="mb-1 flex items-center gap-2 text-xs text-base-content/70">
+								<Brain size={14} />
+								{t("floatingTranslator.sections.reasoning")}
+							</div>
+							<ScrollableReasoning text={reasoning() || ""} />
 						</div>
-						<ScrollableReasoning text={reasoning() || ""} />
-					</div>
-				)}
-			</Show>
-			<div class="w-full flex items-center justify-end mt-2 gap-2">
-				<Cpu size={12} />
-				<span class="mr-4 text-xs text-base-content/60 max-w-32 truncate">
-					{currentModelName()}
-				</span>
-				<Button
-					size="sm"
-					onClick={retry}
-					disabled={data.loading || data.streaming}
-				>
-					{data.len !== null && data.streaming ? (
-						<>
-							<Loading size="xs" />
-							{data.len}
-						</>
-					) : (
-						<>
-							<RotateCcw size={12} />
-							<span>{t("common.retry")}</span>
-						</>
 					)}
-				</Button>
+				</Show>
+				<div class="w-full flex items-center justify-end mt-2 gap-2">
+					<Cpu size={12} />
+					<span class="mr-4 text-xs text-base-content/60 max-w-32 truncate">
+						{currentModelName()}
+					</span>
+					<Button
+						size="sm"
+						onClick={retry}
+						disabled={data.loading || data.streaming}
+					>
+						{data.len !== null && data.streaming ? (
+							<>
+								<Loading size="xs" />
+								{data.len}
+							</>
+						) : (
+							<>
+								<RotateCcw size={12} />
+								<span>{t("common.retry")}</span>
+							</>
+						)}
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

@@ -1,5 +1,5 @@
 {{#if page}}<page>
-{{#for item:page}}{{@key}}: {{item}}{{/for}}
+{{#for key, item: page}}{{key}}: {{item}}{{/for}}
 </page>{{/if}}
 
 {{text}}
