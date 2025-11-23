@@ -6,7 +6,7 @@ export default (props: { navId: string }) => {
 	const extensionName = t("settings.about.extensionName");
 
 	return (
-		<Card.Root class="bg-base-200 rounded-box shadow-sm" data-nav={props.navId}>
+		<Card.Root class="rounded-box bg-base-200/30" data-nav={props.navId}>
 			<Card.Body>
 				<Card.Title>{t("settings.about.title")}</Card.Title>
 				<div class="space-y-6">

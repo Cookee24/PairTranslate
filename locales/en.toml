@@ -9,6 +9,7 @@ basic = "Basic Settings"
 translation = "Translation Services"
 flowControl = "Flow Control"
 llmServices = "LLM Services"
+promptSettings = "Prompt Settings"
 traditionalServices = "Traditional Translation"
 websiteRules = "Website Rules"
 advanced = "Advanced Settings"
@@ -52,6 +53,7 @@ resize = "Resize"
 resetFilter = "Reset filter"
 featureInDevelopment = "Feature in development"
 globalDefault = "Global Default"
+resetSection = "Reset section"
 yes = "Yes"
 no = "No"
 
@@ -77,6 +79,7 @@ resetFailed = "Failed to reset settings. Please try again."
 
 [settings]
 title = "Settings"
+sectionResetConfirm = "Reset this section to its default values?"
 
 [settings.basic]
 title = "Basic Settings"
@@ -155,6 +158,13 @@ filterInteractive = "Filter Interactive Elements"
 filterInteractiveDesc = "Skip interactive elements like buttons, headers, navigation, and footers to avoid unwanted translations"
 translateFullPage = "Translation Scope"
 translateFullPageDesc = "When checked, translate entire page content; when unchecked, only translate visible content"
+
+[settings.prompt]
+title = "Prompt Settings"
+openManager = "Open Prompt Manager"
+pageTitle = "Prompt Manager"
+placeholderDescription = "Prompt customization is coming soon. You'll be able to edit and organize prompts from this page in a future update."
+backToSettings = "Back to Settings"
 
 [settings.flowControl]
 title = "Flow Control"

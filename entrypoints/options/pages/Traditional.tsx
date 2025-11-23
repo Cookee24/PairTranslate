@@ -2,6 +2,7 @@ import { TestTube2 } from "lucide-solid";
 import { createSignal } from "solid-js";
 import { Button } from "~/components/Button";
 import { QueueSummary } from "~/components/settings/QueueSummary";
+import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { ServiceManager } from "~/components/settings/ServiceManager";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
@@ -75,6 +76,8 @@ export default (props: { navId: string }) => {
 		</div>
 	);
 
+	const handleReset = () => setTraditionalServices(() => ({}));
+
 	return (
 		<>
 			<ServiceManager
@@ -90,7 +93,8 @@ export default (props: { navId: string }) => {
 				onEditService={handleEditService}
 				onDeleteService={handleDeleteService}
 				renderServiceDetails={renderTraditionalServiceDetails}
-				extraActions={
+				extraActions=<>
+					<SectionResetButton onReset={handleReset} />
 					<Button
 						variant="ghost"
 						size="sm"
@@ -99,7 +103,7 @@ export default (props: { navId: string }) => {
 						<TestTube2 size={16} />
 						{t("settings.traditionalServices.checkBrowserTranslator")}
 					</Button>
-				}
+				</>
 			/>
 
 			<TraditionalModal

@@ -17,6 +17,13 @@ export default () => {
 	const enabled = () => settings.basic.enabled;
 
 	const [domain] = createResource(getCurrentDomain);
+	const domainSuffix = createMemo(() => {
+		const d = domain();
+		if (!d) return "";
+		const parts = d.split(".");
+		if (parts.length <= 2) return d;
+		return parts.slice(1).join(".");
+	});
 	const [remaining, setTimer] = createDomainEnabledTimer(() => domain() || "");
 
 	const remainingDisplay = createMemo(() => {
@@ -100,7 +107,7 @@ export default () => {
 				{enabled() ? <Power size={16} /> : <PowerOff size={16} />}
 				{enabled() ? t("common.enabled") : t("common.disabled")}
 			</Button>
-			<Card.Root class="w-full" variant="border">
+			<Card.Root dash class="w-full rounded-box">
 				<Card.Body>
 					<Card.Title class="text-sm">
 						{t("settings.translation.modelSettings")}
@@ -161,7 +168,7 @@ export default () => {
 					</div>
 				</Card.Body>
 			</Card.Root>
-			<Card.Root class="w-full" variant="border">
+			<Card.Root dash class="w-full rounded-box">
 				<Card.Body>
 					<Card.Title class="text-sm">
 						{t("settings.translation.translationSettings")}
@@ -207,13 +214,11 @@ export default () => {
 				</Card.Body>
 			</Card.Root>
 			{domain() && (
-				<Card.Root class="w-full" variant="border">
+				<Card.Root dash class="w-full rounded-box">
 					<Card.Body>
 						<span class="flex items-center gap-2">
 							<Link class="inline" size={16} />
-							<span class="font-mono text-sm">
-								{(domain() || "").split(".").slice(-2).join(".")}
-							</span>
+							<span class="font-mono text-sm">{domainSuffix()}</span>
 						</span>
 						<div class="flex gap-2 items-center">
 							<span class="text-sm font-bold">

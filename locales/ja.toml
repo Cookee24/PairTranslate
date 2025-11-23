@@ -11,6 +11,7 @@ flowControl = "フロー制御"
 llmServices = "LLMサービス"
 traditionalServices = "従来の翻訳"
 websiteRules = "ウェブサイトルール"
+promptSettings = "プロンプト設定"
 advanced = "詳細設定"
 about = "について"
 website = "ウェブサイト"
@@ -54,6 +55,7 @@ featureInDevelopment = "機能開発中"
 globalDefault = "グローバルデフォルト"
 yes = "はい"
 no = "いいえ"
+resetSection = "セクションをリセット"
 
 [popup.domainTimer]
 keepUntil = "翻訳を維持する期限"
@@ -77,6 +79,7 @@ resetFailed = "設定のリセットに失敗しました。もう一度お試�
 
 [settings]
 title = "設定"
+sectionResetConfirm = "このセクションを既定値にリセットしますか？"
 
 [settings.basic]
 title = "基本設定"
@@ -155,6 +158,13 @@ filterInteractive = "インタラクティブ要素をフィルター"
 filterInteractiveDesc = "ボタン、ヘッダー、ナビゲーション、フッターなどのインタラクティブ要素をスキップして、不要な翻訳を避けます"
 translateFullPage = "翻訳範囲"
 translateFullPageDesc = "チェックするとページ全体のコンテンツを翻訳します。チェックしないと、表示されているコンテンツのみを翻訳します"
+
+[settings.prompt]
+title = "プロンプト設定"
+openManager = "プロンプトマネージャーを開く"
+pageTitle = "プロンプトマネージャー"
+placeholderDescription = "プロンプトのカスタマイズ機能は近日公開予定です。このページからプロンプトを編集・整理できるようになります。"
+backToSettings = "設定に戻る"
 
 [settings.flowControl]
 title = "フロー制御"

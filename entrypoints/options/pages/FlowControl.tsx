@@ -4,9 +4,11 @@ import { createStore, reconcile, unwrap } from "solid-js/store";
 import type z from "zod";
 import { FormGrid } from "~/components/settings/FormGrid";
 import { NumberInput } from "~/components/settings/NumberInput";
+import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
+import { generateQueueControlSettings } from "~/utils/settings";
 import * as s from "~/utils/settings/def";
 
 export default (props: { navId: string }) => {
@@ -42,8 +44,17 @@ export default (props: { navId: string }) => {
 		);
 	};
 
+	const handleReset = () => {
+		const defaults = generateQueueControlSettings();
+		setLocalQueue(reconcile(defaults));
+	};
+
 	return (
-		<SettingsCard title={t("settings.flowControl.title")} navId={props.navId}>
+		<SettingsCard
+			title={t("settings.flowControl.title")}
+			navId={props.navId}
+			actions={<SectionResetButton onReset={handleReset} />}
+		>
 			<p class="text-sm text-base-content/70 mb-4">
 				{t("settings.flowControl.description")}
 			</p>

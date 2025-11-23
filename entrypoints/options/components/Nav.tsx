@@ -33,7 +33,7 @@ const Root = (props: RootProps) => {
 		>
 			<Status />
 			<Menu.Root
-				class="max-w-96 md:max-w-lg gap-2 bg-secondary/60 backdrop-blur-md text-secondary-content border-base-300 flex-nowrap overflow-x-auto"
+				class="max-w-96 md:max-w-lg gap-2 bg-base-100/80 text-base-content backdrop-blur-md flex-nowrap overflow-x-auto"
 				orientation="horizontal"
 			>
 				{local.children}
@@ -95,7 +95,7 @@ const Item = (props: ItemProps) => {
 	return (
 		<Menu.Item>
 			<Button
-				variant={active() ? "primary" : "ghost"}
+				variant={active() ? "info" : "ghost"}
 				onClick={handleClick}
 				ref={ref}
 			>

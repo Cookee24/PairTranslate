@@ -13,6 +13,7 @@ import {
 	useContext,
 } from "solid-js";
 import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
+import { PREVENT_SCROLL_ATTRIBUTE } from "@/utils/constants";
 import { Button } from "~/components/Button";
 import {
 	animateDown,
@@ -151,10 +152,32 @@ const PopupImpl = (props: ImplProps) => {
 	);
 
 	onMount(() => {
-		const handler = () => setPositionBounds(updatePositionBounds);
-		handler();
-		window.addEventListener("resize", handler, { passive: true });
-		onCleanup(() => window.removeEventListener("resize", handler));
+		const resize = () => setPositionBounds(updatePositionBounds);
+		resize();
+
+		window.addEventListener("resize", resize, { passive: true });
+		onCleanup(() => window.removeEventListener("resize", resize));
+	});
+
+	const [contentRef, setContentRef] = createSignal<HTMLDivElement>();
+	createEffect(() => {
+		const ref = contentRef();
+		if (!ref) return;
+
+		const start = () => {
+			document.body.setAttribute(PREVENT_SCROLL_ATTRIBUTE, "");
+		};
+		const end = () => {
+			document.body.removeAttribute(PREVENT_SCROLL_ATTRIBUTE);
+		};
+
+		ref.addEventListener("pointerenter", start, { passive: true });
+		ref.addEventListener("pointerleave", end, { passive: true });
+		onCleanup(() => {
+			ref.removeEventListener("pointerenter", start);
+			ref.removeEventListener("pointerleave", end);
+			end();
+		});
 	});
 
 	// Track last touch position for movement calculations
@@ -340,7 +363,7 @@ const PopupImpl = (props: ImplProps) => {
 					"z-index": props.zIndex,
 				}}
 			>
-				<div class="w-full h-6 bg-primary/90 backdrop-blur-md text-primary-content flex items-center justify-center relative rounded-tl-(--radius-box) rounded-tr-(--radius-box)">
+				<div class="w-full h-6 bg-primary text-primary-content flex items-center justify-center relative rounded-tl-(--radius-box) rounded-tr-(--radius-box)">
 					<div
 						ref={dragRef}
 						class="absolute inset-0 flex justify-center items-center touch-none"
@@ -371,7 +394,9 @@ const PopupImpl = (props: ImplProps) => {
 						<X size={16} />
 					</Button>
 				</div>
-				<div class="overflow-y-auto">{props.content()}</div>
+				<div ref={setContentRef} class="overflow-y-auto">
+					{props.content()}
+				</div>
 				<button
 					type="button"
 					class="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize touch-none"

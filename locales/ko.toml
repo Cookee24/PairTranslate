@@ -9,6 +9,7 @@ basic = "기본 설정"
 translation = "번역 서비스"
 flowControl = "플로우 제어"
 llmServices = "LLM 서비스"
+promptSettings = "프롬프트 설정"
 traditionalServices = "전통 번역"
 websiteRules = "웹사이트 규칙"
 advanced = "고급 설정"
@@ -52,6 +53,7 @@ resize = "크기 조정"
 resetFilter = "필터 재설정"
 featureInDevelopment = "기능 개발 중"
 globalDefault = "기본값"
+resetSection = "섹션 초기화"
 yes = "예"
 no = "아니요"
 
@@ -77,6 +79,7 @@ resetFailed = "설정 초기화에 실패했습니다. 다시 시도해주세요
 
 [settings]
 title = "설정"
+sectionResetConfirm = "이 섹션을 기본값으로 초기화할까요?"
 
 [settings.basic]
 title = "기본 설정"
@@ -155,6 +158,13 @@ filterInteractive = "인터랙티브 요소 필터링"
 filterInteractiveDesc = "버튼, 헤더, 내비게이션, 푸터 등 인터랙티브 요소를 건너뛰어 원치 않는 번역을 방지합니다"
 translateFullPage = "번역 범위"
 translateFullPageDesc = "체크하면 전체 페이지 콘텐츠를 번역하고, 체크하지 않으면 보이는 콘텐츠만 번역합니다"
+
+[settings.prompt]
+title = "프롬프트 설정"
+openManager = "프롬프트 관리자 열기"
+pageTitle = "프롬프트 관리자"
+placeholderDescription = "프롬프트 사용자화 기능이 곧 제공됩니다. 나중에 이 페이지에서 프롬프트를 편집하고 정리할 수 있습니다."
+backToSettings = "설정으로 돌아가기"
 
 [settings.flowControl]
 title = "플로우 제어"

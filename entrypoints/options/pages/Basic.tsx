@@ -1,13 +1,16 @@
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormGrid } from "~/components/settings/FormGrid";
+import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { SettingsToggle } from "~/components/settings/SettingsToggle";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
+import { generateBasicSettings } from "~/utils/settings";
 import ShortcutInput from "../components/ShortcutInput";
 
 export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
+	const handleReset = () => setSettings("basic", () => generateBasicSettings());
 
 	const themeOptions = [
 		{ value: "light", label: t("settings.basic.themeLight") },
@@ -21,7 +24,11 @@ export default (props: { navId: string }) => {
 	];
 
 	return (
-		<SettingsCard title={t("settings.basic.title")} navId={props.navId}>
+		<SettingsCard
+			title={t("settings.basic.title")}
+			navId={props.navId}
+			actions={<SectionResetButton onReset={handleReset} />}
+		>
 			<FormGrid>
 				<SettingsToggle
 					label={t("settings.basic.enableExtension")}

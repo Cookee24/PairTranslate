@@ -3,6 +3,7 @@ import { browser } from "#imports";
 import {
 	ELEMENT_CONTAINER,
 	ELEMENT_TRANSLATED,
+	PREVENT_SCROLL_ATTRIBUTE,
 	STYLE_CONTAINER,
 } from "~/utils/constants";
 
@@ -16,6 +17,9 @@ export const ContentStyle = () => {
 [${ELEMENT_TRANSLATED}] { 
 	-webkit-line-clamp: unset !important; 
 	max-height: unset !important; 
+}
+[${PREVENT_SCROLL_ATTRIBUTE}] {
+	overflow: hidden !important;
 }`;
 
 		document.head.appendChild(style);

@@ -8,11 +8,13 @@ import {
 	OptionSelect,
 	type SelectOption,
 } from "~/components/settings/OptionSelect";
+import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { SettingsCheckbox } from "~/components/settings/SettingsCheckbox";
 import { useSettings } from "~/hooks/settings";
 import { SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { t } from "~/utils/i18n";
+import { generateTranslateSettings } from "~/utils/settings";
 import * as s from "~/utils/settings/def";
 import { selectServicesByType } from "~/utils/settings/services";
 
@@ -99,8 +101,17 @@ export default (props: { navId: string }) => {
 		})),
 	);
 
+	const handleReset = () => {
+		const defaults = generateTranslateSettings();
+		setLocalSettings(reconcile(defaults));
+	};
+
 	return (
-		<SettingsCard title={t("settings.translation.title")} navId={props.navId}>
+		<SettingsCard
+			title={t("settings.translation.title")}
+			navId={props.navId}
+			actions={<SectionResetButton onReset={handleReset} />}
+		>
 			<FormGrid gap="lg">
 				<OptionSelect
 					label={t("settings.translation.sourceLanguage")}

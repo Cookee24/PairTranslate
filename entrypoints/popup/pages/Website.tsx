@@ -44,7 +44,7 @@ export default () => {
 							break;
 						default:
 							patterns.push(domain);
-							patterns.push(`*.${domainParts.slice(-2).join(".")}`);
+							patterns.push(`*.${domainParts.slice(1).join(".")}`);
 							break;
 					}
 

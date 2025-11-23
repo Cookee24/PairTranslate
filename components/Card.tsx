@@ -15,7 +15,10 @@ const cardVariants = tv({
 			"image-full": "image-full",
 		},
 		shadow: {
-			true: "shadow-xl",
+			true: "shadow-md",
+		},
+		dash: {
+			true: "card-dash",
 		},
 	},
 });
@@ -34,6 +37,7 @@ const CardRoot: Component<CardProps> = (props) => {
 		"variant",
 		"hoverable",
 		"shadow",
+		"dash",
 		"class",
 		"children",
 		"ref",
@@ -54,7 +58,11 @@ const CardRoot: Component<CardProps> = (props) => {
 		<div
 			{...divProps}
 			class={cn(
-				cardVariants({ variant: local.variant, shadow: local.shadow }),
+				cardVariants({
+					variant: local.variant,
+					shadow: local.shadow,
+					dash: local.dash,
+				}),
 				local.class,
 			)}
 			ref={mergeRefs((el) => {

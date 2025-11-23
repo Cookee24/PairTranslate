@@ -66,7 +66,7 @@ export default (props: { navId: string }) => {
 	};
 
 	return (
-		<Card.Root class="bg-base-200 rounded-box shadow-sm" data-nav={props.navId}>
+		<Card.Root class="rounded-box bg-base-200/30" data-nav={props.navId}>
 			<Card.Body>
 				<Card.Title>{t("settings.advanced.title")}</Card.Title>
 				<div class="space-y-6">
@@ -85,7 +85,6 @@ export default (props: { navId: string }) => {
 							size="sm"
 							onClick={handleClearCache}
 							disabled={isClearingCache()}
-							outline
 						>
 							{isClearingCache() ? (
 								<>
@@ -113,7 +112,6 @@ export default (props: { navId: string }) => {
 							size="sm"
 							onClick={handleResetSettings}
 							disabled={isResettingSettings()}
-							outline
 						>
 							{isResettingSettings() ? (
 								<>

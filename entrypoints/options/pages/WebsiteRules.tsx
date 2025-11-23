@@ -3,10 +3,12 @@ import { createSignal, For, Show } from "solid-js";
 import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
 import { Modal } from "~/components/Modal";
+import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { WebsiteRuleEditor } from "~/components/website-rule/Editor";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
+import { generateWebsiteRuleSettings } from "~/utils/settings";
 import type { WebsiteRuleSettings } from "~/utils/settings/def";
 import { useWebsiteRuleManagement } from "../hooks/useWebsiteRuleManagement";
 
@@ -90,9 +92,16 @@ export default (props: { navId: string }) => {
 		handleCloseModal();
 	};
 
+	const handleReset = () =>
+		setSettings("websiteRules", () => generateWebsiteRuleSettings());
+
 	return (
 		<>
-			<SettingsCard title={t("options.websiteRules.title")} navId={props.navId}>
+			<SettingsCard
+				title={t("options.websiteRules.title")}
+				navId={props.navId}
+				actions={<SectionResetButton onReset={handleReset} />}
+			>
 				<div class="flex justify-between items-center mb-4">
 					<div class="text-sm text-base-content/70">
 						{t("options.websiteRules.description")}
@@ -113,7 +122,7 @@ export default (props: { navId: string }) => {
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<For each={rules()}>
 						{([index, rule]) => (
-							<Card.Root class="bg-base-300 shadow-sm">
+							<Card.Root dash class="rounded-box">
 								<Card.Body class="p-4">
 									<div class="flex justify-between items-start mb-2">
 										<h3 class="font-semibold text-lg">

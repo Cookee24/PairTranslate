@@ -1,4 +1,5 @@
 import { QueueSummary } from "~/components/settings/QueueSummary";
+import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { ServiceManager } from "~/components/settings/ServiceManager";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
@@ -62,6 +63,8 @@ export default (props: { navId: string }) => {
 		</div>
 	);
 
+	const handleReset = () => setLLMServices(() => ({}));
+
 	return (
 		<>
 			<ServiceManager
@@ -75,6 +78,7 @@ export default (props: { navId: string }) => {
 				onEditService={handleEditService}
 				onDeleteService={handleDeleteService}
 				renderServiceDetails={renderLLMServiceDetails}
+				extraActions={<SectionResetButton onReset={handleReset} />}
 			/>
 
 			<LLMModal

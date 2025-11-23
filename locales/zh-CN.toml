@@ -9,6 +9,7 @@ basic = "基本设置"
 translation = "翻译服务"
 flowControl = "流控设置"
 llmServices = "LLM 服务"
+promptSettings = "提示词设置"
 traditionalServices = "传统翻译"
 websiteRules = "网站规则"
 advanced = "高级设置"
@@ -52,6 +53,7 @@ resize = "调整大小"
 resetFilter = "重置筛选"
 featureInDevelopment = "功能开发中"
 globalDefault = "全局默认"
+resetSection = "重置此部分"
 yes = "是"
 no = "否"
 
@@ -77,6 +79,7 @@ resetFailed = "重置失败，请重试。"
 
 [settings]
 title = "设置"
+sectionResetConfirm = "确定要将此部分重置为默认值吗？"
 
 [settings.basic]
 title = "基本设置"
@@ -155,6 +158,13 @@ filterInteractive = "过滤交互元素"
 filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素，以避免不必要的翻译"
 translateFullPage = "翻译范围"
 translateFullPageDesc = "勾选后翻译全部页面内容；不勾选则仅翻译可见内容"
+
+[settings.prompt]
+title = "提示词设置"
+openManager = "打开提示词管理器"
+pageTitle = "提示词管理器"
+placeholderDescription = "提示词自定义功能即将上线。稍后您可以在此页面编辑和组织提示词。"
+backToSettings = "返回设置"
 
 [settings.flowControl]
 title = "流控设置"
