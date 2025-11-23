@@ -10,32 +10,38 @@ export const mountOverlay = (app: () => JSX.Element) => {
 	container.setAttribute(ELEMENT_CONTAINER, "");
 	const root = container.attachShadow({ mode: "open" });
 
-	window.rpc
-		.getContentStyles()
-		.then(([documentCss, shadowCss]: [string, string]) =>
-			requestAnimationFrame(() => {
-				const styleEl = document.createElement("style");
-				styleEl.textContent = documentCss;
-				styleEl.setAttribute(STYLE_CONTAINER, "");
-				document.head.appendChild(styleEl);
+	const stylePromise =
+		import.meta.env.Mode === "production"
+			? // This will not auto reload in dev mode
+				window.rpc.getContentStyles()
+			: import("~/utils/css").then(({ getContentStyles }) =>
+					getContentStyles(),
+				);
 
-				const shadowStyleEl = document.createElement("style");
-				shadowStyleEl.textContent = shadowCss;
-				shadowStyleEl.setAttribute(STYLE_CONTAINER, "");
-				root.appendChild(shadowStyleEl);
+	stylePromise.then(([documentCss, shadowCss]: [string, string]) =>
+		requestAnimationFrame(() => {
+			const styleEl = document.createElement("style");
+			styleEl.textContent = documentCss;
+			styleEl.setAttribute(STYLE_CONTAINER, "");
+			document.head.appendChild(styleEl);
 
-				document.body.appendChild(container);
+			const shadowStyleEl = document.createElement("style");
+			shadowStyleEl.textContent = shadowCss;
+			shadowStyleEl.setAttribute(STYLE_CONTAINER, "");
+			root.appendChild(shadowStyleEl);
 
-				_dispose?.();
-				const solidDispose = render(app, root);
-				_dispose = () => {
-					solidDispose();
-					document.body.removeChild(container);
-					document.head.removeChild(styleEl);
-					_dispose = null;
-				};
-			}),
-		);
+			document.body.appendChild(container);
+
+			_dispose?.();
+			const solidDispose = render(app, root);
+			_dispose = () => {
+				solidDispose();
+				document.body.removeChild(container);
+				document.head.removeChild(styleEl);
+				_dispose = null;
+			};
+		}),
+	);
 
 	return () => _dispose?.();
 };
