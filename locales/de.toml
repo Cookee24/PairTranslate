@@ -1,0 +1,604 @@
+[meta]
+name = "Pair Translate"
+description = "Eine Browsererweiterung für die nebeneinander liegende Übersetzung von Webseiten"
+
+# Navigation
+
+[nav]
+basic = "Grundeinstellungen"
+translation = "Übersetzungsdienste"
+flowControl = "Durchsatzsteuerung"
+llmServices = "LLM-Dienste"
+promptSettings = "Eingabeaufforderungseinstellungen"
+traditionalServices = "Traditionelle Übersetzung"
+websiteRules = "Website-Regeln"
+advanced = "Erweiterte Einstellungen"
+about = "Über"
+debug = "Debug-Einstellungen"
+website = "Website"
+
+[popup.navigation]
+openOptions = "Weitere Einstellungen"
+
+# Common UI Elements
+
+[common]
+save = "Speichern"
+cancel = "Abbrechen"
+add = "Hinzufügen"
+edit = "Bearbeiten"
+delete = "Löschen"
+close = "Schließen"
+loading = "Wird geladen..."
+processing = "Wird verarbeitet..."
+enabled = "Aktiviert"
+disabled = "Deaktiviert"
+configure = "Konfigurieren"
+manage = "Verwalten"
+service = "Dienst"
+services = "Dienste"
+allChangesSaved = "Alle Änderungen gespeichert"
+selectModel = "Modell auswählen"
+modelsLoaded = "$1 Modelle geladen"
+retry = "Erneut versuchen"
+confirm = "Bestätigen"
+clear = "Löschen"
+positionLeft = "Links"
+positionRight = "Rechts"
+floatingBallIcon = "Schwebender Kugel-Symbol"
+translationTasks = "Übersetzungsaufgaben"
+queue = "Warteschlange"
+completed = "abgeschlossen"
+running = "läuft"
+resize = "Größe ändern"
+resetFilter = "Filter zurücksetzen"
+featureInDevelopment = "Funktion in Entwicklung"
+globalDefault = "Globaler Standard"
+resetSection = "Abschnitt zurücksetzen"
+yes = "Ja"
+no = "Nein"
+
+[popup.domainTimer]
+keepUntil = "Übersetzung aktiviert lassen bis"
+selectPlaceholder = "Dauer auswählen"
+remainingSeconds = "Endet in $1 Sek"
+remainingMinutes = "Endet in $1 Min"
+remainingHours = "Endet in $1 Std"
+untilClose = "Bis der Browser geschlossen wird"
+closeBrowser = "Browser schließen"
+afterMinutes = "In $1 Min"
+afterHours = "In $1 Std"
+
+[migrationError]
+title = "Einstellungen müssen zurückgesetzt werden"
+description = "Pair Translate konnte Ihre vorherigen Einstellungen nach einem Update nicht laden. Setzen Sie alles auf Standardwerte zurück, um fortzufahren."
+detailsLabel = "Details"
+resetButton = "Einstellungen jetzt zurücksetzen"
+resetFailed = "Fehler beim Zurücksetzen der Einstellungen. Bitte versuchen Sie es erneut."
+
+# Settings Pages
+
+[settings]
+title = "Einstellungen"
+sectionResetConfirm = "Diesen Abschnitt auf Standardwerte zurücksetzen?"
+
+[settings.basic]
+title = "Grundeinstellungen"
+enableExtension = "Erweiterung aktivieren"
+enableExtensionDesc = "Übersetzungserweiterung aktivieren oder deaktivieren"
+theme = "Design"
+themeDesc = "Wählen Sie das Interface-Design"
+themeLight = "Hell"
+themeDark = "Dunkel"
+themeSystem = "System"
+selectionPopupEnabled = "Auswahlmenü aktivieren"
+selectionPopupEnabledDesc = "Schaltflächen zum Übersetzen und Erklären anzeigen, wenn Text ausgewählt wird"
+autoPin = "Automatisches Anheften"
+autoPinDesc = "Übersetzungsergebnis automatisch anheften"
+floatingBallEnabled = "Schwebende Kugel aktivieren"
+floatingBallEnabledDesc = "Schwebende Übersetzungskugel auf Webseiten anzeigen"
+floatingBallPosition = "Position der schwebenden Kugel"
+floatingBallPositionDesc = "Wählen Sie, auf welcher Seite des Bildschirms die schwebende Kugel angezeigt wird"
+positionLeft = "Linke Seite des Bildschirms"
+positionRight = "Rechte Seite des Bildschirms"
+keyboardShortcutEnabled = "Tastaturkürzel aktivieren"
+keyboardShortcutEnabledDesc = "Übersetzung mit Tastaturkürzel umschalten"
+keyboardShortcut = "Tastaturkürzel"
+keyboardShortcutDesc = "Tastenkombination zum Triggern der Übersetzung"
+selectionTranslateEnabled = "Absatzübersetzung aktivieren"
+selectionTranslateEnabledDesc = "Absätze durch Halten von Strg/Option+Ziehen auswählen zum lokalen Übersetzen"
+inputTranslateEnabled = "Eingabeübersetzung aktivieren"
+inputTranslateEnabledDesc = "Übersetzung von Eingabefeldern mit Tastaturkürzel aktivieren"
+progressIndicationEnabled = "Fortschrittsanzeige aktivieren"
+progressIndicationEnabledDesc = "Fortschritts-Popup während der Übersetzung anzeigen"
+keyboardShortcutHint = "Verwenden Sie Strg+Alt+Umschalt+Buchstabe-Kombinationen unter Windows/Linux oder Cmd+Option+Umschalt+Buchstabe auf macOS"
+keyboardShortcutInvalid = "Ungültiges Tastaturkürzel-Format"
+keyboardShortcutTest = "Testen Sie Ihr Tastaturkürzel:"
+keyboardShortcutTestHint = "Klicken Sie hier und drücken Sie Ihre Tastenkombination"
+
+[settings.advanced]
+title = "Erweiterte Einstellungen"
+cleanCache = "Cache leeren"
+cleanCacheDesc = "Alle Übersetzungs-Cachedaten löschen. Dies kann die Übersetzungen vorübergehend verlangsamen, während der Cache neu aufgebaut wird."
+clearingCache = "Wird gelöscht..."
+clearCacheSuccess = "Cache erfolgreich geleert"
+clearCacheFailed = "Cache konnte nicht geleert werden"
+resetSettings = "Einstellungen zurücksetzen"
+resetSettingsDesc = "Alle Einstellungen auf Standardwerte zurücksetzen. Diese Aktion kann nicht rückgängig gemacht werden."
+resettingSettings = "Wird zurückgesetzt..."
+resetSettingsSuccess = "Einstellungen erfolgreich zurückgesetzt"
+resetSettingsFailed = "Einstellungen konnten nicht zurückgesetzt werden"
+resetSettingsConfirm = "Sind Sie sicher, dass Sie alle Einstellungen auf Standardwerte zurücksetzen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+
+[settings.translation]
+title = "Übersetzungseinstellungen"
+concurrentRequests = "Gleichzeitige Anfragen"
+concurrentRequestsDesc = "Anzahl der gleichzeitigen Übersetzungsanfragen"
+cacheSize = "Cache-Größe"
+cacheSizeDesc = "Anzahl der Übersetzungsergebnisse zum Cachen"
+maxBatchSize = "Maximale Batch-Größe"
+maxBatchSizeDesc = "Maximale Anzahl von Texten zum Übersetzen in einem Batch"
+sourceLanguage = "Ausgangssprache"
+targetLanguage = "Zielsprache"
+autoDetect = "Automatische Erkennung"
+noModel = "Kein Modell"
+translationMode = "Übersetzungsmodus"
+translationModeDesc = "Wählen Sie, wie der übersetzte Text angezeigt werden soll"
+modeParallel = "Nebeneinander"
+modeReplace = "Ersetzen"
+inTextTranslateModel = "In-Text-Übersetzungsmodell"
+floatingTranslateModel = "Schwebendes Übersetzungsmodell"
+floatingExplainModel = "Schwebendes Erklärungsmodell"
+inputTranslateModel = "Eingabeübersetzungsmodell"
+modelSettings = "Modelleinstellungen"
+translationSettings = "Übersetzungseinstellungen"
+fullPage = "Vollständige Seite"
+visible = "Sichtbar"
+
+filterInteractive = "Interaktive Elemente filtern"
+filterInteractiveDesc = "Interaktive Elemente wie Schaltflächen, Kopfzeilen, Navigation und Fußzeile überspringen, um unerwünschte Übersetzungen zu vermeiden"
+translateFullPage = "Übersetzungsbereich"
+translateFullPageDesc = "Wenn aktiviert, wird der gesamte Seiteninhalt übersetzt; wenn deaktiviert, wird nur der sichtbare Inhalt übersetzt"
+
+[settings.prompt]
+title = "Eingabeaufforderungseinstellungen"
+openManager = "Eingabeaufforderungs-Manager öffnen"
+pageTitle = "Eingabeaufforderungs-Manager"
+placeholderDescription = "Eingabeaufforderungen-Anpassung kommt bald. Sie können Eingabeaufforderungen in einem zukünftigen Update von dieser Seite aus bearbeiten und organisieren."
+backToSettings = "Zurück zu Einstellungen"
+
+[settings.flowControl]
+title = "Durchsatzsteuerung"
+description = "Passen Sie den globalen Warteschlangen-Durchsatz, Durchsatzgrenzen und das Caching für jedes Übersetzungsmodell an."
+requestConcurrency = "Gleichzeitige Anfragen"
+requestConcurrencyDesc = "Maximale Anzahl von Übersetzungsanfragen, die gleichzeitig auf allen Modellen ausgeführt werden können."
+tokensPerMinute = "Token pro Minute"
+tokensPerMinuteDesc = "Obergrenze für Token, die LLM-Modelle pro Minute verbrauchen können, bevor die Drosselung beginnt."
+maxBatchSize = "Maximale Batch-Größe"
+maxBatchSizeDesc = "Höchste Anzahl von Texten, die in einer einzelnen Anfrage gruppiert werden, bevor der Rest in die Warteschlange eingereiht wird."
+maxTokensPerBatch = "Max. Token pro Batch"
+maxTokensPerBatchDesc = "Die geschätzten Token in einem Batch begrenzen; wenn überschritten, werden die verbleibenden Elemente in den nächsten Batch verschoben."
+cacheSize = "Cache-Größe"
+cacheSizeDesc = "Gesamtzahl der Übersetzungsergebnisse, die im Cache behalten werden, um wiederholte Suchen zu beschleunigen."
+
+[settings.services.flowControl]
+title = "Durchsatzsteuerungseinstellungen"
+description = "Passen Sie die Durchsatzsteuerungsgrenzen dieses Dienstes an. Leeren Sie Felder, um die globalen Standardwerte zu erben."
+usingGlobal = "Verwenden Sie globale Standardwerte"
+reset = "Felder zurücksetzen"
+
+[settings.llmServices]
+title = "LLM-Dienste"
+addService = "Dienst hinzufügen"
+editService = "Dienst bearbeiten"
+deleteService = "Dienst löschen"
+noServicesConfigured = "Keine LLM-Dienste konfiguriert"
+noServicesDesc = "Fügen Sie Dienste hinzu, um die LLM-gestützte Übersetzung zu starten"
+
+[settings.llmServices.serviceDetails]
+model = "Modell"
+api = "API"
+url = "URL"
+temperature = "Temperatur"
+
+[settings.llmModal]
+addTitle = "LLM-Dienst hinzufügen"
+editTitle = "LLM-Dienst bearbeiten"
+serviceTemplate = "Dienstvorlage"
+serviceName = "Dienstname"
+serviceNamePlaceholder = "Mein LLM-Dienst"
+baseUrl = "Basis-URL"
+baseUrlPlaceholder = "https://api.example.com"
+apiSpec = "API-Spezifikation"
+apiKey = "API-Schlüssel"
+apiKeyPlaceholder = "Geben Sie Ihren API-Schlüssel ein"
+modelName = "Modellname"
+modelNamePlaceholder = "gpt-3.5-turbo, claude-3-sonnet, etc."
+temperature = "Temperatur"
+maxTokens = "Maximale Token"
+customService = "Benutzerdefiniert"
+
+[settings.llmModal.apiSpecs]
+openai = "OpenAI-kompatibel"
+anthropic = "Anthropic"
+gemini = "Google Gemini"
+
+[settings.traditionalServices]
+title = "Traditionelle Übersetzungsdienste"
+addService = "Dienst hinzufügen"
+editService = "Dienst bearbeiten"
+deleteService = "Dienst löschen"
+noServicesConfigured = "Keine traditionellen Übersetzungsdienste konfiguriert"
+noServicesDesc = "Fügen Sie Dienste hinzu, um traditionelle Übersetzungs-APIs zu verwenden"
+checkBrowserTranslator = "Browser-Übersetzer prüfen"
+
+[settings.traditionalServices.serviceDetails]
+api = "API"
+url = "URL"
+apiKey = "API-Schlüssel"
+maskedKey = "••••••••"
+
+[settings.browserTranslator]
+title = "Browsererkennung für Übersetzung"
+description = "Überprüfen Sie, ob Ihr Browser integrierte Übersetzungs- und Spracherkennung-APIs unterstützt. Diese APIs ermöglichen Übersetzungen auf dem Gerät ohne Abhängigkeit von externen Diensten."
+recheck = "Erneut überprüfen"
+languageDetector = "Spracherkennung"
+translator = "Übersetzer"
+helpText = "Browser-Übersetzungs-APIs sind experimentelle Funktionen und sind derzeit nur in einigen Browsern verfügbar. Falls Ihr Browser diese nicht unterstützt, können Sie weiterhin traditionelle Übersetzungsdienste oder LLM-Dienste verwenden."
+learnMore = "Mehr über Browser-Übersetzungs-APIs erfahren"
+serviceName = "Browser-Übersetzung"
+addService = "Zu Diensten hinzufügen"
+alreadyAdded = "Browser-Übersetzungsdienst wurde bereits hinzugefügt"
+noAvailablePairs = "Keine verfügbaren Sprachpaare gefunden. Ihr Browser unterstützt möglicherweise die Übersetzungs-API nicht."
+
+[settings.browserTranslator.steps]
+initialize = "Initialisieren"
+checkDetector = "Spracherkennung prüfen"
+checkTranslator = "Übersetzer prüfen"
+complete = "Abgeschlossen"
+
+[settings.browserTranslator.status]
+label = "Status"
+supported = "Unterstützt"
+unsupported = "Nicht unterstützt"
+
+[settings.browserTranslator.availability]
+label = "Verfügbarkeit"
+available = "Verfügbar"
+downloadable = "Herunterladbar"
+downloading = "Wird heruntergeladen"
+unavailable = "Nicht verfügbar"
+
+[settings.browserTranslator.table]
+languagePair = "Sprachenpaar"
+status = "Status"
+availability = "Verfügbarkeit"
+
+[settings.traditionalModal]
+addTitle = "Traditionellen Dienst hinzufügen"
+editTitle = "Traditionellen Dienst bearbeiten"
+serviceName = "Dienstname"
+serviceNamePlaceholder = "Mein Übersetzungsdienst"
+apiSpec = "API-Spezifikation"
+baseUrl = "Basis-URL"
+baseUrlPlaceholder = "https://api.example.com"
+baseUrlDesc = "Leer lassen, um Standard-Service-Endpunkte zu verwenden"
+apiKey = "API-Schlüssel"
+apiKeyPlaceholder = "Geben Sie Ihren API-Schlüssel ein"
+apiKeyDesc = "Von den meisten Übersetzungsdiensten erforderlich"
+region = "Region"
+regionPlaceholder = "z.B. eastus, westeurope"
+regionDesc = "Erforderlich für regionale Microsoft Translator-Ressourcen"
+
+[settings.traditionalModal.apiSpecs]
+microsoft = "Microsoft Bing Translate"
+google = "Google Translate"
+deepl = "DeepL"
+deeplx = "DeepLX"
+browser = "Browser-integriert"
+
+[options.websiteRules]
+title = "Website-Regeln"
+description = "Konfigurieren Sie Übersetzungsregeln für spezifische Websites"
+addRule = "Regel hinzufügen"
+editRule = "Regel bearbeiten"
+noRulesConfigured = "Keine Website-Regeln konfiguriert"
+noRulesDesc = "Fügen Sie Regeln hinzu, um das Übersetzungsverhalten für spezifische Websites anzupassen"
+ruleNumber = "Regel #$1"
+urlPatterns = "URL-Muster"
+translationEnabled = "Übersetzung aktiviert"
+translationMode = "Übersetzungsmodus"
+languages = "Sprachen"
+unsavedChanges = "Nicht gespeicherte Änderungen"
+unsavedChangesDesc = "Sie haben nicht gespeicherte Änderungen. Sind Sie sicher, dass Sie ohne Speichern schließen möchten?"
+discardChanges = "Änderungen verwerfen"
+
+[settings.about]
+title = "Über PairTranslate"
+version = "Version"
+description = "Beschreibung"
+descriptionText = """
+PairTranslate ist eine Browsererweiterung, die eine nebeneinander liegende Übersetzung für Webseiten bietet.
+Im Gegensatz zu traditionellen Übersetzungswerkzeugen fügt sie übersetzte Texte zum Original hinzu,
+was Benutzern ermöglicht, beide Versionen gleichzeitig zu sehen, um besser zu verstehen und Sprachen zu lernen.
+"""
+features = "Funktionen"
+links = "Links"
+sourceCode = "Quellcode"
+reportIssues = "Probleme melden"
+thirdParty = "Dienste Dritter"
+thirdPartyDesc = "Diese Erweiterung integriert verschiedene Übersetzungsdienste:"
+thirdPartyNote = "Hinweis: Benutzer müssen ihre eigenen API-Schlüssel für diese Dienste bereitstellen."
+footer = "Mit ❤️ für Sprachlerner und mehrsprachiges Webbrowsing gemacht"
+extensionName = "PairTranslate"
+extensionVersion = "0.0.0"
+debugIconLabel = "PairTranslate-Symbol"
+debugTapHint = "Tippen Sie $1 Mal mehr auf das Symbol, um Debug-Einstellungen freizuschalten."
+debugUnlocked = "Debug-Einstellungen entsperrt — scrollen Sie nach unten, um die neuen Tools zu erkunden."
+
+[settings.about.featuresList]
+_1 = "Unterstützung für mehrere LLM-Dienste (OpenAI, Anthropic, Gemini, etc.)"
+_2 = "Traditionelle Übersetzungs-APIs (Bing, Google)"
+_3 = "Gleichzeitige Übersetzungsverarbeitung"
+_4 = "Intelligentes Cachingsystem"
+_5 = "Anpassbare Designs und Einstellungen"
+_6 = "Datenschutzorientiert (verarbeitet lokal, wenn möglich)"
+
+[settings.about.thirdPartyList]
+_1 = "OpenAI API (GPT-Modelle)"
+_2 = "Anthropic Claude API"
+_3 = "Google Gemini API"
+_4 = "Microsoft Bing Translate"
+_5 = "Google Translate API"
+_6 = "Andere OpenAI-kompatible Dienste"
+
+[settings.debug]
+title = "Debug-Einstellungen"
+description = "Inspektieren Sie die Instrumentierung, schalten Sie ausführliche Diagnosen um und führen Sie Plausibilitätsprüfungen durch, um Übersetzungsprobleme zu beheben."
+verboseLogging = "Ausführliche Protokollierung erzwingen"
+verboseLoggingDesc = "RPC-Aufrufe und Übersetzungslebenszyklus-Ereignisse immer protokollieren, auch in Produktions-Builds."
+traceLlms = "LLM-Anfragen verfolgen"
+traceLlmsDesc = "Bereinigte Eingabeaufforderungen und Vervollständigungen für jede LLM-Anfrage ausgeben, um generierte Nutzlasten zu inspizieren."
+traceTraditional = "Traditionelle API-Aufrufe verfolgen"
+traceTraditionalDesc = "Anfragemetadaten protokollieren, wenn Microsoft-, Google- oder andere REST-Übersetzer aufgerufen werden."
+disableCache = "Übersetzungs-Cache deaktivieren"
+disableCacheDesc = "Übersetzungs-Cache umgehen, damit jede Anfrage den vorgelagerten Dienst sofort erreicht."
+simulateLatency = "Antwortverzögerung simulieren (ms)"
+simulateLatencyDesc = "Übersetzer-Antworten um diese Anzahl von Millisekunden verzögern, um langsame oder instabile Netzwerke zu simulieren."
+simulateLatencyPlaceholder = "z.B. 250"
+actionsTitle = "Diagnose"
+exportSettings = "Einstellungs-Snapshot herunterladen"
+exportSettingsDesc = "Speichern Sie das aktuelle Einstellungs-JSON zum Anhängen an Fehlermeldungen."
+exportQueues = "Warteschlangen-Snapshot herunterladen"
+exportQueuesDesc = "Live-Warteschlangen-Tiefe und Durchsatz für jeden konfigurierten Dienst erfassen."
+pingBackground = "Hintergrund-Worker pingen"
+pingBackgroundDesc = "Überprüfen Sie, dass das Hintergrund-Skript aktiv ist und bereit ist, RPC-Aufrufe zu akzeptieren."
+clearRpcCache = "Übersetzungs-Cache zurücksetzen"
+clearRpcCacheDesc = "Cached Übersetzungseinträge löschen, ohne Ihre gespeicherten Einstellungen zu ändern."
+
+# Action Items (for content scripts)
+
+[actions]
+translate = "Übersetzen"
+explain = "Erklären"
+example = "Beispiel"
+contextMean = "Kontextbedeutung"
+mean = "Bedeutung"
+fetchModels = "Modelle abrufen"
+copyAsMarkdown = "Als Markdown kopieren"
+
+[dictionary.tabs]
+overview = "Übersicht"
+definitions = "Definitionen"
+
+[dictionary.labels]
+source = "Quelle"
+meaning = "Bedeutung $1"
+meaningShort = "B$1"
+examplePrefix = "Bsp"
+example = "Beispiel"
+synonyms = "Synonyme"
+antonyms = "Antonyme"
+
+[dictionary.sections]
+meanings = "Bedeutungen"
+
+[dictionary.messages]
+noDefinitions = "Keine Definitionen gefunden."
+
+[floatingTranslator.sections]
+dictionary = "Wörterbuch"
+contextExplanation = "Kontexterklärung"
+textExplanation = "Texterklärung"
+examples = "Beispiele"
+translation = "Übersetzung"
+reasoning = "Begründung"
+
+[prompts.defaultNames]
+translate = "Übersetzen"
+batchTranslate = "Batch-Übersetzung"
+inputTranslate = "Eingabe-Übersetzung"
+explain = "Erklären"
+dictionaryTranslate = "Wörterbuch-Übersetzung"
+
+# Error Messages
+
+[errors]
+modelNotFound = "Modell mit ID '$1' nicht in Einstellungen gefunden"
+missingApiSpec = "Modell '$1' hat keine API-Spezifikation"
+invalidModelId = "Modell-ID ist erforderlich"
+invalidTextContext = "Textkontext ist erforderlich und muss ein Objekt sein"
+invalidContent = "Textkontext-Inhalt ist erforderlich und muss eine Zeichenkette sein"
+invalidBefore = "Textkontext-Inhalt vor muss eine Zeichenkette sein"
+invalidAfter = "Textkontext-Inhalt nach muss eine Zeichenkette sein"
+cacheKeyFailed = "Cache-Schlüssel konnte nicht generiert werden"
+cacheRetrieveFailed = "Gecachtes Ergebnis konnte nicht abgerufen werden"
+invalidLlmConfig = "Ungültige LLM-Modellkonfiguration"
+llmServiceFailed = "LLM-Dienstanfrage fehlgeschlagen"
+invalidTraditionalConfig = "Ungültige Konfiguration des traditionellen Übersetzungsmodells"
+traditionalServiceFailed = "Anfrage des traditionellen Übersetzungsdienstes fehlgeschlagen"
+translationFailed = "Übersetzung fehlgeschlagen"
+streamingNotSupported = "Traditionelle Übersetzungsdienste unterstützen kein Streaming"
+streamingTranslationFailed = "Streaming-Übersetzung fehlgeschlagen"
+explainOnlyLlm = "Erklärungsfunktion unterstützt nur LLM-Modelle"
+explanationFailed = "Erklärung fehlgeschlagen"
+streamingExplanationFailed = "Streaming-Erklärung fehlgeschlagen"
+noTranslationModel = "Kein Übersetzungsmodell konfiguriert"
+translationModelRequired = "Modell nicht konfiguriert. Bitte richten Sie ein Übersetzungsmodell in den Einstellungen ein."
+noExplanationModel = "Kein Erklärungsmodell konfiguriert"
+batchResponseMismatch = "Batch-Antwort-Fehlanpassung, $1 Elemente erwartet, aber $2 erhalten"
+promptNotFound = "Eingabeaufforderung mit ID '$1' nicht in Einstellungen gefunden"
+promptNotBatch = "Eingabeaufforderung unterstützt keine Batch-Operationen"
+
+# Template Names
+
+[templates.llm]
+openai = "OpenAI"
+azureOpenai = "Azure OpenAI (Beispielressource)"
+anthropic = "Anthropic"
+googleGemini = "Google (Gemini / Vertex AI)"
+lmStudio = "LM Studio"
+ollama = "Ollama"
+openRouter = "OpenRouter"
+cohere = "Cohere"
+huggingFaceInference = "Hugging Face Inference"
+ai21Labs = "AI21 Labs"
+mistral = "Mistral"
+stabilityAI = "Stability AI"
+replicate = "Replicate"
+alephAlpha = "Aleph Alpha"
+glm = "GLM"
+deepseek = "Deepseek"
+other = "Andere"
+
+# Service Names
+
+[services]
+microsoftTranslatorDefault = "Microsoft Translator (Standard)"
+edgeApiKey = "edge"
+
+# LLM Service Errors
+
+[errors.llm]
+baseUrlRequired = "Basis-URL ist erforderlich, um Modelle abzurufen"
+fetchModelsFailed = "Modelle konnten nicht abgerufen werden"
+
+# OpenAI API Errors
+
+[errors.openai]
+apiError = "OpenAI API-Fehler"
+invalidApiKey = "Der bereitgestellte API-Schlüssel ist ungültig"
+rateLimitExceeded = "Durchsatzgrenze überschritten"
+serverError = "OpenAI-Serverfehler"
+
+# Anthropic API Errors
+
+[errors.anthropic]
+apiError = "Anthropic API-Fehler"
+invalidApiKey = "Der bereitgestellte API-Schlüssel ist ungültig"
+rateLimitExceeded = "Durchsatzgrenze überschritten"
+serverError = "Anthropic-Serverfehler"
+
+# Settings Errors
+
+[errors.settings]
+failedToSet = "Einstellungen konnten nicht festgelegt werden"
+streamFailed = "Stream konnte nicht festgelegt werden"
+
+# RPC System Errors
+
+[errors.rpc]
+transportDisposed = "Transport wurde geschlossen"
+streamError = "Fehler beim Senden des Streams"
+
+# Language Names
+
+[languages]
+en = "Englisch"
+es = "Spanisch"
+fr = "Französisch"
+de = "Deutsch"
+it = "Italienisch"
+pt = "Portugiesisch"
+ru = "Russisch"
+ja = "Japanisch"
+ko = "Koreanisch"
+zhCN = "Vereinfachtes Chinesisch"
+zhTW = "Traditionelles Chinesisch"
+ar = "Arabisch"
+hi = "Hindi"
+th = "Thailändisch"
+vi = "Vietnamesisch"
+nl = "Niederländisch"
+sv = "Schwedisch"
+no = "Norwegisch"
+da = "Dänisch"
+fi = "Finnisch"
+pl = "Polnisch"
+cs = "Tschechisch"
+sk = "Slowakisch"
+hu = "Ungarisch"
+ro = "Rumänisch"
+bg = "Bulgarisch"
+hr = "Kroatisch"
+sr = "Serbisch"
+uk = "Ukrainisch"
+
+# Keyboard Shortcuts
+
+[shortcuts]
+cancel = "Abbrechen (ESC)"
+record = "Aufzeichnung"
+pressCombination = "Drücken Sie Ihre Tastenkombination oder ESC zum Abbrechen"
+
+# Additional Error Messages
+
+[errors.additional]
+customOperationNotSupported = "Benutzerdefinierte Operationen werden noch nicht unterstützt"
+googleInvalidRequest = "Ungültige Anfrageparameter"
+googleInvalidApiKey = "Ungültiger API-Schlüssel bereitgestellt"
+googleRateLimitExceeded = "Durchsatzgrenze überschritten"
+googleServerError = "Google-Serverfehler"
+microsoftFetchFailed = "API-Schlüssel konnte nicht aus Edge abgerufen werden"
+microsoftInvalidResponse = "Ungültiges Antwortformat von Microsoft Translator API"
+microsoftNetworkError = "Netzwerkfehler: Verbindung zu Microsoft Translator API konnte nicht hergestellt werden"
+googleApiError = "Google Translate API-Fehler: $1"
+microsoftApiError = "Microsoft Translator API-Fehler: $1"
+deeplApiError = "DeepL API-Fehler: $1"
+googleTranslateInvalidResponse = "Ungültiges Antwortformat von Google Translate API"
+googleTranslateNetworkError = "Netzwerkfehler: Verbindung zu Google Translate API konnte nicht hergestellt werden"
+deeplInvalidResponse = "Ungültiges Antwortformat von DeepL API"
+deeplNetworkError = "Netzwerkfehler: Verbindung zu DeepL API konnte nicht hergestellt werden"
+taskTerminated = "Aufgabe beendet"
+browserTranslatorUnavailable = "Übersetzer-API ist in diesem Browser nicht verfügbar"
+browserLanguageDetectorUnavailable = "Spracherkennung-API ist in diesem Browser nicht verfügbar"
+browserLanguageDetectionFailed = "Spracherkennung fehlgeschlagen"
+browserApiError = "Fehler der Browser-Übersetzungs-API"
+unknownError = "Unbekannter Fehler"
+
+# Website Rules
+
+[websiteRule]
+urlPatterns = "URL-Muster"
+urlPatternsDesc = "Konfigurieren Sie die Website-URL-Muster, auf die sich diese Regel bezieht"
+patternPlaceholder = "*.example.com oder example.com"
+errorPatternRequired = "Bitte geben Sie ein URL-Muster ein"
+errorPatternExists = "Dieses Muster existiert bereits"
+noPatterns = "Keine URL-Muster hinzugefügt"
+patternExamples = "Musterbipiele:"
+patternExact = "Genaue Domänen-Übereinstimmung"
+patternSubdomains = "Alle Subdomänen abgleichen"
+patternExample = "Stimmt mit gist.github.com überein"
+translationSettings = "Übersetzungseinstellungen"
+enableTranslation = "Übersetzung aktivieren"
+enableTranslationDesc = "Übersetzung für diese Website aktivieren oder deaktivieren"
+translationMode = "Übersetzungsmodus"
+translationModeDesc = "Wählen Sie den Anzeigemodus für die Übersetzung"
+modeParallel = "Nebeneinander liegende Übersetzung"
+modeReplace = "Ersatzübersetzung"
+advancedSettings = "Erweiterte Einstellungen"
+floatingBallToggleDesc = "Schwebende Kugel auf dieser Website anzeigen oder ausblenden"
+addRule = "Regel hinzufügen"
+deleteRule = "Regel löschen"
+deleteAllPatterns = "Alle löschen"
+patternsCount = "Muster"

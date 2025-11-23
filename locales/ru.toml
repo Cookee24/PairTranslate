@@ -1,0 +1,604 @@
+[meta]
+name = "Pair Translate"
+description = "Расширение браузера для параллельного перевода веб-страниц"
+
+# Navigation
+
+[nav]
+basic = "Основные Параметры"
+translation = "Сервисы Перевода"
+flowControl = "Контроль Потока"
+llmServices = "Сервисы LLM"
+promptSettings = "Параметры Подсказок"
+traditionalServices = "Традиционный Перевод"
+websiteRules = "Правила Веб-сайтов"
+advanced = "Дополнительные Параметры"
+about = "О Программе"
+debug = "Параметры Отладки"
+website = "Веб-сайт"
+
+[popup.navigation]
+openOptions = "Больше параметров"
+
+# Common UI Elements
+
+[common]
+save = "Сохранить"
+cancel = "Отмена"
+add = "Добавить"
+edit = "Редактировать"
+delete = "Удалить"
+close = "Закрыть"
+loading = "Загрузка..."
+processing = "Обработка..."
+enabled = "Включено"
+disabled = "Отключено"
+configure = "Настроить"
+manage = "Управлять"
+service = "Сервис"
+services = "Сервисы"
+allChangesSaved = "Все изменения сохранены"
+selectModel = "Выберите Модель"
+modelsLoaded = "Загружено моделей: $1"
+retry = "Повторить"
+confirm = "Подтвердить"
+clear = "Очистить"
+positionLeft = "Слева"
+positionRight = "Справа"
+floatingBallIcon = "Значок Плавающего Шара"
+translationTasks = "Задачи Перевода"
+queue = "Очередь"
+completed = "завершено"
+running = "выполняется"
+resize = "Изменить Размер"
+resetFilter = "Сбросить Фильтр"
+featureInDevelopment = "Функция в разработке"
+globalDefault = "Глобальный Стандарт"
+resetSection = "Сбросить Раздел"
+yes = "Да"
+no = "Нет"
+
+[popup.domainTimer]
+keepUntil = "Сохранить перевод включенным до"
+selectPlaceholder = "Выберите Длительность"
+remainingSeconds = "Осталось $1 сек"
+remainingMinutes = "Осталось $1 мин"
+remainingHours = "Осталось $1 часов"
+untilClose = "До закрытия браузера"
+closeBrowser = "Закройте браузер"
+afterMinutes = "Через $1 мин"
+afterHours = "Через $1 часов"
+
+[migrationError]
+title = "Параметры нужно сбросить"
+description = "Pair Translate не смог загрузить ваши предыдущие параметры после обновления. Сбросьте все значения по умолчанию, чтобы продолжить."
+detailsLabel = "Детали"
+resetButton = "Сбросить параметры сейчас"
+resetFailed = "Ошибка при сбросе параметров. Пожалуйста, попробуйте снова."
+
+# Settings Pages
+
+[settings]
+title = "Параметры"
+sectionResetConfirm = "Сбросить этот раздел на значения по умолчанию?"
+
+[settings.basic]
+title = "Основные Параметры"
+enableExtension = "Включить Расширение"
+enableExtensionDesc = "Включить или отключить расширение перевода"
+theme = "Тема"
+themeDesc = "Выберите тему интерфейса"
+themeLight = "Светлая"
+themeDark = "Тёмная"
+themeSystem = "Система"
+selectionPopupEnabled = "Включить Меню Выделения"
+selectionPopupEnabledDesc = "Показывать кнопки перевода и объяснения при выделении текста"
+autoPin = "Автоматическая Фиксация"
+autoPinDesc = "Автоматически закреплять всплывающее окно результата перевода"
+floatingBallEnabled = "Включить Плавающий Шар"
+floatingBallEnabledDesc = "Показывать плавающий шар перевода на веб-страницах"
+floatingBallPosition = "Положение Плавающего Шара"
+floatingBallPositionDesc = "Выберите, с какой стороны экрана появляется плавающий шар"
+positionLeft = "Левая сторона экрана"
+positionRight = "Правая сторона экрана"
+keyboardShortcutEnabled = "Включить Горячую Клавишу"
+keyboardShortcutEnabledDesc = "Переключать перевод с помощью горячей клавиши"
+keyboardShortcut = "Горячая Клавиша"
+keyboardShortcutDesc = "Комбинация клавиш для активации перевода"
+selectionTranslateEnabled = "Включить Перевод Абзацев"
+selectionTranslateEnabledDesc = "Выбирайте абзацы, удерживая Ctrl/Option+перетаскивание, чтобы переводить на месте"
+inputTranslateEnabled = "Включить Перевод Входных Данных"
+inputTranslateEnabledDesc = "Включить перевод входных полей с помощью горячей клавиши"
+progressIndicationEnabled = "Включить Индикацию Прогресса"
+progressIndicationEnabledDesc = "Показывать всплывающее окно прогресса во время перевода"
+keyboardShortcutHint = "Используйте комбинации Ctrl+Alt+Shift+Буква на Windows/Linux или Cmd+Option+Shift+Буква на macOS"
+keyboardShortcutInvalid = "Неверный формат горячей клавиши"
+keyboardShortcutTest = "Протестируйте вашу горячую клавишу:"
+keyboardShortcutTestHint = "Нажмите здесь и нажмите вашу комбинацию горячих клавиш"
+
+[settings.advanced]
+title = "Дополнительные Параметры"
+cleanCache = "Очистить Кеш"
+cleanCacheDesc = "Удалить все данные кеша перевода. Это может временно замедлить переводы при перестроении кеша."
+clearingCache = "Очищение..."
+clearCacheSuccess = "Кеш успешно очищен"
+clearCacheFailed = "Ошибка при очистке кеша"
+resetSettings = "Сбросить Параметры"
+resetSettingsDesc = "Сбросить все параметры на значения по умолчанию. Это действие не может быть отменено."
+resettingSettings = "Сброс..."
+resetSettingsSuccess = "Параметры успешно сброшены"
+resetSettingsFailed = "Ошибка при сбросе параметров"
+resetSettingsConfirm = "Вы уверены, что хотите сбросить все параметры на значения по умолчанию? Это действие не может быть отменено."
+
+[settings.translation]
+title = "Параметры Перевода"
+concurrentRequests = "Одновременные Запросы"
+concurrentRequestsDesc = "Количество одновременных запросов перевода"
+cacheSize = "Размер Кеша"
+cacheSizeDesc = "Количество результатов перевода для кеширования"
+maxBatchSize = "Максимальный Размер Пакета"
+maxBatchSizeDesc = "Максимальное количество текстов для перевода в одном пакете"
+sourceLanguage = "Исходный Язык"
+targetLanguage = "Целевой Язык"
+autoDetect = "Автоматическое Определение"
+noModel = "Нет Модели"
+translationMode = "Режим Перевода"
+translationModeDesc = "Выберите, как отображать переведенный текст"
+modeParallel = "Параллельно"
+modeReplace = "Заменить"
+inTextTranslateModel = "Модель Перевода В Тексте"
+floatingTranslateModel = "Модель Плавающего Перевода"
+floatingExplainModel = "Модель Плавающего Объяснения"
+inputTranslateModel = "Модель Перевода Входных Данных"
+modelSettings = "Параметры Модели"
+translationSettings = "Параметры Перевода"
+fullPage = "Полная Страница"
+visible = "Видимая"
+
+filterInteractive = "Фильтровать Интерактивные Элементы"
+filterInteractiveDesc = "Пропускать интерактивные элементы, такие как кнопки, заголовки, навигация и нижний колонтитул, чтобы избежать нежелательных переводов"
+translateFullPage = "Область Перевода"
+translateFullPageDesc = "Когда отмечено, переводить весь контент страницы; когда не отмечено, переводить только видимый контент"
+
+[settings.prompt]
+title = "Параметры Подсказок"
+openManager = "Открыть Менеджер Подсказок"
+pageTitle = "Менеджер Подсказок"
+placeholderDescription = "Настройка подсказок скоро будет доступна. Вы сможете редактировать и организовывать подсказки на этой странице в будущем обновлении."
+backToSettings = "Вернуться к Параметрам"
+
+[settings.flowControl]
+title = "Контроль Потока"
+description = "Настройте глобальную пропускную способность очереди, ограничения скорости и кеширование для каждой модели перевода."
+requestConcurrency = "Одновременные Запросы"
+requestConcurrencyDesc = "Максимальное количество запросов перевода, которые могут выполняться одновременно на всех моделях."
+tokensPerMinute = "Токенов в Минуту"
+tokensPerMinuteDesc = "Верхний предел токенов, которые модели LLM могут потреблять в минуту до начала регулирования."
+maxBatchSize = "Максимальный Размер Пакета"
+maxBatchSizeDesc = "Максимальное количество текстов, сгруппированных в одном запросе до постановки остальных в очередь."
+maxTokensPerBatch = "Макс. Токенов на Пакет"
+maxTokensPerBatchDesc = "Ограничить предполагаемые токены в пакете; при превышении оставшиеся элементы перемещаются в следующий пакет."
+cacheSize = "Размер Кеша"
+cacheSizeDesc = "Общее количество результатов перевода, хранящихся в кеше для ускорения повторяющихся поисков."
+
+[settings.services.flowControl]
+title = "Параметры Контроля Потока"
+description = "Настройте ограничения контроля потока для этого сервиса. Оставьте поля пустыми, чтобы наследовать глобальные значения по умолчанию."
+usingGlobal = "Используются глобальные значения по умолчанию"
+reset = "Сбросить Поля"
+
+[settings.llmServices]
+title = "Сервисы LLM"
+addService = "Добавить Сервис"
+editService = "Редактировать Сервис"
+deleteService = "Удалить Сервис"
+noServicesConfigured = "Нет Сервисов LLM Настроено"
+noServicesDesc = "Добавьте сервисы, чтобы начать использовать перевод на основе LLM"
+
+[settings.llmServices.serviceDetails]
+model = "Модель"
+api = "API"
+url = "URL"
+temperature = "Температура"
+
+[settings.llmModal]
+addTitle = "Добавить Сервис LLM"
+editTitle = "Редактировать Сервис LLM"
+serviceTemplate = "Шаблон Сервиса"
+serviceName = "Имя Сервиса"
+serviceNamePlaceholder = "Мой Сервис LLM"
+baseUrl = "Базовый URL"
+baseUrlPlaceholder = "https://api.example.com"
+apiSpec = "Спецификация API"
+apiKey = "Ключ API"
+apiKeyPlaceholder = "Введите ваш ключ API"
+modelName = "Имя Модели"
+modelNamePlaceholder = "gpt-3.5-turbo, claude-3-sonnet, и т.д."
+temperature = "Температура"
+maxTokens = "Максимальные Токены"
+customService = "Пользовательский"
+
+[settings.llmModal.apiSpecs]
+openai = "Совместимо с OpenAI"
+anthropic = "Anthropic"
+gemini = "Google Gemini"
+
+[settings.traditionalServices]
+title = "Сервисы Традиционного Перевода"
+addService = "Добавить Сервис"
+editService = "Редактировать Сервис"
+deleteService = "Удалить Сервис"
+noServicesConfigured = "Нет Сервисов Традиционного Перевода Настроено"
+noServicesDesc = "Добавьте сервисы для использования традиционных API перевода"
+checkBrowserTranslator = "Проверить Переводчик Браузера"
+
+[settings.traditionalServices.serviceDetails]
+api = "API"
+url = "URL"
+apiKey = "Ключ API"
+maskedKey = "••••••••"
+
+[settings.browserTranslator]
+title = "Определение Перевода в Браузере"
+description = "Проверьте, поддерживает ли ваш браузер встроенные API перевода и определения языка. Эти API позволяют переводить на устройстве без зависимости от внешних сервисов."
+recheck = "Проверить Снова"
+languageDetector = "Определитель Языка"
+translator = "Переводчик"
+helpText = "API перевода браузера — это экспериментальные функции, доступные в настоящее время только в некоторых браузерах. Если ваш браузер их не поддерживает, вы можете продолжить использовать традиционные сервисы перевода или сервисы LLM."
+learnMore = "Узнать больше об API перевода браузера"
+serviceName = "Перевод Браузера"
+addService = "Добавить к Сервисам"
+alreadyAdded = "Сервис перевода браузера уже добавлен"
+noAvailablePairs = "Не найдены доступные пары языков. Ваш браузер может не поддерживать API перевода."
+
+[settings.browserTranslator.steps]
+initialize = "Инициализация"
+checkDetector = "Проверить Определитель Языка"
+checkTranslator = "Проверить Переводчик"
+complete = "Завершено"
+
+[settings.browserTranslator.status]
+label = "Статус"
+supported = "Поддерживается"
+unsupported = "Не Поддерживается"
+
+[settings.browserTranslator.availability]
+label = "Доступность"
+available = "Доступно"
+downloadable = "Загружаемо"
+downloading = "Загружается"
+unavailable = "Недоступно"
+
+[settings.browserTranslator.table]
+languagePair = "Пара Языков"
+status = "Статус"
+availability = "Доступность"
+
+[settings.traditionalModal]
+addTitle = "Добавить Традиционный Сервис"
+editTitle = "Редактировать Традиционный Сервис"
+serviceName = "Имя Сервиса"
+serviceNamePlaceholder = "Мой Сервис Перевода"
+apiSpec = "Спецификация API"
+baseUrl = "Базовый URL"
+baseUrlPlaceholder = "https://api.example.com"
+baseUrlDesc = "Оставьте пустым, чтобы использовать конечные точки сервиса по умолчанию"
+apiKey = "Ключ API"
+apiKeyPlaceholder = "Введите ваш ключ API"
+apiKeyDesc = "Требуется большинством сервисов перевода"
+region = "Регион"
+regionPlaceholder = "например, eastus, westeurope"
+regionDesc = "Требуется для региональных ресурсов Microsoft Translator"
+
+[settings.traditionalModal.apiSpecs]
+microsoft = "Microsoft Bing Translate"
+google = "Google Translate"
+deepl = "DeepL"
+deeplx = "DeepLX"
+browser = "Встроено в Браузер"
+
+[options.websiteRules]
+title = "Правила Веб-сайтов"
+description = "Настройте правила перевода для конкретных веб-сайтов"
+addRule = "Добавить Правило"
+editRule = "Редактировать Правило"
+noRulesConfigured = "Нет Правил Веб-сайтов Настроено"
+noRulesDesc = "Добавьте правила для настройки поведения перевода для конкретных веб-сайтов"
+ruleNumber = "Правило #$1"
+urlPatterns = "Шаблоны URL"
+translationEnabled = "Перевод Включен"
+translationMode = "Режим Перевода"
+languages = "Языки"
+unsavedChanges = "Несохраненные Изменения"
+unsavedChangesDesc = "У вас есть несохраненные изменения. Вы уверены, что хотите закрыть без сохранения?"
+discardChanges = "Отменить Изменения"
+
+[settings.about]
+title = "О PairTranslate"
+version = "Версия"
+description = "Описание"
+descriptionText = """
+PairTranslate — это расширение браузера, которое обеспечивает параллельный перевод для веб-страниц.
+В отличие от традиционных инструментов перевода, оно добавляет переведенный текст к исходному тексту,
+позволяя пользователям видеть обе версии одновременно для лучшего понимания и изучения языков.
+"""
+features = "Возможности"
+links = "Ссылки"
+sourceCode = "Исходный Код"
+reportIssues = "Сообщить об Ошибках"
+thirdParty = "Сервисы Третьих Лиц"
+thirdPartyDesc = "Это расширение интегрирует различные сервисы перевода:"
+thirdPartyNote = "Примечание: Пользователи должны предоставить свои собственные ключи API для этих сервисов."
+footer = "Создано с ❤️ для изучающих языки и многоязычного просмотра веб-страниц"
+extensionName = "PairTranslate"
+extensionVersion = "0.0.0"
+debugIconLabel = "Значок PairTranslate"
+debugTapHint = "Нажмите на значок еще $1 раз, чтобы разблокировать Параметры Отладки."
+debugUnlocked = "Параметры Отладки разблокированы — прокрутите вниз, чтобы изучить новые инструменты."
+
+[settings.about.featuresList]
+_1 = "Поддержка множественных сервисов LLM (OpenAI, Anthropic, Gemini и т.д.)"
+_2 = "Традиционные API перевода (Bing, Google)"
+_3 = "Одновременная обработка перевода"
+_4 = "Интеллектуальная система кеширования"
+_5 = "Настраиваемые темы и параметры"
+_6 = "Ориентировано на конфиденциальность (обработка локально, когда возможно)"
+
+[settings.about.thirdPartyList]
+_1 = "API OpenAI (модели GPT)"
+_2 = "API Anthropic Claude"
+_3 = "API Google Gemini"
+_4 = "Microsoft Bing Translate"
+_5 = "API Google Translate"
+_6 = "Другие совместимые с OpenAI сервисы"
+
+[settings.debug]
+title = "Параметры Отладки"
+description = "Осмотрите инструментарий, переключайте подробную диагностику и запускайте проверки здравомыслия при устранении проблем перевода."
+verboseLogging = "Принудительное подробное логирование"
+verboseLoggingDesc = "Всегда регистрируйте вызовы RPC и события жизненного цикла перевода, даже в сборках производства."
+traceLlms = "Отследить Запросы LLM"
+traceLlmsDesc = "Выдавать дезинфицированные подсказки и завершения для каждого запроса LLM, чтобы вы могли проверить сгенерированные полезные нагрузки."
+traceTraditional = "Отследить Вызовы Традиционного API"
+traceTraditionalDesc = "Регистрировать метаданные запроса каждый раз, когда вызываются переводчики Microsoft, Google или другие REST."
+disableCache = "Отключить Кеш Перевода"
+disableCacheDesc = "Обойти кеш перевода, чтобы каждый запрос сразу попадал в услугу вышестоящего уровня."
+simulateLatency = "Симулировать Задержку Ответа (мс)"
+simulateLatencyDesc = "Задержать ответы переводчика на это количество миллисекунд для симуляции медленных или нестабильных сетей."
+simulateLatencyPlaceholder = "например, 250"
+actionsTitle = "Диагностика"
+exportSettings = "Загрузить Снимок Параметров"
+exportSettingsDesc = "Сохранить текущий JSON параметров для присоединения к отчетам об ошибках."
+exportQueues = "Загрузить Снимок Очереди"
+exportQueuesDesc = "Захватить живую глубину очереди и пропускную способность для каждого сервиса."
+pingBackground = "Отправить Сигнал Фоновому Рабочему"
+pingBackgroundDesc = "Убедитесь, что фоновый скрипт активен и готов принимать вызовы RPC."
+clearRpcCache = "Сбросить Кеш Перевода"
+clearRpcCacheDesc = "Очистить кешированные записи перевода без изменения сохраненных параметров."
+
+# Action Items (for content scripts)
+
+[actions]
+translate = "Перевести"
+explain = "Объяснить"
+example = "Пример"
+contextMean = "Значение Контекста"
+mean = "Значение"
+fetchModels = "Получить Модели"
+copyAsMarkdown = "Копировать как Markdown"
+
+[dictionary.tabs]
+overview = "Обзор"
+definitions = "Определения"
+
+[dictionary.labels]
+source = "Источник"
+meaning = "Значение $1"
+meaningShort = "З$1"
+examplePrefix = "Пр"
+example = "Пример"
+synonyms = "Синонимы"
+antonyms = "Антонимы"
+
+[dictionary.sections]
+meanings = "Значения"
+
+[dictionary.messages]
+noDefinitions = "Определения не найдены."
+
+[floatingTranslator.sections]
+dictionary = "Словарь"
+contextExplanation = "Объяснение Контекста"
+textExplanation = "Объяснение Текста"
+examples = "Примеры"
+translation = "Перевод"
+reasoning = "Рассуждение"
+
+[prompts.defaultNames]
+translate = "Перевести"
+batchTranslate = "Пакетный Перевод"
+inputTranslate = "Перевод Входных Данных"
+explain = "Объяснить"
+dictionaryTranslate = "Словарный Перевод"
+
+# Error Messages
+
+[errors]
+modelNotFound = "Модель с ID '$1' не найдена в параметрах"
+missingApiSpec = "Модель '$1' не имеет спецификации API"
+invalidModelId = "ID модели обязателен"
+invalidTextContext = "Контекст текста обязателен и должен быть объектом"
+invalidContent = "Содержание контекста текста обязательно и должно быть строкой"
+invalidBefore = "Содержание до контекста текста должно быть строкой"
+invalidAfter = "Содержание после контекста текста должно быть строкой"
+cacheKeyFailed = "Ошибка при создании ключа кеша"
+cacheRetrieveFailed = "Ошибка при получении кешированного результата"
+invalidLlmConfig = "Неверная конфигурация модели LLM"
+llmServiceFailed = "Ошибка вызова сервиса LLM"
+invalidTraditionalConfig = "Неверная конфигурация модели традиционного перевода"
+traditionalServiceFailed = "Ошибка вызова сервиса традиционного перевода"
+translationFailed = "Ошибка перевода"
+streamingNotSupported = "Сервисы традиционного перевода не поддерживают потоковую передачу"
+streamingTranslationFailed = "Ошибка потокового перевода"
+explainOnlyLlm = "Функция объяснения поддерживает только модели LLM"
+explanationFailed = "Ошибка объяснения"
+streamingExplanationFailed = "Ошибка потокового объяснения"
+noTranslationModel = "Модель перевода не настроена"
+translationModelRequired = "Модель не настроена. Пожалуйста, настройте модель перевода в параметрах."
+noExplanationModel = "Модель объяснения не настроена"
+batchResponseMismatch = "Несоответствие пакетного ответа, ожидалось $1 элемента, но получено $2"
+promptNotFound = "Подсказка с ID '$1' не найдена в параметрах"
+promptNotBatch = "Подсказка не поддерживает пакетные операции"
+
+# Template Names
+
+[templates.llm]
+openai = "OpenAI"
+azureOpenai = "Azure OpenAI (Примерный Ресурс)"
+anthropic = "Anthropic"
+googleGemini = "Google (Gemini / Vertex AI)"
+lmStudio = "LM Studio"
+ollama = "Ollama"
+openRouter = "OpenRouter"
+cohere = "Cohere"
+huggingFaceInference = "Hugging Face Inference"
+ai21Labs = "AI21 Labs"
+mistral = "Mistral"
+stabilityAI = "Stability AI"
+replicate = "Replicate"
+alephAlpha = "Aleph Alpha"
+glm = "GLM"
+deepseek = "Deepseek"
+other = "Другое"
+
+# Service Names
+
+[services]
+microsoftTranslatorDefault = "Microsoft Translator (По Умолчанию)"
+edgeApiKey = "edge"
+
+# LLM Service Errors
+
+[errors.llm]
+baseUrlRequired = "Базовый URL требуется для получения моделей"
+fetchModelsFailed = "Ошибка при получении моделей"
+
+# OpenAI API Errors
+
+[errors.openai]
+apiError = "Ошибка API OpenAI"
+invalidApiKey = "Предоставленный ключ API неверен"
+rateLimitExceeded = "Лимит частоты запросов превышен"
+serverError = "Ошибка сервера OpenAI"
+
+# Anthropic API Errors
+
+[errors.anthropic]
+apiError = "Ошибка API Anthropic"
+invalidApiKey = "Предоставленный ключ API неверен"
+rateLimitExceeded = "Лимит частоты запросов превышен"
+serverError = "Ошибка сервера Anthropic"
+
+# Settings Errors
+
+[errors.settings]
+failedToSet = "Ошибка при установке параметров"
+streamFailed = "Ошибка при установке потока"
+
+# RPC System Errors
+
+[errors.rpc]
+transportDisposed = "Транспорт был закрыт"
+streamError = "Ошибка при отправке потока"
+
+# Language Names
+
+[languages]
+en = "Английский"
+es = "Испанский"
+fr = "Французский"
+de = "Немецкий"
+it = "Итальянский"
+pt = "Португальский"
+ru = "Русский"
+ja = "Японский"
+ko = "Корейский"
+zhCN = "Китайский (Упрощённый)"
+zhTW = "Китайский (Традиционный)"
+ar = "Арабский"
+hi = "Хинди"
+th = "Тайский"
+vi = "Вьетнамский"
+nl = "Нидерландский"
+sv = "Шведский"
+no = "Норвежский"
+da = "Датский"
+fi = "Финский"
+pl = "Польский"
+cs = "Чешский"
+sk = "Словацкий"
+hu = "Венгерский"
+ro = "Румынский"
+bg = "Болгарский"
+hr = "Хорватский"
+sr = "Сербский"
+uk = "Украинский"
+
+# Keyboard Shortcuts
+
+[shortcuts]
+cancel = "Отмена (ESC)"
+record = "Запись"
+pressCombination = "Нажмите вашу комбинацию горячих клавиш или ESC для отмены"
+
+# Additional Error Messages
+
+[errors.additional]
+customOperationNotSupported = "Пользовательские операции еще не поддерживаются"
+googleInvalidRequest = "Неверные параметры запроса"
+googleInvalidApiKey = "Предоставлен неверный ключ API"
+googleRateLimitExceeded = "Лимит частоты запросов превышен"
+googleServerError = "Ошибка сервера Google"
+microsoftFetchFailed = "Ошибка при получении ключа API из Edge"
+microsoftInvalidResponse = "Неверный формат ответа от API Microsoft Translator"
+microsoftNetworkError = "Ошибка сети: не удалось подключиться к API Microsoft Translator"
+googleApiError = "Ошибка API Google Translate: $1"
+microsoftApiError = "Ошибка API Microsoft Translator: $1"
+deeplApiError = "Ошибка API DeepL: $1"
+googleTranslateInvalidResponse = "Неверный формат ответа от API Google Translate"
+googleTranslateNetworkError = "Ошибка сети: не удалось подключиться к API Google Translate"
+deeplInvalidResponse = "Неверный формат ответа от API DeepL"
+deeplNetworkError = "Ошибка сети: не удалось подключиться к API DeepL"
+taskTerminated = "Задача прекращена"
+browserTranslatorUnavailable = "API переводчика недоступен в этом браузере"
+browserLanguageDetectorUnavailable = "API определителя языка недоступен в этом браузере"
+browserLanguageDetectionFailed = "Ошибка определения языка"
+browserApiError = "Ошибка API перевода браузера"
+unknownError = "Неизвестная ошибка"
+
+# Website Rules
+
+[websiteRule]
+urlPatterns = "Шаблоны URL"
+urlPatternsDesc = "Настройте шаблоны URL веб-сайта, к которым применяется это правило"
+patternPlaceholder = "*.example.com или example.com"
+errorPatternRequired = "Пожалуйста, введите шаблон URL"
+errorPatternExists = "Этот шаблон уже существует"
+noPatterns = "Шаблоны URL не добавлены"
+patternExamples = "Примеры Шаблонов:"
+patternExact = "Точное совпадение домена"
+patternSubdomains = "Совпадение всех поддоменов"
+patternExample = "Совпадает с gist.github.com"
+translationSettings = "Параметры Перевода"
+enableTranslation = "Включить Перевод"
+enableTranslationDesc = "Включить или отключить перевод для этого веб-сайта"
+translationMode = "Режим Перевода"
+translationModeDesc = "Выберите режим отображения перевода"
+modeParallel = "Параллельный Перевод"
+modeReplace = "Замещающий Перевод"
+advancedSettings = "Дополнительные Параметры"
+floatingBallToggleDesc = "Показывать или скрывать плавающий шар на этом веб-сайте"
+addRule = "Добавить Правило"
+deleteRule = "Удалить Правило"
+deleteAllPatterns = "Удалить Все"
+patternsCount = "шаблон(ов)"

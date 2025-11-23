@@ -1,0 +1,604 @@
+[meta]
+name = "配對翻譯"
+description = "一個用於網頁對照翻譯的瀏覽器擴展"
+
+# Navigation
+
+[nav]
+basic = "基本設置"
+translation = "翻譯服務"
+flowControl = "流控設置"
+llmServices = "LLM 服務"
+promptSettings = "提示詞設置"
+traditionalServices = "傳統翻譯"
+websiteRules = "網站規則"
+advanced = "高級設置"
+about = "關於"
+debug = "調試設置"
+website = "網站"
+
+[popup.navigation]
+openOptions = "更多設置"
+
+# Common UI Elements
+
+[common]
+save = "保存"
+cancel = "取消"
+add = "添加"
+edit = "編輯"
+delete = "刪除"
+close = "關閉"
+loading = "加載中..."
+processing = "處理中..."
+enabled = "已啟用"
+disabled = "已禁用"
+configure = "配置"
+manage = "管理"
+service = "服務"
+services = "服務"
+allChangesSaved = "所有更改已保存"
+selectModel = "選擇模型"
+modelsLoaded = "已加載 $1 個模型"
+retry = "重試"
+confirm = "確認"
+clear = "清除"
+positionLeft = "左側"
+positionRight = "右側"
+floatingBallIcon = "懸浮球圖標"
+translationTasks = "翻譯任務"
+queue = "隊列"
+completed = "已完成"
+running = "運行中"
+resize = "調整大小"
+resetFilter = "重置篩選"
+featureInDevelopment = "功能開發中"
+globalDefault = "全局默認"
+resetSection = "重置此部分"
+yes = "是"
+no = "否"
+
+[popup.domainTimer]
+keepUntil = "保持翻譯，直到"
+selectPlaceholder = "選擇時間"
+remainingSeconds = "$1 秒後結束"
+remainingMinutes = "$1 分鐘後結束"
+remainingHours = "$1 小時後結束"
+untilClose = "關閉瀏覽器時結束"
+closeBrowser = "關閉瀏覽器"
+afterMinutes = "$1 分鐘後"
+afterHours = "$1 小時後"
+
+[migrationError]
+title = "需要重置設置"
+description = "更新後無法加載您的舊設置，請重置為默認值以繼續使用。"
+detailsLabel = "詳細信息"
+resetButton = "立即重置設置"
+resetFailed = "重置失敗，請重試。"
+
+# Settings Pages
+
+[settings]
+title = "設置"
+sectionResetConfirm = "確定要將此部分重置為默認值嗎？"
+
+[settings.basic]
+title = "基本設置"
+enableExtension = "啟用擴展"
+enableExtensionDesc = "啟用或禁用翻譯擴展"
+theme = "主題"
+themeDesc = "選擇界面主題"
+themeLight = "淺色"
+themeDark = "深色"
+themeSystem = "系統"
+selectionPopupEnabled = "啟用選區菜單"
+selectionPopupEnabledDesc = "選中文本時顯示翻譯和解釋按鈕"
+autoPin = "自動置頂彈窗"
+autoPinDesc = "自動置頂翻譯結果彈窗"
+floatingBallEnabled = "啟用懸浮球"
+floatingBallEnabledDesc = "在網頁上顯示懸浮翻譯球"
+floatingBallPosition = "懸浮球位置"
+floatingBallPositionDesc = "選擇懸浮球出現在屏幕的哪一側"
+positionLeft = "屏幕左側"
+positionRight = "屏幕右側"
+keyboardShortcutEnabled = "啟用鍵盤快捷鍵"
+keyboardShortcutEnabledDesc = "使用鍵盤快捷鍵切換翻譯"
+keyboardShortcut = "鍵盤快捷鍵"
+keyboardShortcutDesc = "觸發翻譯的按鍵組合"
+selectionTranslateEnabled = "啟用段落翻譯"
+selectionTranslateEnabledDesc = "按住 Ctrl/Option 拖拽滑鼠選擇段落翻譯（觸屏可三擊選擇）"
+inputTranslateEnabled = "啟用輸入框翻譯"
+inputTranslateEnabledDesc = "使用鍵盤快捷鍵翻譯輸入框內容"
+progressIndicationEnabled = "啟用進度指示"
+progressIndicationEnabledDesc = "在翻譯進行時顯示進度指示彈窗"
+keyboardShortcutHint = "Windows/Linux 上使用 Ctrl+Alt+Shift+字母，macOS 上使用 Cmd+Option+Shift+字母"
+keyboardShortcutInvalid = "無效的快捷鍵格式"
+keyboardShortcutTest = "測試您的快捷鍵："
+keyboardShortcutTestHint = "點擊此處並按下您的快捷鍵組合"
+
+[settings.advanced]
+title = "高級設置"
+cleanCache = "清理緩存"
+cleanCacheDesc = "清除所有翻譯緩存數據。這可能會暫時減慢翻譯速度，因為緩存需要重建。"
+clearingCache = "清理中..."
+clearCacheSuccess = "緩存已成功清理"
+clearCacheFailed = "清理緩存失敗"
+resetSettings = "重置設置"
+resetSettingsDesc = "將所有設置重置為默認值。此操作無法撤銷。"
+resettingSettings = "重置中..."
+resetSettingsSuccess = "設置已成功重置"
+resetSettingsFailed = "重置設置失敗"
+resetSettingsConfirm = "您確定要將所有設置重置為默認值嗎？此操作無法撤銷。"
+
+[settings.translation]
+title = "翻譯設置"
+concurrentRequests = "並發請求數"
+concurrentRequestsDesc = "同時翻譯請求數量"
+cacheSize = "緩存大小"
+cacheSizeDesc = "緩存翻譯結果數量"
+maxBatchSize = "最大批量大小"
+maxBatchSizeDesc = "單個批次中翻譯的文本最大數量"
+sourceLanguage = "源語言"
+targetLanguage = "目標語言"
+autoDetect = "自動檢測"
+noModel = "無模型"
+translationMode = "翻譯模式"
+translationModeDesc = "選擇翻譯文本的顯示方式"
+modeParallel = "對照"
+modeReplace = "替換"
+inTextTranslateModel = "文本內翻譯模型"
+floatingTranslateModel = "浮窗翻譯模型"
+floatingExplainModel = "浮窗解釋模型"
+inputTranslateModel = "輸入框翻譯模型"
+modelSettings = "模型設置"
+translationSettings = "翻譯設置"
+fullPage = "整頁"
+visible = "可見"
+
+filterInteractive = "過濾交互元素"
+filterInteractiveDesc = "跳過按鈕、標題、導航、頁腳等交互元素，以避免不必要的翻譯"
+translateFullPage = "翻譯範圍"
+translateFullPageDesc = "勾選後翻譯全部頁面內容；不勾選則僅翻譯可見內容"
+
+[settings.prompt]
+title = "提示詞設置"
+openManager = "打開提示詞管理器"
+pageTitle = "提示詞管理器"
+placeholderDescription = "提示詞自定義功能即將上線。稍後您可以在此頁面編輯和組織提示詞。"
+backToSettings = "返回設置"
+
+[settings.flowControl]
+title = "流控設置"
+description = "配置全局翻譯隊列的速率限制與緩存策略。"
+requestConcurrency = "並發請求數"
+requestConcurrencyDesc = "限制所有模型可同時發起的翻譯請求數量。"
+tokensPerMinute = "每分鐘令牌數"
+tokensPerMinuteDesc = "限制 LLM 模型每分鐘可消耗的最大令牌數。"
+maxBatchSize = "最大批量大小"
+maxBatchSizeDesc = "單個批處理中允許的最大文本數量，超出部分會排隊。"
+maxTokensPerBatch = "單批最大令牌數"
+maxTokensPerBatchDesc = "當單個批次的估算令牌數超過該閾值時，剩餘文本會被放入下一批。"
+cacheSize = "緩存大小"
+cacheSizeDesc = "全局緩存的翻譯結果數量。"
+
+[settings.services.flowControl]
+title = "流控設置"
+description = "僅對當前服務修改流控限制，留空則沿用全局默認。"
+usingGlobal = "使用全局默認值"
+reset = "重置設置"
+
+[settings.llmServices]
+title = "LLM 服務"
+addService = "添加服務"
+editService = "編輯服務"
+deleteService = "刪除服務"
+noServicesConfigured = "未配置 LLM 服務"
+noServicesDesc = "添加服務以開始使用 LLM 驅動的翻譯"
+
+[settings.llmServices.serviceDetails]
+model = "模型"
+api = "API"
+url = "URL"
+temperature = "溫度"
+
+[settings.llmModal]
+addTitle = "添加 LLM 服務"
+editTitle = "編輯 LLM 服務"
+serviceTemplate = "服務模板"
+serviceName = "服務名稱"
+serviceNamePlaceholder = "我的 LLM 服務"
+baseUrl = "基礎 URL"
+baseUrlPlaceholder = "https://api.example.com"
+apiSpec = "API 規範"
+apiKey = "API 密鑰"
+apiKeyPlaceholder = "輸入您的 API 密鑰"
+modelName = "模型名稱"
+modelNamePlaceholder = "gpt-3.5-turbo, claude-3-sonnet, 等"
+temperature = "溫度"
+maxTokens = "最大令牌數"
+customService = "自定義"
+
+[settings.llmModal.apiSpecs]
+openai = "OpenAI 兼容"
+anthropic = "Anthropic"
+gemini = "Google Gemini"
+
+[settings.traditionalServices]
+title = "傳統翻譯服務"
+addService = "添加服務"
+editService = "編輯服務"
+deleteService = "刪除服務"
+noServicesConfigured = "未配置傳統翻譯服務"
+noServicesDesc = "添加服務以使用傳統翻譯 API"
+checkBrowserTranslator = "檢測瀏覽器翻譯"
+
+[settings.traditionalServices.serviceDetails]
+api = "API"
+url = "URL"
+apiKey = "API 密鑰"
+maskedKey = "••••••••"
+
+[settings.browserTranslator]
+title = "瀏覽器端側翻譯檢測"
+description = "檢測您的瀏覽器是否支持內置的翻譯和語言檢測 API。這些 API 允許在瀏覽器端進行翻譯，無需依賴外部服務。"
+recheck = "重新檢測"
+languageDetector = "語言檢測器"
+translator = "翻譯器"
+helpText = "瀏覽器翻譯 API 是一個實驗性功能，目前僅在部分瀏覽器中可用。如果您的瀏覽器不支持，您可以繼續使用傳統翻譯服務或 LLM 服務。"
+learnMore = "瞭解更多關於瀏覽器翻譯 API"
+serviceName = "瀏覽器翻譯"
+addService = "添加到服務列表"
+alreadyAdded = "瀏覽器翻譯服務已添加"
+noAvailablePairs = "未找到可用的語言對。您的瀏覽器可能不支持翻譯 API。"
+
+[settings.browserTranslator.steps]
+initialize = "初始化"
+checkDetector = "檢測語言檢測器"
+checkTranslator = "檢測翻譯器"
+complete = "完成"
+
+[settings.browserTranslator.status]
+label = "狀態"
+supported = "支持"
+unsupported = "不支持"
+
+[settings.browserTranslator.availability]
+label = "可用性"
+available = "可用"
+downloadable = "需要下載"
+downloading = "下載中"
+unavailable = "不可用"
+
+[settings.browserTranslator.table]
+languagePair = "語言對"
+status = "狀態"
+availability = "可用性"
+
+[settings.traditionalModal]
+addTitle = "添加傳統服務"
+editTitle = "編輯傳統服務"
+serviceName = "服務名稱"
+serviceNamePlaceholder = "我的翻譯服務"
+apiSpec = "API 規範"
+baseUrl = "基礎 URL"
+baseUrlPlaceholder = "https://api.example.com"
+baseUrlDesc = "留空以使用默認服務端點"
+apiKey = "API 密鑰"
+apiKeyPlaceholder = "輸入您的 API 密鑰"
+apiKeyDesc = "大多數翻譯服務都需要"
+region = "區域"
+regionPlaceholder = "例如：eastus, westeurope"
+regionDesc = "Microsoft Translator 區域資源需要"
+
+[settings.traditionalModal.apiSpecs]
+microsoft = "微軟必應翻譯"
+google = "谷歌翻譯"
+deepl = "DeepL"
+deeplx = "DeepLX"
+browser = "瀏覽器內置"
+
+[options.websiteRules]
+title = "網站規則"
+description = "為特定網站配置翻譯規則"
+addRule = "添加規則"
+editRule = "編輯規則"
+noRulesConfigured = "未配置網站規則"
+noRulesDesc = "添加規則以自定義特定網站的翻譯行為"
+ruleNumber = "規則 #$1"
+urlPatterns = "URL 模式"
+translationEnabled = "啟用翻譯"
+translationMode = "翻譯模式"
+languages = "語言"
+unsavedChanges = "未保存的更改"
+unsavedChangesDesc = "您有未保存的更改。確定要關閉而不保存嗎？"
+discardChanges = "放棄更改"
+
+[settings.about]
+title = "關於 PairTranslate"
+version = "版本"
+description = "描述"
+descriptionText = """
+PairTranslate 是一個瀏覽器擴展，為網頁提供並排翻譯服務。
+與傳統翻譯工具不同，它會將翻譯文本附加到原始文本後，
+允許用戶同時查看兩個版本，以便更好地理解和語言學習。
+"""
+features = "功能"
+links = "鏈接"
+sourceCode = "源代碼"
+reportIssues = "報告問題"
+thirdParty = "第三方服務"
+thirdPartyDesc = "此擴展集成了各種翻譯服務："
+thirdPartyNote = "注意：用戶必須為這些服務提供自己的 API 密鑰。"
+footer = "用 ❤️ 為語言學習者和多語言網頁瀏覽而製作"
+extensionName = "PairTranslate"
+extensionVersion = "0.0.0"
+debugIconLabel = "PairTranslate 圖標"
+debugTapHint = "再點擊 $1 次即可解鎖調試設置。"
+debugUnlocked = "已解鎖調試設置，向下滾動即可查看。"
+
+[settings.about.featuresList]
+_1 = "支持多種 LLM 服務（OpenAI、Anthropic、Gemini 等）"
+_2 = "傳統翻譯 API（必應、谷歌）"
+_3 = "並發翻譯處理"
+_4 = "智能緩存系統"
+_5 = "可定制的主題和設置"
+_6 = "注重隱私（盡可能本地處理）"
+
+[settings.about.thirdPartyList]
+_1 = "OpenAI API (GPT 模型)"
+_2 = "Anthropic Claude API"
+_3 = "Google Gemini API"
+_4 = "微軟必應翻譯"
+_5 = "谷歌翻譯 API"
+_6 = "及其他 OpenAI 兼容服務"
+
+[settings.debug]
+title = "調試設置"
+description = "在排查問題時查看內部狀態、開啟詳細日誌，並運行翻譯服務自檢。"
+verboseLogging = "強制詳細日誌"
+verboseLoggingDesc = "即使在生產環境也始終輸出 RPC 與翻譯生命週期日誌。"
+traceLlms = "跟蹤 LLM 請求"
+traceLlmsDesc = "為每個 LLM 請求輸出脫敏後的提示與響應，便於分析。"
+traceTraditional = "跟蹤傳統 API 調用"
+traceTraditionalDesc = "當調用微軟、谷歌等傳統翻譯服務時記錄請求元數據。"
+disableCache = "禁用翻譯緩存"
+disableCacheDesc = "繞過翻譯結果緩存，讓每次請求都直接訪問上游服務。"
+simulateLatency = "模擬響應延遲（毫秒）"
+simulateLatencyDesc = "在返回結果前增加指定毫秒的延時，用於模擬慢速或不穩定的網絡。"
+simulateLatencyPlaceholder = "例如 250"
+actionsTitle = "診斷工具"
+exportSettings = "下載設置快照"
+exportSettingsDesc = "導出當前設置 JSON，方便在提交問題時附帶。"
+exportQueues = "下載隊列快照"
+exportQueuesDesc = "捕獲所有配置服務的實時隊列深度與吞吐。"
+pingBackground = "Ping 後台進程"
+pingBackgroundDesc = "確認後台腳本仍然存活並可以響應。"
+clearRpcCache = "重置翻譯緩存"
+clearRpcCacheDesc = "僅清空翻譯緩存，不會修改你的其他設置。"
+
+# Action Items (for content scripts)
+
+[actions]
+translate = "翻譯"
+explain = "解釋"
+example = "示例"
+contextMean = "上下文含義"
+mean = "含義"
+fetchModels = "獲取模型"
+copyAsMarkdown = "複製為 Markdown"
+
+[dictionary.tabs]
+overview = "概覽"
+definitions = "釋義"
+
+[dictionary.labels]
+source = "來源"
+meaning = "第 $1 個釋義"
+meaningShort = "第$1義"
+examplePrefix = "例"
+example = "例句"
+synonyms = "同義詞"
+antonyms = "反義詞"
+
+[dictionary.sections]
+meanings = "釋義"
+
+[dictionary.messages]
+noDefinitions = "未找到相關釋義。"
+
+[floatingTranslator.sections]
+dictionary = "詞典"
+contextExplanation = "上下文說明"
+textExplanation = "文本說明"
+examples = "示例"
+translation = "翻譯"
+reasoning = "思考過程"
+
+[prompts.defaultNames]
+translate = "翻譯"
+batchTranslate = "批量翻譯"
+inputTranslate = "輸入框翻譯"
+explain = "解釋"
+dictionaryTranslate = "詞典釋義翻譯"
+
+# Error Messages
+
+[errors]
+modelNotFound = "設置中未找到 ID 為 '$1' 的模型"
+missingApiSpec = "模型 '$1' 缺少 API 規範"
+invalidModelId = "模型 ID 是必需的"
+invalidTextContext = "文本上下文是必需的，且必須是對象"
+invalidContent = "文本上下文內容是必需的，且必須是字符串"
+invalidBefore = "文本上下文之前的內容必須是字符串"
+invalidAfter = "文本上下文之後的內容必須是字符串"
+cacheKeyFailed = "生成緩存密鑰失敗"
+cacheRetrieveFailed = "檢索緩存結果失敗"
+invalidLlmConfig = "無效的 LLM 模型配置"
+llmServiceFailed = "LLM 服務調用失敗"
+invalidTraditionalConfig = "無效的傳統翻譯模型配置"
+traditionalServiceFailed = "傳統翻譯服務調用失敗"
+translationFailed = "翻譯失敗"
+streamingNotSupported = "傳統翻譯服務不支持流式傳輸"
+streamingTranslationFailed = "流式翻譯失敗"
+explainOnlyLlm = "解釋功能僅支持 LLM 模型"
+explanationFailed = "解釋失敗"
+streamingExplanationFailed = "流式解釋失敗"
+noTranslationModel = "未配置翻譯模型"
+translationModelRequired = "尚未配置模型。請在設置中選擇翻譯模型。"
+noExplanationModel = "未配置解釋模型"
+batchResponseMismatch = "批處理響應數量不匹配，預期 $1 項但收到 $2 項"
+promptNotFound = "在設置中找不到 ID 為 '$1' 的提示詞"
+promptNotBatch = "該提示詞不支持批量操作"
+
+# Template Names
+
+[templates.llm]
+openai = "OpenAI"
+azureOpenai = "Azure OpenAI (示例資源)"
+anthropic = "Anthropic"
+googleGemini = "Google (Gemini / Vertex AI)"
+lmStudio = "LM Studio"
+ollama = "Ollama"
+openRouter = "OpenRouter"
+cohere = "Cohere"
+huggingFaceInference = "Hugging Face Inference"
+ai21Labs = "AI21 Labs"
+mistral = "Mistral"
+stabilityAI = "Stability AI"
+replicate = "Replicate"
+alephAlpha = "Aleph Alpha"
+glm = "GLM"
+deepseek = "Deepseek"
+other = "其他"
+
+# Service Names
+
+[services]
+microsoftTranslatorDefault = "Microsoft Translator (默認)"
+edgeApiKey = "edge"
+
+# LLM Service Errors
+
+[errors.llm]
+baseUrlRequired = "獲取模型需要基礎 URL"
+fetchModelsFailed = "獲取模型失敗"
+
+# OpenAI API Errors
+
+[errors.openai]
+apiError = "OpenAI API 錯誤"
+invalidApiKey = "提供的 API 密鑰無效"
+rateLimitExceeded = "超過速率限制"
+serverError = "OpenAI 服務器錯誤"
+
+# Anthropic API Errors
+
+[errors.anthropic]
+apiError = "Anthropic API 錯誤"
+invalidApiKey = "提供的 API 密鑰無效"
+rateLimitExceeded = "超過速率限制"
+serverError = "Anthropic 服務器錯誤"
+
+# Settings Errors
+
+[errors.settings]
+failedToSet = "設置失敗"
+streamFailed = "設置流失敗"
+
+# RPC System Errors
+
+[errors.rpc]
+transportDisposed = "傳輸已被關閉"
+streamError = "發送流時出錯"
+
+# Language Names
+
+[languages]
+en = "英語"
+es = "西班牙語"
+fr = "法語"
+de = "德語"
+it = "意大利語"
+pt = "葡萄牙語"
+ru = "俄語"
+ja = "日語"
+ko = "韓語"
+zhCN = "簡體中文"
+zhTW = "繁體中文"
+ar = "阿拉伯語"
+hi = "印地語"
+th = "泰語"
+vi = "越南語"
+nl = "荷蘭語"
+sv = "瑞典語"
+no = "挪威語"
+da = "丹麥語"
+fi = "芬蘭語"
+pl = "波蘭語"
+cs = "捷克語"
+sk = "斯洛伐克語"
+hu = "匈牙利語"
+ro = "羅馬尼亞語"
+bg = "保加利亞語"
+hr = "克羅地亞語"
+sr = "塞爾維亞語"
+uk = "烏克蘭語"
+
+# Keyboard Shortcuts
+
+[shortcuts]
+cancel = "取消 (ESC)"
+record = "錄製"
+pressCombination = "按下您的快捷鍵組合或 ESC 取消"
+
+# Additional Error Messages
+
+[errors.additional]
+customOperationNotSupported = "自定義操作尚不支持"
+googleInvalidRequest = "無效的請求參數"
+googleInvalidApiKey = "提供的 API 密鑰無效"
+googleRateLimitExceeded = "超過速率限制"
+googleServerError = "Google 服務器錯誤"
+microsoftFetchFailed = "從 Edge 獲取 API 密鑰失敗"
+microsoftInvalidResponse = "Microsoft Translator API 響應格式無效"
+microsoftNetworkError = "網絡錯誤：無法連接到 Microsoft Translator API"
+googleApiError = "Google Translate API 錯誤：$1"
+microsoftApiError = "Microsoft Translator API 錯誤：$1"
+deeplApiError = "DeepL API 錯誤：$1"
+googleTranslateInvalidResponse = "Google Translate API 響應格式無效"
+googleTranslateNetworkError = "網絡錯誤：無法連接到 Google Translate API"
+deeplInvalidResponse = "DeepL API 響應格式無效"
+deeplNetworkError = "網絡錯誤：無法連接到 DeepL API"
+taskTerminated = "任務已終止"
+browserTranslatorUnavailable = "此瀏覽器不支持 Translator API"
+browserLanguageDetectorUnavailable = "此瀏覽器不支持 Language Detector API"
+browserLanguageDetectionFailed = "語言檢測失敗"
+browserApiError = "瀏覽器翻譯 API 錯誤"
+unknownError = "未知錯誤"
+
+# Website Rules
+
+[websiteRule]
+urlPatterns = "URL 模式"
+urlPatternsDesc = "配置此規則適用的網站 URL 模式"
+patternPlaceholder = "*.example.com 或 example.com"
+errorPatternRequired = "請輸入 URL 模式"
+errorPatternExists = "此模式已存在"
+noPatterns = "未添加任何 URL 模式"
+patternExamples = "模式示例："
+patternExact = "精確匹配域名"
+patternSubdomains = "匹配所有子域名"
+patternExample = "匹配如 gist.github.com"
+translationSettings = "翻譯設置"
+enableTranslation = "啟用翻譯"
+enableTranslationDesc = "為此網站啟用或禁用翻譯"
+translationMode = "翻譯模式"
+translationModeDesc = "選擇翻譯模式"
+modeParallel = "對照翻譯"
+modeReplace = "替換翻譯"
+advancedSettings = "高級設置"
+floatingBallToggleDesc = "在此網站顯示或隱藏懸浮球"
+addRule = "添加規則"
+deleteRule = "刪除規則"
+deleteAllPatterns = "全部刪除"
+patternsCount = "個模式"
