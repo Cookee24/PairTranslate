@@ -220,6 +220,77 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		settings.queue.cacheSize,
 	);
 
+	const debugState = () => settings.debug;
+
+	const isCacheEnabled = () => !debugState().disableCache;
+
+	const getCacheEntry = async (key: ArrayBuffer) => {
+		if (!isCacheEnabled()) {
+			return undefined;
+		}
+		return resultCache.get(key);
+	};
+
+	const setCacheEntry = async (key: ArrayBuffer, value: CachedValue) => {
+		if (!isCacheEnabled()) {
+			return;
+		}
+		await resultCache.set(key, value);
+	};
+
+	const applyDebugLatency = async () => {
+		const latency = debugState().simulateLatencyMs;
+		if (latency > 0) {
+			await new Promise((resolve) => setTimeout(resolve, latency));
+		}
+	};
+
+	const debugLog = (...args: unknown[]) => {
+		if (!debugState().verboseLogging) {
+			return;
+		}
+		console.info("[PairTranslate][Debug]", ...args);
+	};
+
+	const logGroup = (enabled: boolean, label: string, details: () => void) => {
+		if (!enabled) return;
+		console.groupCollapsed(label);
+		try {
+			details();
+		} finally {
+			console.groupEnd();
+		}
+	};
+
+	const preview = (value: string, limit = 160) =>
+		value.length > limit ? `${value.slice(0, limit)}…` : value;
+
+	const traceLlms = (
+		phase: "request" | "response",
+		meta: Record<string, unknown>,
+	) => {
+		logGroup(
+			debugState().traceLlms,
+			`[LLM ${phase}] ${meta.model ?? meta.service ?? ""}`,
+			() => {
+				console.log(meta);
+			},
+		);
+	};
+
+	const traceTraditional = (
+		phase: "request" | "response",
+		meta: Record<string, unknown>,
+	) => {
+		logGroup(
+			debugState().traceTraditional,
+			`[Traditional ${phase}] ${meta.apiSpec ?? meta.service ?? ""}`,
+			() => {
+				console.log(meta);
+			},
+		);
+	};
+
 	const resolveService = (modelId: string): ServiceSettings => {
 		const service = settings.services[modelId];
 		if (!service) {
@@ -310,20 +381,35 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			}
 		};
 
+		traceTraditional("request", {
+			service: service.name,
+			apiSpec: service.apiSpec,
+			texts: texts.length,
+			characters: texts.reduce((sum, entry) => sum + entry.length, 0),
+			srcLang,
+			dstLang,
+		});
+
+		const tokenEstimate = estimateTokens(texts);
+		let result: string[];
 		if (SINGLE_TEXT_SERVICES.has(service.apiSpec)) {
 			const translated: string[] = [];
 			for (const text of texts) {
 				const response = await runOnce([text]);
 				translated.push(response.translatedText[0]);
 			}
-			return { result: translated, tokens: estimateTokens(texts) };
+			result = translated;
+		} else {
+			const response = await runOnce(texts);
+			result = response.translatedText;
 		}
-
-		const response = await runOnce(texts);
-		return {
-			result: response.translatedText,
-			tokens: estimateTokens(texts),
-		};
+		traceTraditional("response", {
+			service: service.name,
+			apiSpec: service.apiSpec,
+			items: result.length,
+			tokens: tokenEstimate,
+		});
+		return { result, tokens: tokenEstimate };
 	};
 
 	const runTraditionalStream = (
@@ -382,7 +468,9 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		const conversation = initializeConversation(prompt, promptCtx);
 		let totalTokens = 0;
 		let reasoning: string | undefined;
+		let stepIndex = 0;
 		for (const step of prompt.steps) {
+			stepIndex += 1;
 			throwIfAborted(signal);
 			conversation.push({
 				role: "user",
@@ -392,6 +480,17 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				service,
 				snapshotConversation(conversation),
 			);
+			const latestMessage = conversation.at(-1);
+			traceLlms("request", {
+				service: service.name,
+				model: service.model ?? "(unset)",
+				step: stepIndex,
+				stream: false,
+				snippet:
+					typeof latestMessage?.content === "string"
+						? preview(latestMessage.content)
+						: undefined,
+			});
 			try {
 				const schema = isStructuredOutput(step.output)
 					? (step.output.schema as JSONSchema)
@@ -405,6 +504,23 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				conversation.push({
 					role: "assistant",
 					content: response.content ?? toStreamChunk(output),
+				});
+				traceLlms("response", {
+					service: service.name,
+					model: service.model ?? "(unset)",
+					step: stepIndex,
+					stream: false,
+					snippet:
+						typeof output === "string"
+							? preview(output)
+							: Array.isArray(output)
+								? `array(${output.length})`
+								: typeof output,
+					tokens:
+						response.usage?.totalTokens ??
+						response.usage?.completionTokens ??
+						response.usage?.promptTokens ??
+						0,
 				});
 			} catch (error) {
 				throw convertFromLLMError(error);
@@ -448,6 +564,17 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					service,
 					snapshotConversation(conversation),
 				);
+				const latestMessage = conversation.at(-1);
+				traceLlms("request", {
+					service: service.name,
+					model: service.model ?? "(unset)",
+					step: index + 1,
+					stream: false,
+					snippet:
+						typeof latestMessage?.content === "string"
+							? preview(latestMessage.content)
+							: undefined,
+				});
 				try {
 					const schema = isStructuredOutput(step.output)
 						? (step.output.schema as JSONSchema)
@@ -458,6 +585,18 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					conversation.push({
 						role: "assistant",
 						content: response.content ?? toStreamChunk(output),
+					});
+					traceLlms("response", {
+						service: service.name,
+						model: service.model ?? "(unset)",
+						step: index + 1,
+						stream: false,
+						snippet:
+							typeof output === "string"
+								? preview(output)
+								: Array.isArray(output)
+									? `array(${output.length})`
+									: typeof output,
 					});
 				} catch (error) {
 					throw convertFromLLMError(error);
@@ -479,6 +618,17 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				snapshotConversation(conversation),
 				{ stream: true },
 			);
+			const latestPrompt = conversation.at(-1);
+			traceLlms("request", {
+				service: service.name,
+				model: service.model ?? "(unset)",
+				step: prompt.steps.length,
+				stream: true,
+				snippet:
+					typeof latestPrompt?.content === "string"
+						? preview(latestPrompt.content)
+						: undefined,
+			});
 
 			const { promise: completion, resolve: resolveCompletion } =
 				Promise.withResolvers<number>();
@@ -493,6 +643,13 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 								if (next.value.reasoning) {
 									yield { reasoning: next.value.reasoning };
 								}
+								traceLlms("response", {
+									service: service.name,
+									model: service.model ?? "(unset)",
+									stream: true,
+									tokens: next.value.usage?.completionTokens ?? 0,
+									reasoningChars: next.value.reasoning?.length ?? 0,
+								});
 								resolveCompletion(next.value.usage?.completionTokens ?? 0);
 								return;
 							}
@@ -546,6 +703,17 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		);
 		let thinCacheState: ThinCacheState | undefined;
 
+		debugLog("unary/start", {
+			modelId,
+			promptId,
+			payloadType: Array.isArray(text) ? "array" : typeof text,
+			payloadSize: Array.isArray(text)
+				? text.length
+				: typeof text === "string"
+					? text.length
+					: 0,
+		});
+
 		if (options.cleanCache) {
 			await resultCache.del(cacheKey);
 		}
@@ -574,7 +742,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				cacheState.missing = payloadArray.map((_, index) => index);
 			} else {
 				const cachedEntries = await Promise.all(
-					entryKeys.map((key) => resultCache.get(key)),
+					entryKeys.map((key) => getCacheEntry(key)),
 				);
 				cachedEntries.forEach((entry, index) => {
 					if (entry && typeof entry.output === "string") {
@@ -585,7 +753,14 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				});
 				if (cacheState.missing.length === 0) {
 					const cachedValue = cacheState.values.slice() as string[];
-					await resultCache.set(cacheKey, { output: cachedValue });
+					await setCacheEntry(cacheKey, { output: cachedValue });
+					await applyDebugLatency();
+					debugLog("unary/cache-hit", {
+						modelId,
+						promptId,
+						type: "thin",
+						entries: cachedValue.length,
+					});
 					return {
 						value: {
 							output: cachedValue,
@@ -596,8 +771,14 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				}
 			}
 		} else if (!options.cleanCache) {
-			const cached = await resultCache.get(cacheKey);
+			const cached = await getCacheEntry(cacheKey);
 			if (cached) {
+				await applyDebugLatency();
+				debugLog("unary/cache-hit", {
+					modelId,
+					promptId,
+					type: "full",
+				});
 				return {
 					value: cached,
 					completionTokens: 0,
@@ -687,7 +868,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 								"Thin cache entry missing expected translation result.",
 							);
 						}
-						await resultCache.set(thinCacheState.keys[index], {
+						await setCacheEntry(thinCacheState.keys[index], {
 							output: value,
 						});
 					})(),
@@ -695,9 +876,17 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			);
 		}
 
-		await resultCache.set(cacheKey, {
+		await setCacheEntry(cacheKey, {
 			output: finalValue,
 			reasoning,
+		});
+		await applyDebugLatency();
+		debugLog("unary/complete", {
+			modelId,
+			promptId,
+			stream: false,
+			completionTokens,
+			reasoning: Boolean(reasoning),
 		});
 		return {
 			value: {
@@ -746,6 +935,11 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					? normalizePromptInput(compiledPrompt, payload)
 					: payload;
 
+			debugLog("stream/start", {
+				modelId,
+				promptId,
+				cleanCache: Boolean(options.cleanCache),
+			});
 			return (async function* () {
 				const cacheKey = await computeCacheKey(
 					modelId,
@@ -758,9 +952,14 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				if (options.cleanCache) {
 					await resultCache.del(cacheKey);
 				} else {
-					const cached = await resultCache.get(cacheKey);
+					const cached = await getCacheEntry(cacheKey);
 					const cachedValue = cached?.output;
 					if (cachedValue !== undefined) {
+						await applyDebugLatency();
+						debugLog("stream/cache-hit", {
+							modelId,
+							promptId,
+						});
 						yield {
 							content:
 								typeof cachedValue === "string"
@@ -801,8 +1000,13 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				const iterator = await queue.enqueueStream(streamRunner, estimated);
 				let translationAggregate = "";
 				let reasoningAggregate = "";
+				let emitted = false;
 				try {
 					for await (const chunk of iterator) {
+						if (!emitted) {
+							emitted = true;
+							await applyDebugLatency();
+						}
 						if (chunk.content) {
 							translationAggregate += chunk.content;
 						}
@@ -816,17 +1020,23 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 							finalStep,
 							translationAggregate,
 						);
-						await resultCache.set(cacheKey, {
+						await setCacheEntry(cacheKey, {
 							output: normalizedOutput,
 							reasoning: reasoningAggregate || undefined,
 						});
 					} else if (traditionalResult) {
-						await resultCache.set(cacheKey, {
+						await setCacheEntry(cacheKey, {
 							output: Array.isArray(payload)
 								? traditionalResult
 								: traditionalResult[0],
 						});
 					}
+					debugLog("stream/complete", {
+						modelId,
+						promptId,
+						aggregatedSize: translationAggregate.length,
+						reasoningSize: reasoningAggregate.length,
+					});
 				} finally {
 					if (signal?.aborted) {
 						// @ts-expect-error This is fine, since no one is using the value.

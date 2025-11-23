@@ -91,6 +91,16 @@ export function generateQueueControlSettings(): s.QueueControlSettings {
 	};
 }
 
+export function generateDebugSettings(): s.DebugSettings {
+	return {
+		verboseLogging: import.meta.env.DEV,
+		traceLlms: false,
+		traceTraditional: false,
+		disableCache: false,
+		simulateLatencyMs: 0,
+	};
+}
+
 export function generatePromptSettings(): s.PromptsSettings {
 	return {
 		[PROMPT_ID.translate]: {
@@ -179,6 +189,7 @@ export function generateDefaultSettings(): s.SettingsSchema {
 		websiteRules: generateWebsiteRuleSettings(),
 		queue: generateQueueControlSettings(),
 		prompts: generatePromptSettings(),
+		debug: generateDebugSettings(),
 	};
 }
 

@@ -14,6 +14,7 @@ traditionalServices = "전통 번역"
 websiteRules = "웹사이트 규칙"
 advanced = "고급 설정"
 about = "정보"
+debug = "디버그 설정"
 website = "웹사이트"
 
 [popup.navigation]
@@ -331,6 +332,9 @@ thirdPartyNote = "참고: 사용자는 이 서비스에 대한 자체 API 키를
 footer = "언어 학습자와 다국어 웹 브라우징을 위해 ❤️를 담아 만들었습니다"
 extensionName = "PairTranslate"
 extensionVersion = "0.0.0"
+debugIconLabel = "PairTranslate 아이콘"
+debugTapHint = "아이콘을 $1번 더 탭하면 디버그 설정이 열립니다."
+debugUnlocked = "디버그 설정이 열렸습니다. 아래로 스크롤해 보세요."
 
 [settings.about.featuresList]
 _1 = "다양한 LLM 서비스 지원(OpenAI, Anthropic, Gemini 등)"
@@ -347,6 +351,30 @@ _3 = "Google Gemini API"
 _4 = "Microsoft Bing 번역"
 _5 = "Google 번역 API"
 _6 = "기타 OpenAI 호환 서비스"
+
+[settings.debug]
+title = "디버그 설정"
+description = "문제 해결 중 내부 상태를 확인하고 자세한 로그 및 자가 진단을 실행합니다."
+verboseLogging = "상세 로그 강제"
+verboseLoggingDesc = "프로덕션 빌드에서도 항상 RPC 및 번역 수명주기 로그를 출력합니다."
+traceLlms = "LLM 요청 추적"
+traceLlmsDesc = "각 LLM 요청의 마스킹된 프롬프트와 응답을 기록합니다."
+traceTraditional = "전통 API 호출 추적"
+traceTraditionalDesc = "Microsoft, Google 등 전통 번역 서비스를 호출할 때마다 요청 메타데이터를 기록합니다."
+disableCache = "번역 캐시 비활성화"
+disableCacheDesc = "캐시를 우회하여 모든 요청이 즉시 상위 서비스로 전달되도록 합니다."
+simulateLatency = "응답 지연 시뮬레이션 (ms)"
+simulateLatencyDesc = "느린 네트워크를 재현하기 위해 지정한 밀리초만큼 응답을 지연시킵니다."
+simulateLatencyPlaceholder = "예: 250"
+actionsTitle = "진단 도구"
+exportSettings = "설정 스냅샷 다운로드"
+exportSettingsDesc = "현재 설정 JSON을 저장하여 버그 리포트에 첨부합니다."
+exportQueues = "큐 스냅샷 다운로드"
+exportQueuesDesc = "구성된 모든 서비스의 실시간 큐 깊이와 처리량을 캡처합니다."
+pingBackground = "백그라운드 Ping"
+pingBackgroundDesc = "백그라운드 스크립트가 살아있는지 확인합니다."
+clearRpcCache = "번역 캐시 재설정"
+clearRpcCacheDesc = "저장된 설정을 변경하지 않고 캐시만 지웁니다."
 
 # Action Items (for content scripts)
 

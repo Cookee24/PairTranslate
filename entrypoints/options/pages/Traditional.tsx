@@ -93,17 +93,19 @@ export default (props: { navId: string }) => {
 				onEditService={handleEditService}
 				onDeleteService={handleDeleteService}
 				renderServiceDetails={renderTraditionalServiceDetails}
-				extraActions=<>
-					<SectionResetButton onReset={handleReset} />
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => setShowBrowserTranslatorModal(true)}
-					>
-						<TestTube2 size={16} />
-						{t("settings.traditionalServices.checkBrowserTranslator")}
-					</Button>
-				</>
+				extraActions={
+					<>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setShowBrowserTranslatorModal(true)}
+						>
+							<TestTube2 size={16} />
+							{t("settings.traditionalServices.checkBrowserTranslator")}
+						</Button>
+						<SectionResetButton onReset={handleReset} />
+					</>
+				}
 			/>
 
 			<TraditionalModal

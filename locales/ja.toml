@@ -14,6 +14,7 @@ websiteRules = "ウェブサイトルール"
 promptSettings = "プロンプト設定"
 advanced = "詳細設定"
 about = "について"
+debug = "デバッグ設定"
 website = "ウェブサイト"
 
 [popup.navigation]
@@ -331,6 +332,9 @@ thirdPartyNote = "注：ユーザーはこれらのサービスに独自のAPI�
 footer = "言語学習者と多言語ウェブブラウジングのために❤️を込めて作成"
 extensionName = "PairTranslate"
 extensionVersion = "0.0.0"
+debugIconLabel = "PairTranslate アイコン"
+debugTapHint = "あと $1 回タップするとデバッグ設定が表示されます。"
+debugUnlocked = "デバッグ設定を表示しました。下へスクロールしてください。"
 
 [settings.about.featuresList]
 _1 = "複数のLLMサービスをサポート（OpenAI、Anthropic、Geminiなど）"
@@ -347,6 +351,30 @@ _3 = "Google Gemini API"
 _4 = "Microsoft Bing翻訳"
 _5 = "Google翻訳API"
 _6 = "その他のOpenAI互換サービス"
+
+[settings.debug]
+title = "デバッグ設定"
+description = "トラブルシューティング時に内部状態を確認し、詳細ログや自己診断を実行します。"
+verboseLogging = "詳細ログを強制"
+verboseLoggingDesc = "本番ビルドでも常に RPC と翻訳ライフサイクルのログを出力します。"
+traceLlms = "LLM リクエストの追跡"
+traceLlmsDesc = "各 LLM リクエストのマスク済みプロンプトとレスポンスを出力します。"
+traceTraditional = "従来型 API コールの追跡"
+traceTraditionalDesc = "Microsoft や Google などの翻訳 API を呼ぶたびにリクエストメタデータを記録します。"
+disableCache = "翻訳キャッシュを無効化"
+disableCacheDesc = "キャッシュを使わず常に上流サービスへ直接リクエストします。"
+simulateLatency = "レスポンス遅延をシミュレート (ms)"
+simulateLatencyDesc = "指定したミリ秒だけレスポンスを遅延させて遅いネットワークを再現します。"
+simulateLatencyPlaceholder = "例: 250"
+actionsTitle = "診断ツール"
+exportSettings = "設定スナップショットをダウンロード"
+exportSettingsDesc = "現在の設定 JSON を保存し、バグ報告に添付できます。"
+exportQueues = "キュースナップショットをダウンロード"
+exportQueuesDesc = "各サービスのリアルタイムなキュー深度とスループットを取得します。"
+pingBackground = "バックグラウンドを Ping"
+pingBackgroundDesc = "バックグラウンドスクリプトが稼働しているか確認します。"
+clearRpcCache = "翻訳キャッシュをリセット"
+clearRpcCacheDesc = "翻訳キャッシュのみを消去し、保存済み設定には影響しません。"
 
 # Action Items (for content scripts)
 

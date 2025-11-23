@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const SETTINGS_VERSION = 1;
+export const SETTINGS_VERSION = 2;
 
 export const FloatingBallPosition = z.object({
 	side: z.enum(["left", "right"]).default("right"),
@@ -75,6 +75,15 @@ export const QueueControlSettings = z.object({
 	cacheSize: z.number().min(0),
 });
 export type QueueControlSettings = z.infer<typeof QueueControlSettings>;
+
+export const DebugSettings = z.object({
+	verboseLogging: z.boolean().default(false),
+	traceLlms: z.boolean().default(false),
+	traceTraditional: z.boolean().default(false),
+	disableCache: z.boolean().default(false),
+	simulateLatencyMs: z.number().min(0).max(3000).default(0),
+});
+export type DebugSettings = z.infer<typeof DebugSettings>;
 
 export const TranslateSettings = z.object({
 	sourceLang: z.string().default("auto"),
@@ -152,5 +161,6 @@ export const SettingsSchema = z.object({
 	queue: QueueControlSettings,
 	prompts: PromptsSettings,
 	websiteRules: WebsiteRulesSettings,
+	debug: DebugSettings,
 });
 export type SettingsSchema = z.infer<typeof SettingsSchema>;

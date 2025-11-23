@@ -14,6 +14,7 @@ traditionalServices = "传统翻译"
 websiteRules = "网站规则"
 advanced = "高级设置"
 about = "关于"
+debug = "调试设置"
 website = "网站"
 
 [popup.navigation]
@@ -331,6 +332,9 @@ thirdPartyNote = "注意：用户必须为这些服务提供自己的 API 密钥
 footer = "用 ❤️ 为语言学习者和多语言网页浏览而制作"
 extensionName = "PairTranslate"
 extensionVersion = "0.0.0"
+debugIconLabel = "PairTranslate 图标"
+debugTapHint = "再点击 $1 次即可解锁调试设置。"
+debugUnlocked = "已解锁调试设置，向下滚动即可查看。"
 
 [settings.about.featuresList]
 _1 = "支持多种 LLM 服务（OpenAI、Anthropic、Gemini 等）"
@@ -347,6 +351,30 @@ _3 = "Google Gemini API"
 _4 = "微软必应翻译"
 _5 = "谷歌翻译 API"
 _6 = "及其他 OpenAI 兼容服务"
+
+[settings.debug]
+title = "调试设置"
+description = "在排查问题时查看内部状态、开启详细日志，并运行翻译服务自检。"
+verboseLogging = "强制详细日志"
+verboseLoggingDesc = "即使在生产环境也始终输出 RPC 与翻译生命周期日志。"
+traceLlms = "跟踪 LLM 请求"
+traceLlmsDesc = "为每个 LLM 请求输出脱敏后的提示与响应，便于分析。"
+traceTraditional = "跟踪传统 API 调用"
+traceTraditionalDesc = "当调用微软、谷歌等传统翻译服务时记录请求元数据。"
+disableCache = "禁用翻译缓存"
+disableCacheDesc = "绕过翻译结果缓存，让每次请求都直接访问上游服务。"
+simulateLatency = "模拟响应延迟（毫秒）"
+simulateLatencyDesc = "在返回结果前增加指定毫秒的延时，用于模拟慢速或不稳定的网络。"
+simulateLatencyPlaceholder = "例如 250"
+actionsTitle = "诊断工具"
+exportSettings = "下载设置快照"
+exportSettingsDesc = "导出当前设置 JSON，方便在提交问题时附带。"
+exportQueues = "下载队列快照"
+exportQueuesDesc = "捕获所有配置服务的实时队列深度与吞吐。"
+pingBackground = "Ping 后台进程"
+pingBackgroundDesc = "确认后台脚本仍然存活并可以响应。"
+clearRpcCache = "重置翻译缓存"
+clearRpcCacheDesc = "仅清空翻译缓存，不会修改你的其他设置。"
 
 # Action Items (for content scripts)
 

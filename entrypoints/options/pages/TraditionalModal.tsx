@@ -36,8 +36,8 @@ export default (props: TraditionalModalProps) => {
 
 	createEffect(
 		on(
-			() => props.modelInfo,
-			(info) => setFormData(info || DEFAULT),
+			[() => props.modelInfo, () => props.open],
+			([info, open]) => open && setFormData(info || DEFAULT),
 		),
 	);
 

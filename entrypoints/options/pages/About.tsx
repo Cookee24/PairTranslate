@@ -1,9 +1,22 @@
-import { ExternalLink, Github, Info } from "lucide-solid";
+import { ExternalLink, Github } from "lucide-solid";
+import { type Accessor, Show } from "solid-js";
+import { browser } from "#imports";
+import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
 import { t } from "~/utils/i18n";
 
-export default (props: { navId: string }) => {
+interface AboutProps {
+	navId: string;
+	onRevealDebug?: () => void;
+	debugVisible?: Accessor<boolean>;
+	debugTapsRemaining?: Accessor<number>;
+}
+
+const APP_ICON_URL = browser.runtime.getURL("/icons/128.png");
+
+export default (props: AboutProps) => {
 	const extensionName = t("settings.about.extensionName");
+	const debugVisible = () => props.debugVisible?.() ?? false;
 
 	return (
 		<Card.Root class="rounded-box bg-base-200/30" data-nav={props.navId}>
@@ -11,7 +24,23 @@ export default (props: { navId: string }) => {
 				<Card.Title>{t("settings.about.title")}</Card.Title>
 				<div class="space-y-6">
 					<div class="text-center">
-						<Info size={48} class="mx-auto mb-4 text-primary" />
+						<Button
+							type="button"
+							variant="ghost"
+							onClick={() => props.onRevealDebug?.()}
+							class="btn-circle mx-auto mb-4 h-20 w-20 bg-base-100/80 border border-base-300/60 shadow"
+							aria-label={t("settings.about.debugIconLabel")}
+						>
+							<img
+								src={APP_ICON_URL}
+								alt={t("settings.about.debugIconLabel")}
+							/>
+						</Button>
+						<Show when={debugVisible()}>
+							<p class="text-xs font-semibold text-success">
+								{t("settings.about.debugUnlocked")}
+							</p>
+						</Show>
 						<h2 class="text-2xl font-bold mb-2">{extensionName}</h2>
 						<p class="text-base-content/70">
 							{t("settings.about.version")}{" "}

@@ -2,6 +2,7 @@ import { HashRouter, Navigate, Route } from "@solidjs/router";
 import {
 	Activity,
 	BrainCircuit,
+	Bug,
 	Cog,
 	FileText,
 	Globe,
@@ -11,6 +12,7 @@ import {
 } from "lucide-solid";
 import {
 	createEffect,
+	createMemo,
 	createSignal,
 	type JSX,
 	onCleanup,
@@ -24,6 +26,7 @@ import Nav from "./components/Nav";
 import About from "./pages/About";
 import Advanced from "./pages/Advanced";
 import Basic from "./pages/Basic";
+import Debug from "./pages/Debug";
 import FlowControl from "./pages/FlowControl";
 import LLM from "./pages/LLM";
 import Prompt from "./pages/Prompt";
@@ -47,8 +50,22 @@ const OptionsRoot = (props: { children?: JSX.Element }) => {
 	return <div class="min-h-screen">{props.children}</div>;
 };
 
+const DEBUG_TAPS_REQUIRED = 5;
+
 const SettingsPage = () => {
 	const [top, setTop] = createSignal(8);
+	const [debugTapCount, setDebugTapCount] = createSignal(0);
+	const isDevBuild = import.meta.env.DEV;
+	const debugVisible = createMemo(
+		() => isDevBuild || debugTapCount() >= DEBUG_TAPS_REQUIRED,
+	);
+	const tapsRemaining = createMemo(() =>
+		debugVisible() ? 0 : Math.max(0, DEBUG_TAPS_REQUIRED - debugTapCount()),
+	);
+	const handleDebugIconClick = () => {
+		if (debugVisible()) return;
+		setDebugTapCount((count) => Math.min(DEBUG_TAPS_REQUIRED, count + 1));
+	};
 
 	let ref: HTMLDivElement | undefined;
 	onMount(() => {
@@ -99,6 +116,12 @@ const SettingsPage = () => {
 					<Cog size={16} />
 					{t("nav.advanced")}
 				</Nav.Item>
+				{debugVisible() && (
+					<Nav.Item navId="debug">
+						<Bug size={16} />
+						{t("nav.debug")}
+					</Nav.Item>
+				)}
 				<Nav.Item navId="about">
 					<Info size={16} />
 					{t("nav.about")}
@@ -119,7 +142,13 @@ const SettingsPage = () => {
 				<FlowControl navId="flowControl" />
 				<WebsiteRules navId="websiteRules" />
 				<Advanced navId="advanced" />
-				<About navId="about" />
+				{debugVisible() && <Debug navId="debug" />}
+				<About
+					navId="about"
+					onRevealDebug={handleDebugIconClick}
+					debugVisible={debugVisible}
+					debugTapsRemaining={tapsRemaining}
+				/>
 			</div>
 		</>
 	);

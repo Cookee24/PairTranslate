@@ -1,6 +1,7 @@
 import type { ServicesSettings } from "./def";
 import { SETTINGS_VERSION, SettingsSchema } from "./def";
 import {
+	generateDebugSettings,
 	generatePromptSettings,
 	generateQueueControlSettings,
 	generateTranslateSettings,
@@ -45,7 +46,9 @@ type LegacyTranslateSettings = {
 	inputTranslateLang: string;
 };
 
-type LegacySettingsV0 = Omit<SettingsSchema, "services" | "prompts" | "__v"> & {
+type SettingsV1 = Omit<SettingsSchema, "debug"> & { __v: 1 };
+
+type LegacySettingsV0 = Omit<SettingsV1, "services" | "prompts"> & {
 	services?: LegacyServices;
 	prompts?: SettingsSchema["prompts"];
 	translate?: LegacyTranslateSettings;
@@ -66,6 +69,11 @@ export const migrateSettings = (raw: unknown): SettingsSchema => {
 			version = 1;
 			continue;
 		}
+		if (version === 1) {
+			working = migrateV1ToV2(working as SettingsV1);
+			version = 2;
+			continue;
+		}
 		throw new Error(`Unsupported settings version: ${version}`);
 	}
 
@@ -78,7 +86,7 @@ export const migrateSettings = (raw: unknown): SettingsSchema => {
 	return parsed.data;
 };
 
-function migrateV0ToV1(oldSettings: LegacySettingsV0): SettingsSchema {
+function migrateV0ToV1(oldSettings: LegacySettingsV0): SettingsV1 {
 	const services = convertLegacyServices(oldSettings.services);
 	const translate = getModernTranslateSettings(oldSettings.translate);
 	const queue = buildQueueSettings(oldSettings.translate);
@@ -90,6 +98,14 @@ function migrateV0ToV1(oldSettings: LegacySettingsV0): SettingsSchema {
 		services,
 		prompts: oldSettings.prompts ?? generatePromptSettings(),
 		__v: 1,
+	};
+}
+
+function migrateV1ToV2(oldSettings: SettingsV1): SettingsSchema {
+	return {
+		...oldSettings,
+		debug: generateDebugSettings(),
+		__v: 2,
 	};
 }
 

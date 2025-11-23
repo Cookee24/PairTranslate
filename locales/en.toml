@@ -14,6 +14,7 @@ traditionalServices = "Traditional Translation"
 websiteRules = "Website Rules"
 advanced = "Advanced Settings"
 about = "About"
+debug = "Debug Settings"
 website = "Website"
 
 [popup.navigation]
@@ -331,6 +332,9 @@ thirdPartyNote = "Note: Users must provide their own API keys for these services
 footer = "Made with ❤️ for language learners and multilingual web browsing"
 extensionName = "PairTranslate"
 extensionVersion = "0.0.0"
+debugIconLabel = "PairTranslate icon"
+debugTapHint = "Tap the icon $1 more times to unlock Debug Settings."
+debugUnlocked = "Debug Settings unlocked — scroll down to explore the new tools."
 
 [settings.about.featuresList]
 _1 = "Support for multiple LLM services (OpenAI, Anthropic, Gemini, etc.)"
@@ -347,6 +351,30 @@ _3 = "Google Gemini API"
 _4 = "Microsoft Bing Translate"
 _5 = "Google Translate API"
 _6 = "Other OpenAI-compatible services"
+
+[settings.debug]
+title = "Debug Settings"
+description = "Inspect instrumentation, toggle verbose diagnostics, and run sanity checks while troubleshooting translation issues."
+verboseLogging = "Force verbose logging"
+verboseLoggingDesc = "Always log RPC calls and translation lifecycle events, even in production builds."
+traceLlms = "Trace LLM requests"
+traceLlmsDesc = "Emit sanitized prompts and completions for every LLM request so you can inspect generated payloads."
+traceTraditional = "Trace traditional API calls"
+traceTraditionalDesc = "Log request metadata whenever Microsoft, Google, or other REST translators are invoked."
+disableCache = "Disable translation cache"
+disableCacheDesc = "Bypass the translation cache so each request hits the upstream service immediately."
+simulateLatency = "Simulate response latency (ms)"
+simulateLatencyDesc = "Delay translator responses by this many milliseconds to mimic slow or flaky networks."
+simulateLatencyPlaceholder = "e.g. 250"
+actionsTitle = "Diagnostics"
+exportSettings = "Download settings snapshot"
+exportSettingsDesc = "Save the current settings JSON to attach to bug reports."
+exportQueues = "Download queue snapshot"
+exportQueuesDesc = "Capture live queue depth and throughput for every configured service."
+pingBackground = "Ping background worker"
+pingBackgroundDesc = "Verify that the background script is alive and ready to accept RPC calls."
+clearRpcCache = "Reset translation cache"
+clearRpcCacheDesc = "Clear cached translation entries without modifying your saved settings."
 
 # Action Items (for content scripts)
 

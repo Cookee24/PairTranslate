@@ -1,5 +1,5 @@
 import { Check, CheckCheck, Download, Plus, X } from "lucide-solid";
-import { createMemo, createSignal, For, onMount, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, For, Show } from "solid-js";
 import { Alert } from "~/components/Alert";
 import { Badge } from "~/components/Badge";
 import { Button } from "~/components/Button";
@@ -101,11 +101,7 @@ export default (props: BrowserTranslatorModalProps) => {
 		}
 	};
 
-	onMount(() => {
-		if (props.open) {
-			checkCapabilities();
-		}
-	});
+	createEffect(() => props.open && checkCapabilities());
 
 	const handleAddBrowserService = () => {
 		if (!props.onAddService) return;
