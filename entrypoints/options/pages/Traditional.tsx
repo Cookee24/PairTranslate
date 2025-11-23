@@ -1,5 +1,7 @@
 import { TestTube2 } from "lucide-solid";
 import { createSignal } from "solid-js";
+import type { StoreSetter } from "solid-js/store";
+import type { ServicesSettings } from "@/utils/settings";
 import { Button } from "~/components/Button";
 import { QueueSummary } from "~/components/settings/QueueSummary";
 import { SectionResetButton } from "~/components/settings/SectionResetButton";
@@ -7,7 +9,6 @@ import { ServiceManager } from "~/components/settings/ServiceManager";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
 import {
-	replaceServicesOfType,
 	type ServiceByType,
 	selectServicesByType,
 } from "~/utils/settings/services";
@@ -25,16 +26,9 @@ export default (props: { navId: string }) => {
 	const getTraditionalServices = () =>
 		selectServicesByType(settings.services, "traditional");
 
-	const setTraditionalServices = (
-		updater: (
-			data: Record<string, TraditionalService>,
-		) => Record<string, TraditionalService>,
-	) =>
-		setSettings("services", (services) => {
-			const subset = selectServicesByType(services, "traditional");
-			const updatedSubset = updater({ ...subset });
-			return replaceServicesOfType(services, "traditional", updatedSubset);
-		});
+	const setTraditionalServices = (updater: StoreSetter<ServicesSettings>) =>
+		// @ts-ignore
+		setSettings("services", updater);
 
 	const {
 		services,

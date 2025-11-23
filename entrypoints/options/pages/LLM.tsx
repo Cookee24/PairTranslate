@@ -1,10 +1,11 @@
+import type { StoreSetter } from "solid-js/store";
+import type { ServicesSettings } from "@/utils/settings";
 import { QueueSummary } from "~/components/settings/QueueSummary";
 import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { ServiceManager } from "~/components/settings/ServiceManager";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
 import {
-	replaceServicesOfType,
 	type ServiceByType,
 	selectServicesByType,
 } from "~/utils/settings/services";
@@ -17,14 +18,9 @@ export default (props: { navId: string }) => {
 
 	const getLLMServices = () => selectServicesByType(settings.services, "llm");
 
-	const setLLMServices = (
-		updater: (data: Record<string, LLMService>) => Record<string, LLMService>,
-	) =>
-		setSettings("services", (services) => {
-			const subset = selectServicesByType(services, "llm");
-			const updatedSubset = updater({ ...subset });
-			return replaceServicesOfType(services, "llm", updatedSubset);
-		});
+	const setLLMServices = (updater: StoreSetter<ServicesSettings>) =>
+		// @ts-ignore
+		setSettings("services", updater);
 
 	const {
 		services: llmServices,

@@ -1,9 +1,9 @@
 import { trackDeep } from "@solid-primitives/deep";
 import type { Accessor } from "solid-js";
 import { createEffect, createSignal } from "solid-js";
-import { unwrap } from "solid-js/store";
+import { produce, type StoreSetter, unwrap } from "solid-js/store";
 import { v4 as uuidv4 } from "uuid";
-import type { ServiceSettings } from "~/utils/settings";
+import type { ServiceSettings, ServicesSettings } from "~/utils/settings";
 
 export interface UseServiceManagementReturn<T extends ServiceSettings> {
 	services: Accessor<[string, T][]>;
@@ -18,9 +18,7 @@ export interface UseServiceManagementReturn<T extends ServiceSettings> {
 
 export function useServiceManagement<T extends ServiceSettings>(
 	getServices: () => Record<string, T>,
-	setServices: (
-		updater: (data: Record<string, T>) => Record<string, T>,
-	) => void,
+	setServices: (updater: StoreSetter<ServicesSettings>) => void,
 ): UseServiceManagementReturn<T> {
 	const [showModal, setShowModal] = createSignal(false);
 	const [editingService, setEditingService] = createSignal<
@@ -48,13 +46,11 @@ export function useServiceManagement<T extends ServiceSettings>(
 	};
 
 	const handleDeleteService = (serviceId: string) => {
-		setServices((data) => {
-			if (serviceId in data) {
+		setServices(
+			produce((data) => {
 				delete data[serviceId];
-				setServicesList(Object.entries(data));
-			}
-			return { ...data };
-		});
+			}),
+		);
 	};
 
 	const handleSaveService = (config: T) => {
