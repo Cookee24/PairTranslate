@@ -536,7 +536,14 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			(service.type === "traditional" ||
 				(service.type === "llm" && compiled?.input === "stringArray"));
 
-		const cacheKey = await computeCacheKey(promptId, modelId, text, ctx);
+		const cacheKey = await computeCacheKey(
+			promptId,
+			modelId,
+			text,
+			ctx,
+			options.srcLang,
+			options.dstLang,
+		);
 		let thinCacheState: ThinCacheState | undefined;
 
 		if (options.cleanCache) {
@@ -546,7 +553,14 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		if (supportsThinCache && payloadArray) {
 			const entryKeys = await Promise.all(
 				payloadArray.map((entry) =>
-					computeCacheKey(promptId, modelId, entry, ctx),
+					computeCacheKey(
+						promptId,
+						modelId,
+						entry,
+						ctx,
+						options.srcLang,
+						options.dstLang,
+					),
 				),
 			);
 			const cacheState: ThinCacheState = {
@@ -733,7 +747,14 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					: payload;
 
 			return (async function* () {
-				const cacheKey = await computeCacheKey(modelId, promptId, text, ctx);
+				const cacheKey = await computeCacheKey(
+					modelId,
+					promptId,
+					text,
+					ctx,
+					options.srcLang,
+					options.dstLang,
+				);
 				if (options.cleanCache) {
 					await resultCache.del(cacheKey);
 				} else {

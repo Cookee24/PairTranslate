@@ -72,7 +72,11 @@ const batchMismatchError = (exp: number, got: number) =>
 	);
 
 // Helper to get translation context
-const useTranslationContext = (modelIdOverride?: () => string | undefined) => {
+const useTranslationContext = (
+	modelIdOverride?: () => string | undefined,
+	srcLangOverride?: () => string | undefined,
+	dstLangOverride?: () => string | undefined,
+) => {
 	const websiteRule = useWebsiteRule();
 	const { settings } = useSettings();
 
@@ -82,8 +86,14 @@ const useTranslationContext = (modelIdOverride?: () => string | undefined) => {
 			: websiteRule.inTextTranslateModel ||
 				settings.translate.inTextTranslateModel;
 
-	const srcLang = () => websiteRule.sourceLang || settings.translate.sourceLang;
-	const dstLang = () => websiteRule.targetLang || settings.translate.targetLang;
+	const srcLang = () =>
+		srcLangOverride?.() ||
+		websiteRule.sourceLang ||
+		settings.translate.sourceLang;
+	const dstLang = () =>
+		dstLangOverride?.() ||
+		websiteRule.targetLang ||
+		settings.translate.targetLang;
 
 	return [modelId, srcLang, dstLang] as const;
 };
@@ -93,11 +103,17 @@ export function createBatchTranslation(
 	options: {
 		promptId?: string;
 		modelId?: () => string | undefined;
+		srcLang?: () => string | undefined;
+		dstLang?: () => string | undefined;
 		thinCache?: boolean;
 		ctx?: () => Record<string, unknown>;
 	} = {},
 ): BatchReturn {
-	const [modelId, srcLang, dstLang] = useTranslationContext(options.modelId);
+	const [modelId, srcLang, dstLang] = useTranslationContext(
+		options.modelId,
+		options.srcLang,
+		options.dstLang,
+	);
 	const promptId = options.promptId || PROMPT_ID.batchTranslate;
 	const ctx = options.ctx || (() => ({ page: getPageContext() }));
 	const thinCache = options.thinCache ?? true;
@@ -281,6 +297,8 @@ export function createTranslation<T = string>(
 		stream: true;
 		promptId?: string;
 		modelId?: () => string | undefined;
+		srcLang?: () => string | undefined;
+		dstLang?: () => string | undefined;
 		ctx?: () => TranslateContext;
 	},
 ): SingleStreamReturn<T>;
@@ -289,6 +307,8 @@ export function createTranslation<T>(
 	options?: {
 		stream?: false;
 		modelId?: () => string | undefined;
+		srcLang?: () => string | undefined;
+		dstLang?: () => string | undefined;
 		promptId?: string;
 		ctx?: () => TranslateContext;
 	},
@@ -299,12 +319,18 @@ export function createTranslation<T>(
 		stream?: boolean;
 		promptId?: string;
 		modelId?: () => string | undefined;
+		srcLang?: () => string | undefined;
+		dstLang?: () => string | undefined;
 		ctx?: () => TranslateContext;
 	} = {
 		stream: false,
 	},
 ): SingleReturn<T> | SingleStreamReturn<T> {
-	const [modelId, srcLang, dstLang] = useTranslationContext(options.modelId);
+	const [modelId, srcLang, dstLang] = useTranslationContext(
+		options.modelId,
+		options.srcLang,
+		options.dstLang,
+	);
 	const promptId = options.promptId || PROMPT_ID.translate;
 	const ctx = options.ctx || (() => ({ page: getPageContext() }));
 	const { beginRequest } = useProgressIndicator();

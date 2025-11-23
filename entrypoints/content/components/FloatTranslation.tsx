@@ -14,17 +14,17 @@ import {
 	createMemo,
 	createSignal,
 	Index,
-	onCleanup,
 	Show,
 	splitProps,
 } from "solid-js";
-import { Badge } from "@/components/Badge";
-import Dict from "@/components/Dict";
-import { MdStyled } from "@/components/MD";
-import { createAnimatedAppearance } from "@/hooks/animation";
-import { createDictionary } from "@/hooks/dictionary";
+import { Badge } from "~/components/Badge";
 import { Button } from "~/components/Button";
+import Dict from "~/components/Dict";
 import { Loading } from "~/components/Loading";
+import { MdStyled } from "~/components/MD";
+import { ScrollableReasoning } from "~/components/Reasoning";
+import { createAnimatedAppearance } from "~/hooks/animation";
+import { createDictionary } from "~/hooks/dictionary";
 import { useSettings } from "~/hooks/settings";
 import { createTranslation } from "~/hooks/translation";
 import { cn } from "~/utils/cn";
@@ -64,69 +64,6 @@ export default (props: Props) => {
 			) : (
 				<Explain textContext={local.textContext} />
 			)}
-		</div>
-	);
-};
-
-// Shared ResizeObserver instance
-let sharedResizeObserver: ResizeObserver | null = null;
-const resizeCallbacks = new WeakMap<Element, () => void>();
-
-const getSharedResizeObserver = () => {
-	if (!sharedResizeObserver) {
-		sharedResizeObserver = new ResizeObserver((entries) => {
-			for (const entry of entries) {
-				const callback = resizeCallbacks.get(entry.target);
-				callback?.();
-			}
-		});
-	}
-	return sharedResizeObserver;
-};
-
-const ScrollableReasoning = (props: { text: string }) => {
-	const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
-	const [showTop, setShowTop] = createSignal(false);
-	const [showBottom, setShowBottom] = createSignal(false);
-
-	const checkScroll = () => {
-		const el = containerRef();
-		if (!el) return;
-
-		const { scrollTop, scrollHeight, clientHeight } = el;
-		setShowTop(scrollTop > 0);
-		setShowBottom(scrollTop + clientHeight < scrollHeight - 1);
-	};
-
-	createEffect(() => {
-		const el = containerRef();
-		if (!el) return;
-
-		checkScroll();
-		el.addEventListener("scroll", checkScroll);
-
-		const observer = getSharedResizeObserver();
-		resizeCallbacks.set(el, checkScroll);
-		observer.observe(el);
-
-		onCleanup(() => {
-			el.removeEventListener("scroll", checkScroll);
-			observer.unobserve(el);
-			resizeCallbacks.delete(el);
-		});
-	});
-
-	return (
-		<div class="w-full flex flex-col">
-			<span class="w-full text-end align-middle text-xs">
-				{showTop() ? "↑" : "•"}
-			</span>
-			<div ref={setContainerRef} class="max-h-32 overflow-y-auto">
-				<MdStyled text={props.text} />
-			</div>
-			<span class="w-full text-end align-middle text-xs">
-				{showBottom() ? "↓" : "•"}
-			</span>
 		</div>
 	);
 };

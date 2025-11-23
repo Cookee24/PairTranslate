@@ -6,6 +6,8 @@ export const computeCacheKey = async (
 	modelId: string,
 	text: string | string[] = "",
 	ctx: TranslateContext,
+	srcLang?: string,
+	dstLang?: string,
 ) => {
 	const D = "\u200C"; // Zero-width non-joiner to separate fields
 	let str = `${promptId}${modelId}${D}${Array.isArray(text) ? text.join(D) : text}${D}`;
@@ -18,6 +20,9 @@ export const computeCacheKey = async (
 		// For hit rate, we only hash the domain of the page context
 		str += ctx.page.domain;
 	}
+
+	if (srcLang) str += `${D}src:${srcLang}`;
+	if (dstLang) str += `${D}dst:${dstLang}`;
 
 	const buf = await crypto.subtle.digest("SHA-256", encoder.encode(str));
 	return buf;

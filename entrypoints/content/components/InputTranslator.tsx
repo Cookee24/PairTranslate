@@ -1,19 +1,28 @@
-import {
-	createEffect,
-	createSignal,
-	For,
-	on,
-	onCleanup,
-	onMount,
-} from "solid-js";
+import { Brain } from "lucide-solid";
+import { createEffect, For, on, onCleanup, onMount, Show } from "solid-js";
 import { Button } from "~/components/Button";
 import { Loading } from "~/components/Loading";
+import { ScrollableReasoning } from "~/components/Reasoning";
 import { Select } from "~/components/Select";
 import { useSettings } from "~/hooks/settings";
 import { createTranslation } from "~/hooks/translation";
 import { PROMPT_ID, SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { t } from "~/utils/i18n";
+import { getPageContext } from "~/utils/page-context";
 import { usePopup } from "./Popup";
+
+const ATTRS = ["id", "as", "class", "role", "aria-label"];
+const getElementAttributes = (el?: HTMLElement) => {
+	const attrs: Record<string, string> = {};
+	if (!el) return attrs;
+	for (const attr of ATTRS) {
+		const value = el.getAttribute(attr);
+		if (value) {
+			attrs[attr] = value;
+		}
+	}
+	return attrs;
+};
 
 const TranslateElement = (props: {
 	element?: HTMLInputElement | HTMLTextAreaElement;
@@ -21,23 +30,28 @@ const TranslateElement = (props: {
 }) => {
 	let ref: HTMLDivElement | undefined;
 	const { settings, setSettings } = useSettings();
-	const [targetLang, setTargetLang] = createSignal(
-		settings.translate.inputTranslateLang,
-	);
 
 	const getText = () => {
 		const el = props.element;
 		if (!el) return "";
 		return el.value || el.innerText || "";
 	};
+
 	const [data, retry] = createTranslation(getText, {
 		promptId: PROMPT_ID.inputTranslate,
 		modelId: () => settings.translate.inputTranslateModel,
 		stream: true,
+		dstLang: () => settings.translate.inputTranslateLang,
+		ctx: () => ({
+			page: getPageContext(),
+			element: {
+				tag: props.element?.tagName.toLowerCase() || "",
+				attrs: getElementAttributes(props.element),
+			},
+		}),
 	});
 
 	const handleRetry = () => {
-		if (data.loading) return;
 		retry();
 	};
 	const handleClose = () => {
@@ -61,7 +75,6 @@ const TranslateElement = (props: {
 
 	const handleLanguageChange = (e: Event) => {
 		const value = (e.target as HTMLSelectElement).value;
-		setTargetLang(value);
 		setSettings("translate", "inputTranslateLang", value);
 	};
 
@@ -79,6 +92,7 @@ const TranslateElement = (props: {
 			event.stopPropagation();
 			switch (event.key.toLowerCase()) {
 				case "escape":
+				case "c":
 					handleClose();
 					break;
 				case "enter":
@@ -101,26 +115,53 @@ const TranslateElement = (props: {
 	});
 
 	return (
-		<div class="p-4 w-full h-full flex flex-col" ref={ref}>
+		<div class="p-2 w-full h-full flex flex-col" ref={ref}>
 			<pre
 				class="p-4 rounded-box grow whitespace-pre-wrap wrap-break-word overflow-auto"
 				classList={{
 					"bg-error/10": !!data.error,
 					"text-error-content": !!data.error,
-					"bg-base-300": !data.error,
+					"bg-base-100": !data.error,
 				}}
 			>
+				{data.streaming && <Loading size="xs" />}
 				{data.error ? data.error.message : data()}
+				<Show when={data.reasoning}>
+					{(reasoning) => (
+						<div class="mt-3 rounded-box border border-base-300 p-3 bg-base-100">
+							<div class="mb-2 flex items-center gap-2 text-xs text-base-content/70">
+								<Brain size={14} />
+								{t("floatingTranslator.sections.reasoning")}
+							</div>
+							<ScrollableReasoning text={reasoning() || ""} />
+						</div>
+					)}
+				</Show>
 			</pre>
 			<div class="mt-4 flex justify-end gap-2">
-				<Select size="xs" value={targetLang()} onChange={handleLanguageChange}>
+				<Select
+					size="xs"
+					value={settings.translate.inputTranslateLang}
+					onChange={handleLanguageChange}
+				>
 					<For each={SUPPORTED_LANGUAGES}>
-						{(lang) => <option value={lang.code}>{lang.nativeName}</option>}
+						{(lang) => (
+							<option
+								selected={lang.code === settings.translate.inputTranslateLang}
+								value={lang.code}
+							>
+								{lang.nativeName}
+							</option>
+						)}
 					</For>
 				</Select>
 				<div class="grow" />
-				<Button size="xs" onClick={handleRetry} disabled={data.loading}>
-					{data.loading ? (
+				<Button
+					size="xs"
+					onClick={handleRetry}
+					disabled={data.loading && data.streaming}
+				>
+					{data.loading && data.streaming ? (
 						<>
 							<Loading size="xs" />
 							{t("common.loading")}
@@ -133,7 +174,7 @@ const TranslateElement = (props: {
 					)}
 				</Button>
 				<Button variant="error" size="xs" onClick={handleClose}>
-					<kbd class="kbd kbd-xs">Esc</kbd>
+					<kbd class="kbd kbd-xs">C</kbd>
 					{t("common.close")}
 				</Button>
 				<Button variant="success" size="xs" onClick={handleConfirm}>
@@ -156,7 +197,7 @@ export default (props: Props) => {
 	const calculatePopupPosition = (element: HTMLElement) => {
 		const rect = element.getBoundingClientRect();
 		const popupWidth = 400;
-		const popupHeight = 300;
+		const popupHeight = 320;
 		const spacing = 8;
 
 		// Try to position below the input element first
