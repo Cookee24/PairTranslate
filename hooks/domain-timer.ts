@@ -5,6 +5,7 @@ import {
 	on,
 	onCleanup,
 } from "solid-js";
+import { browser } from "wxt/browser";
 import { STORAGE_KEYS } from "~/utils/constants";
 import { createSessionStorage } from "~/utils/session";
 
@@ -20,6 +21,10 @@ const getStorageKey = (domain: string) => {
 export function createDomainEnabledTimer(
 	domain: () => string = () => window.location.hostname,
 ) {
+	// TODO: Migrate to other API
+	if (typeof browser.storage.session === "undefined")
+		return [() => undefined, async () => {}] as const;
+
 	const key = createMemo(() => {
 		const domain_ = domain();
 		if (!domain_) return "";

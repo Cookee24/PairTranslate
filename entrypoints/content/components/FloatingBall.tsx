@@ -1,12 +1,12 @@
 import { Check, Loader } from "lucide-solid";
 import { spring } from "motion";
-import { animate } from "motion/mini";
 import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { browser } from "#imports";
 import { Button } from "~/components/Button";
 import { animatedHover } from "~/hooks/animation";
 import { useProgressIndicator } from "~/hooks/progress-indicator";
 import { useSettings } from "~/hooks/settings";
+import { animate } from "~/utils/animate";
 import { t } from "~/utils/i18n";
 
 interface Props {

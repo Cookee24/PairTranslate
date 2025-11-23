@@ -2,6 +2,7 @@ import { trackStore } from "@solid-primitives/deep";
 import { Link, Power, PowerOff, Trash2 } from "lucide-solid";
 import { createMemo, createResource, For } from "solid-js";
 import { unwrap } from "solid-js/store";
+import { browser } from "wxt/browser";
 import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
@@ -213,7 +214,8 @@ export default () => {
 					</div>
 				</Card.Body>
 			</Card.Root>
-			{domain() && (
+			{/* TODO: Migrate to other API */}
+			{domain() && "session" in browser.storage && (
 				<Card.Root dash class="w-full rounded-box">
 					<Card.Body>
 						<span class="flex items-center gap-2">
