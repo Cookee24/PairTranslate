@@ -1,3 +1,4 @@
+import { trackDeep } from "@solid-primitives/deep";
 import {
 	createContext,
 	createEffect,
@@ -7,7 +8,7 @@ import {
 	Show,
 	useContext,
 } from "solid-js";
-import { createStore, type Store } from "solid-js/store";
+import { createStore, reconcile, type Store } from "solid-js/store";
 import { useSettings } from "~/hooks/settings";
 import type { WebsiteRuleSettings } from "~/utils/settings";
 
@@ -20,27 +21,37 @@ export function WebsiteRuleProvider(props: { children: JSX.Element }) {
 	const [websiteRule, setWebsiteRule] = createStore<WebsiteRuleSettings>({
 		urlPatterns: [],
 	});
-	const [idx, setIdx] = createSignal<number | null>(null);
+	const [idx, setIdx] = createSignal<number | null>(null, { equals: false });
 	const [initialized, setInitialized] = createSignal(false);
 	const domain = window.location.hostname;
 
 	const fetchOnce = () => window.rpc.matchWebsiteRule(domain).then(setIdx);
 
-	createEffect(async () => {
-		const idx_ = idx();
-		if (idx_ === null) return;
-		createEffect(
-			on(
-				[
-					() => settings.websiteRules.length,
-					() => Object.values(settings.websiteRules[idx_]).forEach(() => {}),
-				],
-				fetchOnce,
-				{ defer: true },
-			),
-		);
-		setWebsiteRule(settings.websiteRules[idx_]);
-	});
+	createEffect(
+		on(
+			idx,
+			(idx_) => {
+				createEffect(
+					on(
+						[
+							() => settings.websiteRules.length,
+							() => idx_ !== null && trackDeep(settings.websiteRules[idx_]),
+						],
+						async () => {
+							// Hacky way to ensure background has updated its cache
+							await new Promise((r) => setTimeout(r, 200));
+							fetchOnce();
+						},
+						{ defer: true },
+					),
+				);
+				idx_ === null
+					? setWebsiteRule(reconcile({ urlPatterns: [] }))
+					: setWebsiteRule(reconcile(settings.websiteRules[idx_]));
+			},
+			{ defer: true },
+		),
+	);
 
 	fetchOnce().then(() => setInitialized(true));
 

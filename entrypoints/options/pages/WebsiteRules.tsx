@@ -4,10 +4,7 @@ import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
 import { Modal } from "~/components/Modal";
 import { SettingsCard } from "~/components/settings/SettingsCard";
-import {
-	WebsiteRuleEditor,
-	type WebsiteRuleEditorRef,
-} from "~/components/website-rule/Editor";
+import { WebsiteRuleEditor } from "~/components/website-rule/Editor";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
 import type { WebsiteRuleSettings } from "~/utils/settings/def";
@@ -15,8 +12,10 @@ import { useWebsiteRuleManagement } from "../hooks/useWebsiteRuleManagement";
 
 export default (props: { navId: string }) => {
 	const { settings, setSettings } = useSettings();
-	let editorRef: WebsiteRuleEditorRef | undefined;
 	const [showConfirmClose, setShowConfirmClose] = createSignal(false);
+
+	let changed = false;
+	let currentRule: WebsiteRuleSettings | null = null;
 
 	const {
 		rules,
@@ -71,15 +70,15 @@ export default (props: { navId: string }) => {
 	);
 
 	const handleSave = () => {
-		if (editorRef) {
-			const config = editorRef.getConfig();
-			handleSaveRule(config);
+		if (currentRule) {
+			handleSaveRule(currentRule);
 			handleCloseModal();
+			changed = false;
 		}
 	};
 
 	const handleClose = () => {
-		if (editorRef?.hasChanges()) {
+		if (changed) {
 			setShowConfirmClose(true);
 		} else {
 			handleCloseModal();
@@ -168,8 +167,9 @@ export default (props: { navId: string }) => {
 			>
 				<WebsiteRuleEditor
 					s={editingRule()?.[1] ?? { urlPatterns: [] }}
-					ref={(ref) => {
-						editorRef = ref;
+					onChange={(val) => {
+						changed = true;
+						currentRule = val;
 					}}
 				/>
 			</Modal>

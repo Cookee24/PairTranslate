@@ -1,14 +1,7 @@
 import { trackStore } from "@solid-primitives/deep";
 import { Plus, Trash2 } from "lucide-solid";
-import {
-	createEffect,
-	createMemo,
-	createSignal,
-	For,
-	on,
-	Show,
-} from "solid-js";
-import { createStore, reconcile } from "solid-js/store";
+import { createEffect, createMemo, For, on, Show } from "solid-js";
+import { createStore, unwrap } from "solid-js/store";
 import { Button } from "~/components/Button";
 import { Input } from "~/components/Input";
 import { Select } from "~/components/Select";
@@ -21,14 +14,8 @@ import { t } from "~/utils/i18n";
 import type { WebsiteRuleSettings } from "~/utils/settings";
 import { selectServicesByType } from "~/utils/settings/services";
 
-export interface WebsiteRuleEditorRef {
-	getConfig: () => WebsiteRuleSettings;
-	hasChanges: () => boolean;
-}
-
 interface Props {
 	s: WebsiteRuleSettings;
-	ref?: (ref: WebsiteRuleEditorRef) => void;
 	onChange?: (newSettings: WebsiteRuleSettings) => void;
 }
 
@@ -38,45 +25,18 @@ export const WebsiteRuleEditor = (props: Props) => {
 	const [errors, setErrors] = createStore({
 		urlPatterns: "" as string,
 	});
-	const [initialConfig, setInitialConfig] = createSignal(
-		JSON.stringify(props.s),
-	);
 
-	// Expose ref to parent
-	if (props.ref) {
-		props.ref({
-			getConfig: () => local,
-			hasChanges: () => {
-				const current = JSON.stringify(local);
-				return current !== initialConfig();
-			},
-		});
-	}
-
-	createEffect(
-		on(
-			() => props.s,
-			(s) => {
-				setLocal(reconcile(s));
-				setInitialConfig(JSON.stringify(s));
-			},
-			{ defer: true },
-		),
-	);
-
-	// Support auto-save mode for popup
 	createEffect(
 		on(
 			() => trackStore(local),
 			(val) => {
-				props.onChange?.(val);
+				props.onChange?.(unwrap(val));
 			},
 			{ defer: true },
 		),
 	);
 
 	const modelOptions = createMemo<SelectOption[]>(() => {
-		trackStore(settings.services);
 		const options: SelectOption[] = [
 			{ value: "default", label: t("common.globalDefault") },
 		];

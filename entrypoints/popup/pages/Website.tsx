@@ -1,5 +1,6 @@
 import { CheckCheck, Link, Plus, Trash2 } from "lucide-solid";
 import { createEffect, createSignal, on, Show, untrack } from "solid-js";
+import { reconcile } from "solid-js/store";
 import { Button } from "~/components/Button";
 import { WebsiteRuleEditor } from "~/components/website-rule/Editor";
 import { useSettings } from "~/hooks/settings";
@@ -10,8 +11,11 @@ import { getCurrentDomain } from "../get-current";
 export default () => {
 	const { settings, setSettings } = useSettings();
 	const [domain, setDomain] = createSignal<string>();
-	const [rule, setRule] = createSignal<WebsiteRuleSettings>();
-	const [idx, setIdx] = createSignal<number>();
+	const [rule, setRule] = createSignal<WebsiteRuleSettings | undefined>(
+		undefined,
+		{ equals: false },
+	);
+	const [idx, setIdx] = createSignal<number | null>(null);
 
 	getCurrentDomain().then((hostname) => setDomain(hostname));
 
@@ -57,8 +61,8 @@ export default () => {
 		on(
 			[rule, idx],
 			([r, i]) => {
-				if (r && i !== undefined) {
-					setSettings("websiteRules", i, r);
+				if (r && i !== null) {
+					setSettings("websiteRules", i, reconcile(r));
 				}
 			},
 			{ defer: true },
@@ -76,7 +80,7 @@ export default () => {
 					size="xs"
 					data-tip={t("websiteRule.addRule")}
 					onClick={() => {
-						if (idx() !== undefined) return;
+						if (idx() !== null) return;
 						const newIdx = settings.websiteRules.length;
 						const rule_ = rule();
 						if (!rule_) return;
@@ -84,9 +88,9 @@ export default () => {
 						setSettings("websiteRules", newIdx, rule_);
 						setIdx(newIdx);
 					}}
-					disabled={idx() !== undefined}
+					disabled={idx() !== null}
 				>
-					{idx() === undefined ? <Plus size={16} /> : <CheckCheck size={16} />}
+					{idx() === null ? <Plus size={16} /> : <CheckCheck size={16} />}
 				</Button>
 				<Button
 					class="tooltip tooltip-left"
@@ -95,13 +99,13 @@ export default () => {
 					data-tip={t("websiteRule.deleteRule")}
 					onClick={() => {
 						const idx_ = idx();
-						if (idx_ === undefined) return;
+						if (idx_ === null) return;
 						setSettings("websiteRules", (prev) =>
 							prev.filter((_, i) => i !== idx_),
 						);
-						setIdx(undefined);
+						setIdx(null);
 					}}
-					disabled={idx() === undefined}
+					disabled={idx() === null}
 				>
 					<Trash2 size={16} />
 				</Button>

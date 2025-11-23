@@ -11,9 +11,8 @@ import SelectionInTextTranslator from "./SelectionInTextTranslator";
 export default () => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
-	const [inTextTranslateEnabled, setInTextTranslateEnabled] = createSignal(
-		websiteRule.enableTranslation ?? false,
-	);
+	const [inTextTranslateEnabled, setInTextTranslateEnabled] =
+		createSignal(false);
 	const [inputTranslateElement, setInputTranslateElement] = createSignal<
 		HTMLElement | undefined
 	>(undefined, { equals: false });
@@ -21,6 +20,10 @@ export default () => {
 	const [remaining] = createDomainEnabledTimer();
 	createEffect(() => {
 		if ((remaining() || 0) > 0) setInTextTranslateEnabled(true);
+	});
+
+	createEffect(() => {
+		setInTextTranslateEnabled((prev) => websiteRule.enableTranslation ?? prev);
 	});
 
 	// Handle keyboard shortcut
