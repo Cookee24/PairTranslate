@@ -36,26 +36,6 @@ const COMMON_SKIP_PATTERNS = new RegExp(
 	"i",
 );
 
-// Tags that should be ignored at the walker level for performance
-const IGNORED_TAGS = new Set([
-	"SCRIPT",
-	"STYLE",
-	"NOSCRIPT",
-	"IFRAME",
-	"SVG",
-	"META",
-	"LINK",
-]);
-
-const createElementWalker = (element: Node) => {
-	return document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT, {
-		acceptNode: (node) => {
-			if (IGNORED_TAGS.has(node.nodeName)) return NodeFilter.FILTER_REJECT;
-			return NodeFilter.FILTER_ACCEPT;
-		},
-	});
-};
-
 // Check if element has its own text nodes (not inside children)
 const hasDirectText = (el: Element): boolean => {
 	let node = el.firstChild;
@@ -101,16 +81,6 @@ const skipSubtree = (walker: TreeWalker): HTMLElement | null => {
 };
 
 export async function* elementWalker(state: State): ElementGenerator {
-	const judgeExclude = (el: HTMLElement): boolean => {
-		if (el.matches(state.excludedSelector)) return true;
-
-		for (const fn of state.judgeFns) {
-			if (!fn(el)) return true;
-		}
-
-		return false;
-	};
-
 	const judgeText = (el: HTMLElement): boolean => {
 		if (!el.matches(state.textSelector)) return false;
 		if (!hasDirectText(el)) return false;
@@ -120,14 +90,32 @@ export async function* elementWalker(state: State): ElementGenerator {
 		return true;
 	};
 
+	const createElementWalker = (element: Node) => {
+		return document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT, {
+			acceptNode: (node) => {
+				const el = node as HTMLElement;
+
+				if (el.matches(state.excludedSelector)) {
+					return NodeFilter.FILTER_REJECT; // Prune subtree
+				}
+
+				for (const fn of state.judgeFns) {
+					if (!fn(el)) {
+						return NodeFilter.FILTER_REJECT; // Prune subtree
+					}
+				}
+
+				return NodeFilter.FILTER_ACCEPT;
+			},
+		});
+	};
+
 	const walker = createElementWalker(state.root);
 	let node = walker.nextNode();
 
 	while (node) {
 		const element = node as HTMLElement;
-		if (judgeExclude(element)) {
-			node = skipSubtree(walker);
-		} else if (judgeText(element)) {
+		if (judgeText(element)) {
 			node = skipSubtree(walker);
 			yield element;
 		} else {
@@ -154,6 +142,7 @@ export async function* elementWalker(state: State): ElementGenerator {
 						excludedRoot.add(el);
 						continue;
 					}
+
 					const excludedAncestor = el.closest(state.excludedSelector);
 					if (excludedAncestor) {
 						excludedRoot.add(el);
@@ -161,7 +150,8 @@ export async function* elementWalker(state: State): ElementGenerator {
 						excludedRoot.add(excludedAncestor as HTMLElement);
 						continue;
 					}
-					if (judgeExclude(el)) {
+
+					if (state.judgeFns.some((fn) => !fn(el))) {
 						excludedRoot.add(el);
 						continue;
 					}
@@ -175,9 +165,7 @@ export async function* elementWalker(state: State): ElementGenerator {
 					let cur = walker.nextNode();
 					while (cur) {
 						const childEl = cur as HTMLElement;
-						if (judgeExclude(childEl)) {
-							cur = skipSubtree(walker);
-						} else if (judgeText(childEl)) {
+						if (judgeText(childEl)) {
 							mutationsQueue.add(new WeakRef(childEl));
 							hasUpdates = true;
 							cur = skipSubtree(walker);
