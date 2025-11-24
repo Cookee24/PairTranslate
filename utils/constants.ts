@@ -79,10 +79,10 @@ export const getNativeName = (input: string): string => {
 	return input;
 };
 
-export const STYLE_CONTAINER = "data-pt-style";
-export const ELEMENT_CONTAINER = "data-pt-container";
-export const ELEMENT_TRANSLATED = "data-pt-translated";
-export const PREVENT_SCROLL_ATTRIBUTE = "data-pt-prevent-scroll";
+export const DATA_STYLE = "data-pt-style";
+export const DATA_CONTAINER = "data-pt-container";
+export const DATA_TRANSLATED = "data-pt-translated";
+export const DATA_PREVENT_SCROLL = "data-pt-prevent-scroll";
 
 export const TEXT_SELECTORS = [
 	"p",
@@ -97,6 +97,7 @@ export const TEXT_SELECTORS = [
 	"span",
 	"details",
 	"summary",
+	"option",
 	"h1",
 	"h2",
 	"h3",
@@ -126,9 +127,8 @@ export const EXCLUDED_SELECTORS = [
 	"audio",
 	"input",
 	"textarea",
-	"select",
-	`[${ELEMENT_CONTAINER}]`,
-	`[${ELEMENT_TRANSLATED}]`,
+	`[${DATA_CONTAINER}]`,
+	`[${DATA_TRANSLATED}]`,
 	"[translate=false]",
 	"[translate=no]",
 	".notranslate",

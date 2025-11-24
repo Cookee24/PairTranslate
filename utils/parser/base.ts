@@ -1,6 +1,5 @@
 import { hasMeaningfulChars } from "~/utils/blank";
 import {
-	ELEMENT_CONTAINER,
 	EXCLUDED_SELECTORS,
 	INTERACTIVE_SELECTORS,
 	TEXT_SELECTORS,
@@ -37,101 +36,153 @@ const COMMON_SKIP_PATTERNS = new RegExp(
 	"i",
 );
 
-const createTreeWalker = (element: Node) => {
-	return document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+// Tags that should be ignored at the walker level for performance
+const IGNORED_TAGS = new Set([
+	"SCRIPT",
+	"STYLE",
+	"NOSCRIPT",
+	"IFRAME",
+	"SVG",
+	"META",
+	"LINK",
+]);
+
+const createElementWalker = (element: Node) => {
+	return document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT, {
+		acceptNode: (node) => {
+			if (IGNORED_TAGS.has(node.nodeName)) return NodeFilter.FILTER_REJECT;
+			return NodeFilter.FILTER_ACCEPT;
+		},
+	});
 };
 
-const hasDirectText = (el?: Element | null) => {
-	if (!el) return false;
+// Check if element has its own text nodes (not inside children)
+const hasDirectText = (el: Element): boolean => {
 	let node = el.firstChild;
 	while (node) {
-		const text = node.nodeValue;
-		if (node.nodeType === Node.TEXT_NODE && text && /\S/.test(text))
+		if (node.nodeType === Node.TEXT_NODE && /\S/.test(node.nodeValue || "")) {
 			return true;
+		}
 		node = node.nextSibling;
 	}
 	return false;
 };
 
-export async function* textWalker(state: State): ElementGenerator {
-	// Cache for elements confirmed to be excluded to avoid expensive .closest() calls
-	const excludedElements = new WeakSet<HTMLElement>();
-
-	const judge = (el: HTMLElement) => {
-		if (!el.matches(state.textSelector)) return false;
-
-		const parent = el.parentElement;
-		if (parent && excludedElements.has(parent)) {
-			excludedElements.add(el);
-			return false;
+// Get text content strictly from direct text nodes
+const getDirectText = (el: Element): string => {
+	let text = "";
+	let node = el.firstChild;
+	while (node) {
+		if (node.nodeType === Node.TEXT_NODE) {
+			// Using nodeValue is faster than textContent for text nodes
+			text += node.nodeValue;
 		}
+		node = node.nextSibling;
+	}
+	return text;
+};
 
-		if (el.closest(state.excludedSelector)) {
-			excludedElements.add(el);
-			return false;
-		}
+const skipSubtree = (walker: TreeWalker): HTMLElement | null => {
+	// 1. Try to go to the immediate sibling
+	const sibling = walker.nextSibling();
+	if (sibling) return sibling as HTMLElement;
+
+	// 2. If no sibling, we are at the end of a branch.
+	// We need to climb up until we find an uncle (parent's sibling).
+	// Note: We check walker.parentNode() to ensure we don't go past the root.
+	let parent = walker.parentNode();
+	while (parent) {
+		const uncle = walker.nextSibling();
+		if (uncle) return uncle as HTMLElement;
+		parent = walker.parentNode();
+	}
+
+	return null; // Reached end of document
+};
+
+export async function* elementWalker(state: State): ElementGenerator {
+	const judgeExclude = (el: HTMLElement): boolean => {
+		if (el.matches(state.excludedSelector)) return true;
 
 		for (const fn of state.judgeFns) {
-			if (!fn(el)) {
-				excludedElements.add(el);
-				return false;
-			}
+			if (!fn(el)) return true;
 		}
+
+		return false;
+	};
+
+	const judgeText = (el: HTMLElement): boolean => {
+		if (!el.matches(state.textSelector)) return false;
+		if (!hasDirectText(el)) return false;
+		const text = getDirectText(el);
+		if (!hasMeaningfulChars(text)) return false;
 
 		return true;
 	};
 
-	const walker = createTreeWalker(state.root);
-
+	const walker = createElementWalker(state.root);
 	let node = walker.nextNode();
+
 	while (node) {
-		if (!hasMeaningfulChars(node.nodeValue)) {
+		const element = node as HTMLElement;
+		if (judgeExclude(element)) {
+			node = skipSubtree(walker);
+		} else if (judgeText(element)) {
+			node = skipSubtree(walker);
+			yield element;
+		} else {
 			node = walker.nextNode();
-			continue;
 		}
-
-		const element = node.parentElement;
-		if (element) {
-			const parent = element.parentElement;
-			if (parent && parent.firstChild === element && hasDirectText(parent)) {
-				// Skip this element, the parent container will be picked up by the walker later
-				node = walker.nextNode();
-				continue;
-			}
-
-			if (judge(element)) {
-				yield element;
-			}
-		}
-		node = walker.nextNode();
 	}
 
 	if (!state.listenNew) return;
 
-	const elementSet = new Set<WeakRef<HTMLElement>>();
 	const notifier = createNotifier();
+	const mutationsQueue = new Set<WeakRef<HTMLElement>>();
 
-	const observer = new MutationObserver((mutations) => {
-		for (const fn of state.mutationObserverCallbacks) {
-			fn(mutations, observer);
-		}
-	});
-
+	const excludedRoot = new WeakSet<HTMLElement>();
 	const handler: MutationCallback = (mutations) => {
 		let hasUpdates = false;
 		for (const mutation of mutations) {
 			for (const node of mutation.addedNodes) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
 					const el = node as HTMLElement;
-					if (el.getAttribute(ELEMENT_CONTAINER) !== null) continue;
 
-					const walker = createTreeWalker(node);
-					for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-						if (!hasMeaningfulChars(node.nodeValue)) continue;
-						const parent = node.parentElement;
-						if (parent && judge(parent)) {
-							elementSet.add(new WeakRef(parent));
+					// Skip if matches excluded selectors
+					const parent = el.parentElement;
+					if (parent && excludedRoot.has(parent)) {
+						excludedRoot.add(el);
+						continue;
+					}
+					const excludedAncestor = el.closest(state.excludedSelector);
+					if (excludedAncestor) {
+						excludedRoot.add(el);
+						parent && excludedRoot.add(parent);
+						excludedRoot.add(excludedAncestor as HTMLElement);
+						continue;
+					}
+					if (judgeExclude(el)) {
+						excludedRoot.add(el);
+						continue;
+					}
+
+					if (judgeText(el)) {
+						mutationsQueue.add(new WeakRef(el));
+						hasUpdates = true;
+					}
+
+					const walker = createElementWalker(el);
+					let cur = walker.nextNode();
+					while (cur) {
+						const childEl = cur as HTMLElement;
+						if (judgeExclude(childEl)) {
+							cur = skipSubtree(walker);
+						} else if (judgeText(childEl)) {
+							mutationsQueue.add(new WeakRef(childEl));
 							hasUpdates = true;
+							cur = skipSubtree(walker);
+						} else {
+							cur = walker.nextNode();
 						}
 					}
 				}
@@ -139,6 +190,15 @@ export async function* textWalker(state: State): ElementGenerator {
 		}
 		if (hasUpdates) notifier.notify();
 	};
+
+	const observerCallback: MutationCallback = (mutations, obs) => {
+		for (const fn of state.mutationObserverCallbacks) {
+			if (fn !== handler) fn(mutations, obs);
+		}
+		handler(mutations, obs);
+	};
+
+	const observer = new MutationObserver(observerCallback);
 	state.mutationObserverCallbacks.add(handler);
 
 	observer.observe(state.root, {
@@ -151,11 +211,11 @@ export async function* textWalker(state: State): ElementGenerator {
 	try {
 		while (true) {
 			await notifier.wait();
-			for (const node of elementSet) {
-				const element = node.deref();
+			for (const ref of mutationsQueue) {
+				const element = ref.deref();
 				if (element) yield element;
 			}
-			elementSet.clear();
+			mutationsQueue.clear();
 		}
 	} finally {
 		state.mutationObserverCallbacks.delete(handler);
@@ -163,12 +223,13 @@ export async function* textWalker(state: State): ElementGenerator {
 	}
 }
 
+// Prevents processing the exact same DOM element reference multiple times.
+// Useful if MutationObserver triggers multiple times for the same node.
 export async function* emittedFilter(
 	_state: State,
 	prev: ElementGenerator,
 ): ElementGenerator {
 	const emittedElements = new WeakSet<HTMLElement>();
-
 	for await (const element of prev) {
 		if (!emittedElements.has(element)) {
 			emittedElements.add(element);
@@ -182,19 +243,10 @@ export async function* textContentFilter(
 	prev: ElementGenerator,
 ): ElementGenerator {
 	for await (const element of prev) {
-		// If element has no Element children, getting nodeValue of firstChild is
-		// much faster than .textContent (which causes serialization of the tree).
-		let text: string;
-		if (element.firstElementChild === null && element.firstChild) {
-			text = element.firstChild.nodeValue || "";
-		} else {
-			text = element.textContent || "";
-		}
-
+		const text = getDirectText(element);
 		const trimmed = text.trim();
-		if (COMMON_SKIP_PATTERNS.test(trimmed)) {
-			continue;
-		}
+
+		if (COMMON_SKIP_PATTERNS.test(trimmed)) continue;
 
 		let isInvalid = false;
 		for (const regex of state.extraTextFilters) {
@@ -206,36 +258,6 @@ export async function* textContentFilter(
 		if (isInvalid) continue;
 
 		yield element;
-	}
-}
-
-export async function* childFilter(
-	state: State,
-	prev: ElementGenerator,
-): ElementGenerator {
-	const parentStore = new WeakSet<HTMLElement>();
-
-	const MAX_DEPTH = 8;
-
-	const climb = (el: HTMLElement) => {
-		let current: HTMLElement | null = el;
-		let depth = 0;
-		while (depth < MAX_DEPTH && current && current !== state.root) {
-			const parent: HTMLElement | null = current.parentElement;
-			if (parent && parentStore.has(parent)) {
-				return false;
-			}
-			current = parent;
-			depth++;
-		}
-		return true;
-	};
-
-	for await (const element of prev) {
-		if (climb(element)) {
-			parentStore.add(element);
-			yield element;
-		}
 	}
 }
 
@@ -273,11 +295,11 @@ export function domListener(options: Options = {}): ElementGenerator {
 	const state = getState(options);
 
 	const defaultGenerators: ChainedGeneratorFn[] = [
-		emittedFilter,
-		textContentFilter,
-		childFilter,
+		emittedFilter, // Keeps distinct object references unique
+		textContentFilter, // Filters noise (dates, emails, etc)
 	];
 	const appendGenerators = options.appendGenerators || [];
 
-	return pipe(state, textWalker, ...defaultGenerators, ...appendGenerators);
+	// childFilter is removed from pipeline
+	return pipe(state, elementWalker, ...defaultGenerators, ...appendGenerators);
 }

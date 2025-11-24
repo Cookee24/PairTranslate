@@ -13,7 +13,7 @@ import { InTextPortal } from "~/components/MPortal";
 import { useSettings } from "~/hooks/settings";
 import { createBatchTranslation, createTranslation } from "~/hooks/translation";
 import { useWebsiteRule } from "~/hooks/website-rule";
-import { ELEMENT_TRANSLATED } from "~/utils/constants";
+import { DATA_TRANSLATED } from "~/utils/constants";
 import { copyToClipboard } from "~/utils/copy";
 import { extractMarkdownContent } from "~/utils/markdown";
 import InTextTooltip from "../components/InTextTooltip";
@@ -231,9 +231,9 @@ const TranslationRender = (props: TranslationRenderProps) => {
 	createEffect(() => {
 		const el = props.element;
 
-		el.setAttribute(ELEMENT_TRANSLATED, "");
+		el.setAttribute(DATA_TRANSLATED, "");
 		onCleanup(() => {
-			el.removeAttribute(ELEMENT_TRANSLATED);
+			el.removeAttribute(DATA_TRANSLATED);
 		});
 	});
 

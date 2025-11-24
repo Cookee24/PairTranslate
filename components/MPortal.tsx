@@ -7,11 +7,11 @@ import {
 	runWithOwner,
 } from "solid-js";
 import { insert } from "solid-js/web";
-import { ELEMENT_CONTAINER } from "~/utils/constants";
+import { DATA_CONTAINER } from "~/utils/constants";
 
 export function InTextPortal(props: {
 	mount: HTMLElement;
-	ref?: (el: HTMLSpanElement) => void;
+	ref?: (el: HTMLDivElement) => void;
 	// Whether to hide the original elements
 	hideOriginal?: boolean;
 	children: JSX.Element;
@@ -26,7 +26,7 @@ export function InTextPortal(props: {
 		const el = props.mount;
 		if (!el) return;
 		const container = document.createElement("div");
-		container.setAttribute(ELEMENT_CONTAINER, "");
+		container.setAttribute(DATA_CONTAINER, "");
 
 		Object.defineProperty(container, "_$host", {
 			get() {
@@ -44,8 +44,8 @@ export function InTextPortal(props: {
 		}
 
 		insert(container, content);
-		el.appendChild(container);
 		props.ref?.(container);
+		el.appendChild(container);
 
 		onCleanup(() => {
 			try {

@@ -13,7 +13,7 @@ import {
 	useContext,
 } from "solid-js";
 import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
-import { PREVENT_SCROLL_ATTRIBUTE } from "@/utils/constants";
+import { DATA_PREVENT_SCROLL } from "@/utils/constants";
 import { Button } from "~/components/Button";
 import {
 	animateDown,
@@ -165,10 +165,10 @@ const PopupImpl = (props: ImplProps) => {
 		if (!ref) return;
 
 		const start = () => {
-			document.body.setAttribute(PREVENT_SCROLL_ATTRIBUTE, "");
+			document.body.setAttribute(DATA_PREVENT_SCROLL, "");
 		};
 		const end = () => {
-			document.body.removeAttribute(PREVENT_SCROLL_ATTRIBUTE);
+			document.body.removeAttribute(DATA_PREVENT_SCROLL);
 		};
 
 		ref.addEventListener("pointerenter", start, { passive: true });

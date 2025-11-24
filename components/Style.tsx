@@ -1,24 +1,24 @@
 import { onCleanup, onMount } from "solid-js";
 import { browser } from "#imports";
 import {
-	ELEMENT_CONTAINER,
-	ELEMENT_TRANSLATED,
-	PREVENT_SCROLL_ATTRIBUTE,
-	STYLE_CONTAINER,
+	DATA_CONTAINER,
+	DATA_PREVENT_SCROLL,
+	DATA_STYLE,
+	DATA_TRANSLATED,
 } from "~/utils/constants";
 
 export const ContentStyle = () => {
 	onMount(() => {
 		const style = document.createElement("style");
-		style.setAttribute(STYLE_CONTAINER, "");
-		style.textContent = `[${ELEMENT_CONTAINER}] {
+		style.setAttribute(DATA_STYLE, "");
+		style.textContent = `[${DATA_CONTAINER}] {
 	display: contents; 
 } 
-[${ELEMENT_TRANSLATED}] { 
+[${DATA_TRANSLATED}] { 
 	-webkit-line-clamp: unset !important; 
 	max-height: unset !important; 
 }
-[${PREVENT_SCROLL_ATTRIBUTE}] {
+[${DATA_PREVENT_SCROLL}] {
 	overflow: hidden !important;
 }`;
 
@@ -33,7 +33,7 @@ export const KatexStyle = () => {
 	onMount(() => {
 		const link = document.createElement("link");
 		const url = browser.runtime.getURL("/katex/katex.min.css");
-		link.setAttribute(STYLE_CONTAINER, "");
+		link.setAttribute(DATA_STYLE, "");
 		link.setAttribute("rel", "stylesheet");
 		link.setAttribute("href", url);
 

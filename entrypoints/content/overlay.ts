@@ -1,13 +1,13 @@
 import type { JSX } from "solid-js";
 import { render } from "solid-js/web";
-import { ELEMENT_CONTAINER, STYLE_CONTAINER } from "~/utils/constants";
+import { DATA_CONTAINER, DATA_STYLE } from "~/utils/constants";
 
 let _dispose: (() => void) | null = null;
 
 export const mountOverlay = (app: () => JSX.Element) => {
 	const container = document.createElement("div");
 	container.style.display = "contents";
-	container.setAttribute(ELEMENT_CONTAINER, "");
+	container.setAttribute(DATA_CONTAINER, "");
 	const root = container.attachShadow({ mode: "open" });
 
 	const stylePromise =
@@ -22,12 +22,12 @@ export const mountOverlay = (app: () => JSX.Element) => {
 		requestAnimationFrame(() => {
 			const styleEl = document.createElement("style");
 			styleEl.textContent = documentCss;
-			styleEl.setAttribute(STYLE_CONTAINER, "");
+			styleEl.setAttribute(DATA_STYLE, "");
 			document.head.appendChild(styleEl);
 
 			const shadowStyleEl = document.createElement("style");
 			shadowStyleEl.textContent = shadowCss;
-			shadowStyleEl.setAttribute(STYLE_CONTAINER, "");
+			shadowStyleEl.setAttribute(DATA_STYLE, "");
 			root.appendChild(shadowStyleEl);
 
 			document.body.appendChild(container);
