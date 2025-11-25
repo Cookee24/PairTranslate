@@ -416,10 +416,70 @@ reasoning = "Raisonnement"
 
 [prompts.defaultNames]
 translate = "Traduire"
-batchTranslate = "Traduction par Lots"
-inputTranslate = "Traduction d'Entrée"
+batchTranslate = "Traduction par lot"
+inputTranslate = "Traduction d'entrée"
 explain = "Expliquer"
-dictionaryTranslate = "Traduction de Dictionnaire"
+dictionaryTranslate = "Traduction du dictionnaire"
+
+# Prompt Studio
+
+[promptStudio]
+title = "Studio d'invites"
+selectPrompt = "Sélectionnez d'abord une invite."
+selectLLM = "Sélectionnez LLM."
+modelMissing = "Modèle manquant."
+templates = "Modèles"
+preview = "Aperçu"
+runPreview = "Exécuter l'aperçu"
+addStep = "Ajouter une étape"
+deleteStep = "Supprimer l'étape"
+reset = "Réinitialiser"
+promptName = "Nom de l'invite"
+systemPrompt = "Invite système"
+contextVariables = "Variables de contexte"
+pageTitle = "Titre de la page"
+pageUrl = "URL de la page"
+surroundingBefore = "Avant"
+surroundingAfter = "Après"
+customVariables = "Variables personnalisées"
+resolvedMapping = "Mappage résolu"
+empty = "Vide"
+in = "Entrée"
+out = "Sortie"
+reasoning = "Raisonnement"
+trace = "Trace"
+systemPromptLabel = "Invite système"
+result = "Résultat"
+step = "Étape $1"
+status = "Statut"
+idle = "Inactif"
+running = "En cours d'exécution"
+completed = "Complété"
+error = "Erreur"
+
+[promptStudio.placeholders]
+sampleText = "Traduire le texte surligné."
+pageTitle = "Annonce de produit"
+pageUrl = "https://example.com/products/spark"
+surrBefore = "Visible immédiatement."
+surrAfter = "Pas besoin de traduire l'appel à l'action."
+selectModel = "Sélectionner LLM"
+enterURL = "https://example.com"
+keyPlaceholder = "Clé"
+valuePlaceholder = "Valeur"
+
+[promptStudio.templateSnippets]
+variables = "Variables"
+conditionals = "Conditions"
+loops = "Boucles"
+loopsWithoutKey = "Boucles sans clé"
+internalFunctions = "Fonctions internes"
+
+[promptStudio.contextLabels]
+text = "Texte"
+src = "Langue"
+dst = "Langue cible"
+title = "Titre"
 
 # Error Messages
 

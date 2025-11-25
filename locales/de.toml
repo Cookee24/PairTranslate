@@ -421,6 +421,66 @@ inputTranslate = "Eingabe-Übersetzung"
 explain = "Erklären"
 dictionaryTranslate = "Wörterbuch-Übersetzung"
 
+# Prompt Studio
+
+[promptStudio]
+title = "Prompt-Studio"
+selectPrompt = "Wählen Sie zuerst einen Prompt aus."
+selectLLM = "Wählen Sie LLM."
+modelMissing = "Modell fehlt."
+templates = "Vorlagen"
+preview = "Vorschau"
+runPreview = "Vorschau ausführen"
+addStep = "Schritt hinzufügen"
+deleteStep = "Schritt löschen"
+reset = "Zurücksetzen"
+promptName = "Prompt-Name"
+systemPrompt = "System-Prompt"
+contextVariables = "Kontext und Variablen"
+pageTitle = "Seitentitel"
+pageUrl = "Seiten-URL"
+surroundingBefore = "Davor"
+surroundingAfter = "Danach"
+customVariables = "Benutzerdefinierte Variablen"
+resolvedMapping = "Aufgelöste Zuordnung"
+empty = "Leer"
+in = "Eingabe"
+out = "Ausgabe"
+reasoning = "Begründung"
+trace = "Verfolgung"
+systemPromptLabel = "System-Prompt"
+result = "Ergebnis"
+step = "Schritt $1"
+status = "Status"
+idle = "Untätig"
+running = "Läuft"
+completed = "Abgeschlossen"
+error = "Fehler"
+
+[promptStudio.placeholders]
+sampleText = "Übersetzen Sie den markierten Text."
+pageTitle = "Produktankündigung"
+pageUrl = "https://example.com/products/spark"
+surrBefore = "Sofort sichtbar."
+surrAfter = "CTA-Übersetzung nicht erforderlich."
+selectModel = "LLM auswählen"
+enterURL = "https://example.com"
+keyPlaceholder = "Schlüssel"
+valuePlaceholder = "Wert"
+
+[promptStudio.templateSnippets]
+variables = "Variablen"
+conditionals = "Bedingungen"
+loops = "Schleifen"
+loopsWithoutKey = "Schleifen ohne Schlüssel"
+internalFunctions = "Interne Funktionen"
+
+[promptStudio.contextLabels]
+text = "Text"
+src = "Sprache"
+dst = "Zielsprache"
+title = "Titel"
+
 # Error Messages
 
 [errors]

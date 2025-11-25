@@ -421,6 +421,66 @@ inputTranslate = "输入框翻译"
 explain = "解释"
 dictionaryTranslate = "词典释义翻译"
 
+# Prompt Studio
+
+[promptStudio]
+title = "提示词工作室"
+selectPrompt = "请先选择一个提示词。"
+selectLLM = "请选择 LLM。"
+modelMissing = "模型缺失。"
+templates = "模板"
+preview = "预览"
+runPreview = "运行预览"
+addStep = "添加步骤"
+deleteStep = "删除步骤"
+reset = "重置"
+promptName = "提示词名称"
+systemPrompt = "系统提示词"
+contextVariables = "上下文和变量"
+pageTitle = "页面标题"
+pageUrl = "页面网址"
+surroundingBefore = "前面内容"
+surroundingAfter = "后面内容"
+customVariables = "自定义变量"
+resolvedMapping = "解析的映射"
+empty = "空"
+in = "输入"
+out = "输出"
+reasoning = "思考过程"
+trace = "追踪"
+systemPromptLabel = "系统提示词"
+result = "结果"
+step = "步骤 $1"
+status = "状态"
+idle = "空闲"
+running = "运行中"
+completed = "已完成"
+error = "错误"
+
+[promptStudio.placeholders]
+sampleText = "翻译高亮的内容。"
+pageTitle = "产品公告"
+pageUrl = "https://example.com/products/spark"
+surrBefore = "立即可见。"
+surrAfter = "行动号召无需翻译。"
+selectModel = "选择 LLM"
+enterURL = "https://example.com"
+keyPlaceholder = "键"
+valuePlaceholder = "值"
+
+[promptStudio.templateSnippets]
+variables = "变量"
+conditionals = "条件"
+loops = "循环"
+loopsWithoutKey = "不带键的循环"
+internalFunctions = "内置函数"
+
+[promptStudio.contextLabels]
+text = "文本"
+src = "源语言"
+dst = "目标语言"
+title = "标题"
+
 # Error Messages
 
 [errors]

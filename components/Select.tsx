@@ -1,4 +1,4 @@
-import { type Component, type JSX, splitProps } from "solid-js";
+import { type Component, For, type JSX, Show, splitProps } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
 import { cn } from "~/utils/cn";
 
@@ -82,13 +82,15 @@ export const Select: Component<SelectProps> = (props) => {
 					{local.placeholder}
 				</option>
 			)}
-			{local.options
-				? local.options.map((option) => (
+			<Show when={local.options} fallback={local.children}>
+				<For each={local.options}>
+					{(option) => (
 						<option value={option.value} disabled={option.disabled}>
 							{option.label}
 						</option>
-					))
-				: local.children}
+					)}
+				</For>
+			</Show>
 		</select>
 	);
 

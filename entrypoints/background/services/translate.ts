@@ -22,18 +22,22 @@ import type {
 } from "~/utils/llm";
 import { createLLMClient } from "~/utils/llm";
 import { appendReasoningContent } from "~/utils/llm/reasoning";
+import type { PromptStepOutput } from "~/utils/prompt/delimiter";
 import {
-	isStringArrayOutput,
-	type PromptStepOutput,
-	resolveStringArrayDelimiter,
-	splitWithDelimiter,
-} from "~/utils/prompt/delimiter";
+	type CompiledPrompt,
+	compilePrompt,
+	initializeConversation,
+	normalizeLLMStepOutput,
+	normalizePromptInput,
+	normalizeStreamAggregate,
+	snapshotConversation,
+	toTextArray,
+} from "~/utils/prompt/engine";
 import {
 	buildContextWithTranslateParams,
-	templateToTokens,
 	tokensToString,
 } from "~/utils/prompt/parser";
-import type { PromptSettings, ServiceSettings } from "~/utils/settings";
+import type { ServiceSettings } from "~/utils/settings";
 import { getSettings, listenSettings } from "~/utils/settings/helper";
 import { createLRUStorage } from "~/utils/storage";
 import {
@@ -58,42 +62,6 @@ type CachedValue<T = unknown> = {
 	output: T;
 	reasoning?: string;
 };
-
-type CompiledStep = {
-	messageTokens: ReturnType<typeof templateToTokens>;
-	output: PromptSettings["steps"][number]["output"];
-	stringArrayDelimiter?: string | RegExp;
-};
-
-type CompiledPrompt = {
-	input: PromptSettings["input"];
-	systemTokens: ReturnType<typeof templateToTokens>;
-	steps: CompiledStep[];
-};
-
-type PromptContext = ReturnType<typeof buildContextWithTranslateParams>;
-
-const normalizeStreamAggregate = (
-	step: CompiledStep | undefined,
-	value: string,
-): string | string[] => {
-	if (!step?.stringArrayDelimiter) {
-		return value;
-	}
-	return splitWithDelimiter(value, step.stringArrayDelimiter);
-};
-
-const initializeConversation = (
-	prompt: CompiledPrompt,
-	ctx: PromptContext,
-): ChatRequest["messages"] => {
-	const systemContent = tokensToString(ctx, prompt.systemTokens);
-	return systemContent ? [{ role: "system", content: systemContent }] : [];
-};
-
-const snapshotConversation = (
-	messages: ChatRequest["messages"],
-): ChatRequest["messages"] => messages.map((message) => ({ ...message }));
 
 const toStreamChunk = (value: unknown): string => {
 	if (typeof value === "string") {
@@ -132,48 +100,6 @@ const isStructuredOutput = (
 	output !== null &&
 	"type" in output &&
 	output.type === "structured";
-
-const compilePrompt = (prompt: PromptSettings): CompiledPrompt => ({
-	input: prompt.input,
-	systemTokens: templateToTokens(prompt.systemPrompt),
-	steps: prompt.steps.map((step) => ({
-		output: step.output,
-		messageTokens: templateToTokens(step.message),
-		stringArrayDelimiter: isStringArrayOutput(step.output)
-			? resolveStringArrayDelimiter(step.output)
-			: undefined,
-	})),
-});
-
-const normalizePromptInput = (
-	prompt: CompiledPrompt,
-	text: TranslatePayload,
-): TranslatePayload => {
-	if (prompt.input === "stringArray") {
-		if (Array.isArray(text)) return text;
-		return text ? [text] : [];
-	}
-	if (Array.isArray(text)) {
-		return text.join("\n\n");
-	}
-	return text;
-};
-
-const toTextArray = (text: TranslatePayload): string[] =>
-	Array.isArray(text) ? text : text ? [text] : [];
-
-const normalizeLLMStepOutput = (
-	step: CompiledStep,
-	output: unknown,
-): unknown => {
-	if (typeof output !== "string") {
-		return output;
-	}
-	if (!step.stringArrayDelimiter) {
-		return output;
-	}
-	return splitWithDelimiter(output, step.stringArrayDelimiter);
-};
 
 const ensureServiceModel = (
 	service: Extract<ServiceSettings, { type: "llm" }>,

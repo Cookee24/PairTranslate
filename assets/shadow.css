@@ -6,6 +6,10 @@
 		dim --prefersdark;
 }
 
+@utility no-scrollbar {
+  @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+}
+
 :host {
 	all: initial;
 }

@@ -15,6 +15,7 @@ import {
 	createMemo,
 	createSignal,
 	type JSX,
+	lazy,
 	onCleanup,
 	onMount,
 } from "solid-js";
@@ -29,11 +30,12 @@ import Basic from "./pages/Basic";
 import Debug from "./pages/Debug";
 import FlowControl from "./pages/FlowControl";
 import LLM from "./pages/LLM";
-import Prompt from "./pages/Prompt";
 import PromptSettings from "./pages/PromptSettings";
 import Traditional from "./pages/Traditional";
 import Translation from "./pages/Translation";
 import WebsiteRules from "./pages/WebsiteRules";
+
+const PromptPage = lazy(() => import("./pages/Prompt"));
 
 const OptionsRoot = (props: { children?: JSX.Element }) => {
 	const { settings } = useSettings();
@@ -160,7 +162,8 @@ export default () => {
 			<HashRouter root={OptionsRoot}>
 				<Route path="" component={() => <Navigate href="/settings" />} />
 				<Route path="/settings" component={SettingsPage} />
-				<Route path="/prompt" component={Prompt} />
+				<Route path="/prompt" component={PromptPage} />
+				<Route path="/prompt/:promptId" component={PromptPage} />
 				<Route path="*" component={() => <Navigate href="/settings" />} />
 			</HashRouter>
 		</SettingsProvider>

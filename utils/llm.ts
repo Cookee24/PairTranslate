@@ -19,6 +19,10 @@ export function createLLMClient(
 export function createLLMClient(
 	provider: LLMProvider,
 	config: ClientConfig,
+): import("./llm/types").LLMClient;
+export function createLLMClient(
+	provider: LLMProvider,
+	config: ClientConfig,
 ): import("./llm/types").LLMClient {
 	switch (provider) {
 		case "openai": {

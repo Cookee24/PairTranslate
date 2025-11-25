@@ -416,10 +416,70 @@ reasoning = "推論"
 
 [prompts.defaultNames]
 translate = "翻訳"
-batchTranslate = "一括翻訳"
-inputTranslate = "入力欄翻訳"
+batchTranslate = "バッチ翻訳"
+inputTranslate = "入力翻訳"
 explain = "説明"
-dictionaryTranslate = "辞書訳"
+dictionaryTranslate = "辞書翻訳"
+
+# Prompt Studio
+
+[promptStudio]
+title = "プロンプトスタジオ"
+selectPrompt = "まずプロンプトを選択してください。"
+selectLLM = "LLM を選択してください。"
+modelMissing = "モデルが見つかりません。"
+templates = "テンプレート"
+preview = "プレビュー"
+runPreview = "プレビューを実行"
+addStep = "ステップを追加"
+deleteStep = "ステップを削除"
+reset = "リセット"
+promptName = "プロンプト名"
+systemPrompt = "システムプロンプト"
+contextVariables = "コンテキストと変数"
+pageTitle = "ページタイトル"
+pageUrl = "ページURL"
+surroundingBefore = "前のコンテキスト"
+surroundingAfter = "後のコンテキスト"
+customVariables = "カスタム変数"
+resolvedMapping = "解決されたマッピング"
+empty = "空"
+in = "入力"
+out = "出力"
+reasoning = "推論"
+trace = "トレース"
+systemPromptLabel = "システムプロンプト"
+result = "結果"
+step = "ステップ $1"
+status = "ステータス"
+idle = "アイドル"
+running = "実行中"
+completed = "完了"
+error = "エラー"
+
+[promptStudio.placeholders]
+sampleText = "ハイライトされたテキストを翻訳してください。"
+pageTitle = "商品発表"
+pageUrl = "https://example.com/products/spark"
+surrBefore = "すぐに表示されます。"
+surrAfter = "CTA 翻訳は不要です。"
+selectModel = "LLM を選択"
+enterURL = "https://example.com"
+keyPlaceholder = "キー"
+valuePlaceholder = "値"
+
+[promptStudio.templateSnippets]
+variables = "変数"
+conditionals = "条件"
+loops = "ループ"
+loopsWithoutKey = "キーなしループ"
+internalFunctions = "内部関数"
+
+[promptStudio.contextLabels]
+text = "テキスト"
+src = "ソース言語"
+dst = "ターゲット言語"
+title = "タイトル"
 
 # Error Messages
 

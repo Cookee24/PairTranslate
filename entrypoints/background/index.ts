@@ -54,7 +54,7 @@ export default defineBackground(() => {
 	});
 
 	// TODO: Migrate to other API
-	"session" in browser.storage &&
+	"setAccessLevel" in browser.storage.session &&
 		browser.storage.session.setAccessLevel({
 			accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS",
 		});

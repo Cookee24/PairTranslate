@@ -421,6 +421,66 @@ inputTranslate = "Input Translate"
 explain = "Explain"
 dictionaryTranslate = "Dictionary Translate"
 
+# Prompt Studio
+
+[promptStudio]
+title = "Prompt Studio"
+selectPrompt = "Select a prompt first."
+selectLLM = "Select LLM."
+modelMissing = "Model missing."
+templates = "Templates"
+preview = "Preview"
+runPreview = "Run Preview"
+addStep = "Add Step"
+deleteStep = "Delete Step"
+reset = "Reset"
+promptName = "Prompt Name"
+systemPrompt = "System Prompt"
+contextVariables = "Context & Variables"
+pageTitle = "Page Title"
+pageUrl = "Page URL"
+surroundingBefore = "Before"
+surroundingAfter = "After"
+customVariables = "Custom Vars"
+resolvedMapping = "Resolved Mapping"
+empty = "Empty"
+in = "In"
+out = "Out"
+reasoning = "Reasoning"
+trace = "Trace"
+systemPromptLabel = "System Prompt"
+result = "Result"
+step = "Step $1"
+status = "Status"
+idle = "idle"
+running = "running"
+completed = "completed"
+error = "error"
+
+[promptStudio.placeholders]
+sampleText = "Translate the highlighted copy."
+pageTitle = "Product announcement"
+pageUrl = "https://example.com/products/spark"
+surrBefore = "Seen immediately."
+surrAfter = "No CTA translation."
+selectModel = "Select LLM"
+enterURL = "https://example.com"
+keyPlaceholder = "Key"
+valuePlaceholder = "Value"
+
+[promptStudio.templateSnippets]
+variables = "Variables"
+conditionals = "Conditionals"
+loops = "Loops"
+loopsWithoutKey = "Loops without key"
+internalFunctions = "Internal functions"
+
+[promptStudio.contextLabels]
+text = "Text"
+src = "Src"
+dst = "Dst"
+title = "Title"
+
 # Error Messages
 
 [errors]

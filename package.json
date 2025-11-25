@@ -29,6 +29,7 @@
 		"clsx": "^2.1.1",
 		"katex": "^0.16.25",
 		"lucide-solid": "^0.554.0",
+		"monaco-editor-core": "^0.55.1",
 		"motion": "^12.23.24",
 		"openai": "^6.9.1",
 		"reflect-metadata": "^0.2.2",

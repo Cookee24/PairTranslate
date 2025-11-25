@@ -416,10 +416,70 @@ reasoning = "Raciocínio"
 
 [prompts.defaultNames]
 translate = "Traduzir"
-batchTranslate = "Tradução em Lote"
-inputTranslate = "Tradução de Entrada"
+batchTranslate = "Tradução em lote"
+inputTranslate = "Tradução de entrada"
 explain = "Explicar"
-dictionaryTranslate = "Tradução de Dicionário"
+dictionaryTranslate = "Tradução do dicionário"
+
+# Prompt Studio
+
+[promptStudio]
+title = "Estúdio de Prompts"
+selectPrompt = "Selecione um prompt primeiro."
+selectLLM = "Selecione LLM."
+modelMissing = "Modelo ausente."
+templates = "Modelos"
+preview = "Visualizar"
+runPreview = "Executar visualização"
+addStep = "Adicionar etapa"
+deleteStep = "Excluir etapa"
+reset = "Redefinir"
+promptName = "Nome do prompt"
+systemPrompt = "Prompt do sistema"
+contextVariables = "Variáveis de contexto"
+pageTitle = "Título da página"
+pageUrl = "URL da página"
+surroundingBefore = "Antes"
+surroundingAfter = "Depois"
+customVariables = "Variáveis personalizadas"
+resolvedMapping = "Mapeamento resolvido"
+empty = "Vazio"
+in = "Entrada"
+out = "Saída"
+reasoning = "Raciocínio"
+trace = "Rastreamento"
+systemPromptLabel = "Prompt do sistema"
+result = "Resultado"
+step = "Etapa $1"
+status = "Status"
+idle = "Inativo"
+running = "Em execução"
+completed = "Concluído"
+error = "Erro"
+
+[promptStudio.placeholders]
+sampleText = "Traduzir o texto realçado."
+pageTitle = "Anúncio de produto"
+pageUrl = "https://example.com/products/spark"
+surrBefore = "Visível imediatamente."
+surrAfter = "Tradução de chamada para ação não necessária."
+selectModel = "Selecionar LLM"
+enterURL = "https://example.com"
+keyPlaceholder = "Chave"
+valuePlaceholder = "Valor"
+
+[promptStudio.templateSnippets]
+variables = "Variáveis"
+conditionals = "Condicionais"
+loops = "Loops"
+loopsWithoutKey = "Loops sem chave"
+internalFunctions = "Funções internas"
+
+[promptStudio.contextLabels]
+text = "Texto"
+src = "Idioma de origem"
+dst = "Idioma de destino"
+title = "Título"
 
 # Error Messages
 

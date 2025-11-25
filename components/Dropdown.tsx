@@ -41,7 +41,7 @@ const dropdownContentVariants = tv({
 
 export interface DropdownItem {
 	id: string | number;
-	label: string;
+	label: string | JSX.Element;
 	icon?: JSX.Element;
 	disabled?: boolean;
 	danger?: boolean;
@@ -58,6 +58,7 @@ export interface DropdownProps
 	closeOnSelect?: boolean;
 	width?: string;
 	offset?: number;
+	triggerClass?: string;
 }
 
 export const Dropdown: Component<DropdownProps> = (props) => {
@@ -71,6 +72,7 @@ export const Dropdown: Component<DropdownProps> = (props) => {
 		"closeOnSelect",
 		"width",
 		"offset",
+		"triggerClass",
 		"class",
 	]);
 
@@ -125,7 +127,7 @@ export const Dropdown: Component<DropdownProps> = (props) => {
 			<button
 				type="button"
 				tabindex={local.disabled ? -1 : 0}
-				class="btn m-1"
+				class={cn("btn m-1", local.triggerClass)}
 				disabled={local.disabled}
 				onClick={handleTriggerClick}
 				onKeyPress={(e) => e.key === "Enter" && handleTriggerClick()}

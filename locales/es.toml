@@ -416,10 +416,70 @@ reasoning = "Razonamiento"
 
 [prompts.defaultNames]
 translate = "Traducir"
-batchTranslate = "Traducción por Lote"
-inputTranslate = "Traducción de Entrada"
+batchTranslate = "Traducción por lotes"
+inputTranslate = "Traducción de entrada"
 explain = "Explicar"
-dictionaryTranslate = "Traducción de Diccionario"
+dictionaryTranslate = "Traducción del diccionario"
+
+# Prompt Studio
+
+[promptStudio]
+title = "Estudio de indicaciones"
+selectPrompt = "Seleccione primero una indicación."
+selectLLM = "Seleccione LLM."
+modelMissing = "Modelo faltante."
+templates = "Plantillas"
+preview = "Vista previa"
+runPreview = "Ejecutar vista previa"
+addStep = "Agregar paso"
+deleteStep = "Eliminar paso"
+reset = "Restablecer"
+promptName = "Nombre de la indicación"
+systemPrompt = "Indicación del sistema"
+contextVariables = "Variables de contexto"
+pageTitle = "Título de la página"
+pageUrl = "URL de la página"
+surroundingBefore = "Antes"
+surroundingAfter = "Después"
+customVariables = "Variables personalizadas"
+resolvedMapping = "Asignación resuelta"
+empty = "Vacío"
+in = "Entrada"
+out = "Salida"
+reasoning = "Razonamiento"
+trace = "Rastreo"
+systemPromptLabel = "Indicación del sistema"
+result = "Resultado"
+step = "Paso $1"
+status = "Estado"
+idle = "Inactivo"
+running = "Ejecutándose"
+completed = "Completado"
+error = "Error"
+
+[promptStudio.placeholders]
+sampleText = "Traducir el texto resaltado."
+pageTitle = "Anuncio de producto"
+pageUrl = "https://example.com/products/spark"
+surrBefore = "Visible inmediatamente."
+surrAfter = "No es necesario traducir el llamado a la acción."
+selectModel = "Seleccionar LLM"
+enterURL = "https://example.com"
+keyPlaceholder = "Clave"
+valuePlaceholder = "Valor"
+
+[promptStudio.templateSnippets]
+variables = "Variables"
+conditionals = "Condicionales"
+loops = "Bucles"
+loopsWithoutKey = "Bucles sin clave"
+internalFunctions = "Funciones internas"
+
+[promptStudio.contextLabels]
+text = "Texto"
+src = "Idioma"
+dst = "Idioma de destino"
+title = "Título"
 
 # Error Messages
 

@@ -2,11 +2,25 @@ import { describe, expect, test } from "bun:test";
 import {
 	ExprSegmentType,
 	isEmpty,
+	parseExpr,
+	TemplateErrorCode,
 	TemplateParseError,
 	TokenType,
 	templateToTokens,
 	tokensToString,
 } from "./parser";
+
+const captureParseError = (fn: () => unknown): TemplateParseError => {
+	try {
+		fn();
+	} catch (error) {
+		if (error instanceof TemplateParseError) {
+			return error;
+		}
+		throw error;
+	}
+	throw new Error("Expected TemplateParseError to be thrown");
+};
 
 describe("isEmpty", () => {
 	test("returns true for null and undefined", () => {
@@ -44,6 +58,23 @@ describe("isEmpty", () => {
 		expect(isEmpty(0)).toBe(false);
 		expect(isEmpty(false)).toBe(false);
 		expect(isEmpty(true)).toBe(false);
+	});
+});
+
+describe("parseExpr validation", () => {
+	test("throws on unexpected characters", () => {
+		const error = captureParseError(() => parseExpr("value$"));
+		expect(error.code).toBe(TemplateErrorCode.UnexpectedToken);
+	});
+
+	test("throws on unterminated index accessor", () => {
+		const error = captureParseError(() => parseExpr("items[0"));
+		expect(error.code).toBe(TemplateErrorCode.IncompleteExpression);
+	});
+
+	test("throws on invalid index value", () => {
+		const error = captureParseError(() => parseExpr("items[foo]"));
+		expect(error.code).toBe(TemplateErrorCode.InvalidIndex);
 	});
 });
 
@@ -323,6 +354,42 @@ describe("intoTokens", () => {
 			const tokens = templateToTokens("");
 			expect(tokens).toHaveLength(0);
 		});
+
+		test("reports incomplete template expressions", () => {
+			const error = captureParseError(() => templateToTokens("Value: {{name"));
+			expect(error.code).toBe(TemplateErrorCode.IncompleteExpression);
+		});
+
+		test("reports unexpected closing tags", () => {
+			const error = captureParseError(() => templateToTokens("{{/if}}"));
+			expect(error.code).toBe(TemplateErrorCode.UnexpectedToken);
+		});
+
+		test("reports unknown directives", () => {
+			const error = captureParseError(() =>
+				templateToTokens("{{#unknown foo}}"),
+			);
+			expect(error.code).toBe(TemplateErrorCode.UnknownDirective);
+		});
+
+		test("reports invalid loop declarations", () => {
+			const error = captureParseError(() =>
+				templateToTokens("{{#for :items}}{{/for}}"),
+			);
+			expect(error.code).toBe(TemplateErrorCode.InvalidLoopDeclaration);
+		});
+
+		test("requires whitespace after control keywords", () => {
+			const error = captureParseError(() =>
+				templateToTokens("{{#ifvalue}}yes{{/if}}"),
+			);
+			expect(error.code).toBe(TemplateErrorCode.InvalidExpression);
+		});
+
+		test("prevents stray elif directives", () => {
+			const error = captureParseError(() => templateToTokens("{{#elif cond}}"));
+			expect(error.code).toBe(TemplateErrorCode.UnexpectedToken);
+		});
 	});
 });
 
@@ -399,6 +466,13 @@ describe("serializeToString", () => {
 			const ctx = { items: ["a", "b"], lang: { dst: "English" } };
 			const result = tokensToString(ctx, tokens);
 			expect(result).toBe("");
+		});
+
+		test("throws when indexing non-array values", () => {
+			const tokens = templateToTokens("{{value[0]}}");
+			const ctx = { value: 42, lang: { dst: "English" } };
+			const error = captureParseError(() => tokensToString(ctx, tokens));
+			expect(error.code).toBe(TemplateErrorCode.InvalidExpression);
 		});
 
 		test("serializes number values", () => {
@@ -558,13 +632,15 @@ describe("serializeToString", () => {
 		test("throws on non-iterable collection", () => {
 			const tokens = templateToTokens("{{#for item:items}}{{item}}{{/for}}");
 			const ctx = { items: 123, lang: { dst: "English" } };
-			expect(() => tokensToString(ctx, tokens)).toThrow(TemplateParseError);
+			const error = captureParseError(() => tokensToString(ctx, tokens));
+			expect(error.code).toBe(TemplateErrorCode.InvalidExpression);
 		});
 
 		test("throws on boolean collection", () => {
 			const tokens = templateToTokens("{{#for item:items}}{{item}}{{/for}}");
 			const ctx = { items: true, lang: { dst: "English" } };
-			expect(() => tokensToString(ctx, tokens)).toThrow(TemplateParseError);
+			const error = captureParseError(() => tokensToString(ctx, tokens));
+			expect(error.code).toBe(TemplateErrorCode.InvalidExpression);
 		});
 
 		test("handles null collection gracefully", () => {
@@ -720,7 +796,8 @@ describe("serializeToString", () => {
 		test("throws for unknown internal function", () => {
 			const tokens = templateToTokens("{{@unknown page}}");
 			const ctx = { page: {}, lang: { dst: "English" } };
-			expect(() => tokensToString(ctx, tokens)).toThrow(TemplateParseError);
+			const error = captureParseError(() => tokensToString(ctx, tokens));
+			expect(error.code).toBe(TemplateErrorCode.UnknownInternalFunction);
 		});
 	});
 
