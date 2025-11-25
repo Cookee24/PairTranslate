@@ -1,8 +1,8 @@
 import { createSignal, For, Show } from "solid-js";
 import { Alert } from "~/components/Alert";
 import { Button } from "~/components/Button";
-import { Card } from "~/components/Card";
 import { NumberInput } from "~/components/settings/NumberInput";
+import { SettingsCard } from "~/components/settings/SettingsCard";
 import { SettingsToggle } from "~/components/settings/SettingsToggle";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
@@ -201,9 +201,8 @@ export default (props: DebugProps) => {
 	const loadingFor = (key: string) => Boolean(actionLoading()[key]);
 
 	return (
-		<Card.Root class="rounded-box bg-base-200/30" data-nav={props.navId}>
-			<Card.Body class="space-y-6">
-				<Card.Title>{t("settings.debug.title")}</Card.Title>
+		<SettingsCard navId={props.navId} title={t("settings.debug.title")}>
+			<div class="space-y-6">
 				<p class="text-sm text-base-content/70">
 					{t("settings.debug.description")}
 				</p>
@@ -243,7 +242,7 @@ export default (props: DebugProps) => {
 					<div class="grid gap-4 md:grid-cols-2">
 						<For each={diagnostics}>
 							{(diag) => (
-								<div class="rounded-lg border border-base-300/70 p-4 space-y-3 bg-base-100/60">
+								<div class="space-y-3 rounded-2xl border border-base-300/70 bg-base-100/80 p-4">
 									<div>
 										<p class="font-medium">{diag.title}</p>
 										<p class="text-sm text-base-content/70">
@@ -291,7 +290,7 @@ export default (props: DebugProps) => {
 						</Alert>
 					)}
 				</Show>
-			</Card.Body>
-		</Card.Root>
+			</div>
+		</SettingsCard>
 	);
 };

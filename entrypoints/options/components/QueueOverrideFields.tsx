@@ -1,6 +1,5 @@
+import { Activity, Layers, Package, Scale, Zap } from "lucide-solid";
 import { Button } from "~/components/Button";
-import { FormGrid } from "~/components/settings/FormGrid";
-import { NumberInput } from "~/components/settings/NumberInput";
 import { t } from "~/utils/i18n";
 import type { QueueControlSettings, QueueOverride } from "~/utils/settings/def";
 
@@ -46,25 +45,6 @@ const labelKeyForField = (
 	return "settings.flowControl.maxBatchSize";
 };
 
-const descKeyForField = (
-	field: keyof QueueOverride,
-):
-	| "settings.flowControl.requestConcurrencyDesc"
-	| "settings.flowControl.tokensPerMinuteDesc"
-	| "settings.flowControl.maxBatchSizeDesc"
-	| "settings.flowControl.maxTokensPerBatchDesc" => {
-	if (field === "requestConcurrency") {
-		return "settings.flowControl.requestConcurrencyDesc";
-	}
-	if (field === "tokensPerMinute") {
-		return "settings.flowControl.tokensPerMinuteDesc";
-	}
-	if (field === "maxTokensPerBatch") {
-		return "settings.flowControl.maxTokensPerBatchDesc";
-	}
-	return "settings.flowControl.maxBatchSizeDesc";
-};
-
 export const QueueOverrideFields = (props: QueueOverrideFieldsProps) => {
 	const updateQueueField = (field: keyof QueueOverride, value: string) => {
 		const trimmed = value.trim();
@@ -82,23 +62,21 @@ export const QueueOverrideFields = (props: QueueOverrideFieldsProps) => {
 		props.onChange(hasValues ? next : undefined);
 	};
 
-	const helperText = (field: keyof QueueOverride) => {
-		const defaultValue = props.defaults[field] ?? 0;
-		return `${t(descKeyForField(field))} (${t("common.globalDefault")}: ${defaultValue})`;
-	};
-
 	const getValue = (field: keyof QueueOverride) => props.value?.[field] ?? "";
 
+	const iconMap: Record<keyof QueueOverride, typeof Layers> = {
+		requestConcurrency: Layers,
+		tokensPerMinute: Zap,
+		maxBatchSize: Package,
+		maxTokensPerBatch: Scale,
+	};
+
 	return (
-		<div class="space-y-3">
-			<div class="flex items-start justify-between gap-2">
-				<div>
-					<p class="text-sm font-semibold">
-						{t("settings.services.flowControl.title")}
-					</p>
-					<p class="text-xs text-base-content/70">
-						{t("settings.services.flowControl.description")}
-					</p>
+		<div class="space-y-4 rounded-2xl bg-base-200/70 p-4">
+			<div class="flex flex-wrap items-center justify-between gap-2">
+				<div class="flex items-center gap-2 text-sm font-semibold">
+					<Activity size={16} />
+					{t("settings.services.flowControl.title")}
 				</div>
 				<Button
 					variant="ghost"
@@ -109,20 +87,43 @@ export const QueueOverrideFields = (props: QueueOverrideFieldsProps) => {
 					{t("settings.services.flowControl.reset")}
 				</Button>
 			</div>
-			<FormGrid cols={2} gap="md">
-				{fieldKeys.map((field) => (
-					<NumberInput
-						label={t(labelKeyForField(field))}
-						helperText={helperText(field)}
-						value={getValue(field)}
-						min={fieldConstraints[field].min}
-						max={fieldConstraints[field].max}
-						step={fieldConstraints[field].step}
-						placeholder={String(props.defaults[field])}
-						onChange={(e) => updateQueueField(field, e.currentTarget.value)}
-					/>
-				))}
-			</FormGrid>
+
+			<div class="grid gap-4 md:grid-cols-2">
+				{fieldKeys.map((field) => {
+					const Icon = iconMap[field];
+					return (
+						<div class="form-control">
+							<div class="label pb-1 justify-between">
+								<span class="label-text text-xs font-semibold uppercase text-base-content/70">
+									{t(labelKeyForField(field))}
+								</span>
+								<span class="label-text-alt text-[11px] text-base-content/50">
+									{t("common.globalDefault")}: {props.defaults[field]}
+								</span>
+							</div>
+							<label class="input input-sm input-bordered flex items-center gap-2">
+								<Icon size={14} class="text-base-content/60" />
+								<input
+									type="number"
+									class="grow bg-transparent text-sm"
+									value={getValue(field)}
+									min={fieldConstraints[field].min}
+									max={fieldConstraints[field].max}
+									step={fieldConstraints[field].step}
+									placeholder={String(props.defaults[field])}
+									onChange={(e) =>
+										updateQueueField(field, e.currentTarget.value)
+									}
+								/>
+							</label>
+						</div>
+					);
+				})}
+			</div>
+
+			<p class="text-center text-[11px] text-base-content/60">
+				{t("settings.services.flowControl.usingGlobal")}
+			</p>
 		</div>
 	);
 };

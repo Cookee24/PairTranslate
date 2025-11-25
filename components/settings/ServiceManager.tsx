@@ -1,7 +1,6 @@
-import { Edit, Plus, Trash2 } from "lucide-solid";
+import { Plus } from "lucide-solid";
 import { For, type JSX } from "solid-js";
 import { Button } from "~/components/Button";
-import { Card } from "~/components/Card";
 import type { ServiceSettings } from "~/utils/settings";
 import { SettingsCard } from "./SettingsCard";
 
@@ -17,7 +16,12 @@ export interface ServiceManagerProps<
 	onAddService: () => void;
 	onEditService: (id: string) => void;
 	onDeleteService: (id: string) => void;
-	renderServiceDetails: (service: T) => JSX.Element;
+	renderServiceCard: (context: {
+		id: string;
+		service: T;
+		onEdit: () => void;
+		onDelete: () => void;
+	}) => JSX.Element;
 	extraActions?: JSX.Element;
 }
 
@@ -26,8 +30,8 @@ export const ServiceManager = <T extends ServiceSettings>(
 ) => {
 	return (
 		<SettingsCard title={props.title} navId={props.navId}>
-			<div class="flex justify-between items-center mb-4">
-				<div class="flex gap-2">{props.extraActions}</div>
+			<div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-base-200 bg-base-50 px-4 py-3 text-sm text-base-content/70">
+				<div class="flex flex-wrap gap-2">{props.extraActions}</div>
 				<Button variant="primary" size="sm" onClick={props.onAddService}>
 					<Plus size={16} />
 					{props.addServiceLabel}
@@ -35,40 +39,30 @@ export const ServiceManager = <T extends ServiceSettings>(
 			</div>
 
 			{props.services.length === 0 && (
-				<div class="text-center py-8 text-base-content/70">
-					<p>{props.noServicesConfigured}</p>
-					<p class="text-sm mt-2">{props.noServicesDesc}</p>
+				<div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-8 text-center text-base-content/70">
+					<p class="text-base font-medium">{props.noServicesConfigured}</p>
+					<p class="mt-2 text-sm">{props.noServicesDesc}</p>
+					<Button
+						variant="ghost"
+						class="mt-4"
+						size="sm"
+						onClick={props.onAddService}
+					>
+						{props.addServiceLabel}
+					</Button>
 				</div>
 			)}
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<For each={props.services}>
-					{([id, service]) => (
-						<Card.Root dash class="rounded-box">
-							<Card.Body class="p-4">
-								<div class="flex justify-between items-start mb-2">
-									<h3 class="font-semibold text-lg">{service.name}</h3>
-									<div class="flex gap-2">
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => props.onEditService(id)}
-										>
-											<Edit size={14} />
-										</Button>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => props.onDeleteService(id)}
-										>
-											<Trash2 size={14} />
-										</Button>
-									</div>
-								</div>
-								{props.renderServiceDetails(service)}
-							</Card.Body>
-						</Card.Root>
-					)}
+					{([id, service]) =>
+						props.renderServiceCard({
+							id,
+							service,
+							onEdit: () => props.onEditService(id),
+							onDelete: () => props.onDeleteService(id),
+						})
+					}
 				</For>
 			</div>
 		</SettingsCard>

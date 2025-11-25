@@ -1,18 +1,21 @@
 import { HashRouter, Route, useLocation, useNavigate } from "@solidjs/router";
-import { Earth, ExternalLink, Settings2 } from "lucide-solid";
+import { Earth, ExternalLink, Power, PowerOff, Settings2 } from "lucide-solid";
 import type { JSX } from "solid-js";
-import { Match, Switch } from "solid-js";
+import { createMemo, Match, Switch } from "solid-js";
 import { browser } from "#imports";
 import { Button } from "~/components/Button";
 import { Loading } from "~/components/Loading";
 import { SettingsRecoveryBanner } from "~/components/SettingsRecoveryBanner";
-import { SettingsProvider } from "~/hooks/settings";
+import { SettingsProvider, useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
 import { getCurrentDomain } from "./get-current";
 import Overall from "./pages/Overall";
 import Website from "./pages/Website";
 
 const Content = (props: { children?: JSX.Element }) => {
+	const { settings, setSettings } = useSettings();
+	const enabled = createMemo(() => settings.basic.enabled);
+
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -26,7 +29,16 @@ const Content = (props: { children?: JSX.Element }) => {
 				<SettingsRecoveryBanner />
 				{props.children}
 			</div>
-			<div class="self-end flex gap-2">
+			<div class="flex gap-2">
+				<Button
+					class="btn-circle mr-auto tooltip tooltip-right"
+					size="sm"
+					variant={enabled() ? "primary" : "neutral"}
+					on:click={() => setSettings("basic", "enabled", !enabled())}
+					data-tip={enabled() ? t("common.enabled") : t("common.disabled")}
+				>
+					{enabled() ? <Power size={16} /> : <PowerOff size={16} />}
+				</Button>
 				<Switch>
 					<Match when={location.pathname.includes("overall")}>
 						<Button variant="ghost" on:click={() => navigate("website")}>

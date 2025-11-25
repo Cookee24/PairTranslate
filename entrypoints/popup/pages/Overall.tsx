@@ -1,5 +1,5 @@
 import { trackStore } from "@solid-primitives/deep";
-import { Link, Power, PowerOff, Trash2 } from "lucide-solid";
+import { Box, Link, TextAlignStart, Trash2 } from "lucide-solid";
 import { createMemo, createResource, For } from "solid-js";
 import { unwrap } from "solid-js/store";
 import { browser } from "wxt/browser";
@@ -14,8 +14,6 @@ import { getCurrentDomain } from "../get-current";
 
 export default () => {
 	const { settings, setSettings } = useSettings();
-
-	const enabled = () => settings.basic.enabled;
 
 	const [domain] = createResource(getCurrentDomain);
 	const domainSuffix = createMemo(() => {
@@ -100,17 +98,10 @@ export default () => {
 
 	return (
 		<div class="flex-1 flex flex-col gap-2">
-			<Button
-				class="w-full"
-				variant={enabled() ? "success" : "neutral"}
-				on:click={() => setSettings("basic", "enabled", (v) => !v)}
-			>
-				{enabled() ? <Power size={16} /> : <PowerOff size={16} />}
-				{enabled() ? t("common.enabled") : t("common.disabled")}
-			</Button>
-			<Card.Root dash class="w-full rounded-box">
+			<Card.Root class="w-full rounded-box border border-base-200">
 				<Card.Body>
 					<Card.Title class="text-sm">
+						<Box size={16} />
 						{t("settings.translation.modelSettings")}
 					</Card.Title>
 					<div class="grid grid-cols-2 gap-2">
@@ -169,9 +160,10 @@ export default () => {
 					</div>
 				</Card.Body>
 			</Card.Root>
-			<Card.Root dash class="w-full rounded-box">
+			<Card.Root class="w-full rounded-box border border-base-200">
 				<Card.Body>
 					<Card.Title class="text-sm">
+						<TextAlignStart size={16} />
 						{t("settings.translation.translationSettings")}
 					</Card.Title>
 					<div class="grid grid-cols-2 gap-2">
@@ -216,7 +208,7 @@ export default () => {
 			</Card.Root>
 			{/* TODO: Migrate to other API */}
 			{domain() && "session" in browser.storage && (
-				<Card.Root dash class="w-full rounded-box">
+				<Card.Root class="w-full rounded-box border border-base-200">
 					<Card.Body>
 						<span class="flex items-center gap-2">
 							<Link class="inline" size={16} />

@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import {
 	ArrowLeft,
-	ArrowRight,
 	BookMarked,
 	BookText,
 	Brain,
@@ -30,15 +29,12 @@ import {
 import { Alert } from "~/components/Alert";
 import { Badge } from "~/components/Badge";
 import { Button } from "~/components/Button";
-import { Card } from "~/components/Card";
 import { Dropdown } from "~/components/Dropdown";
-import { Input } from "~/components/Input";
 import { Loading } from "~/components/Loading";
 import { Modal } from "~/components/Modal";
 import { MonacoEditor } from "~/components/Monaco";
 import { ScrollableReasoning } from "~/components/Reasoning";
 import type { SelectOption } from "~/components/Select";
-import { Select } from "~/components/Select";
 import { useSettings } from "~/hooks/settings";
 import { PROMPT_ID, SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { convertGenericError } from "~/utils/errors";
@@ -197,7 +193,7 @@ const describeStepOutput = (output: PromptStepOutput | undefined): string => {
 
 const makeCustomVariableId = () => Math.random().toString(36).slice(2, 9);
 
-const resolveLanguageLabel = (code: string) => {
+const _resolveLanguageLabel = (code: string) => {
 	if (code === "auto") return "Auto";
 	const lang = SUPPORTED_LANGUAGES.find((entry) => entry.code === code);
 	return lang ? lang.code : code;
@@ -477,9 +473,6 @@ const PromptPage = () => {
 	const [stepExecutions, setStepExecutions] = createSignal<StepExecutionMap>(
 		{},
 	);
-	const [expandedSteps, setExpandedSteps] = createSignal<
-		Record<number, boolean>
-	>({});
 	const updateStepExecution = (
 		index: number,
 		patch:
@@ -499,27 +492,13 @@ const PromptPage = () => {
 		});
 	};
 
-	const setAllExpanded = (indexes: number[]) => {
-		setExpandedSteps(() => {
-			const next: Record<number, boolean> = {};
-			indexes.forEach((index) => {
-				next[index] = true;
-			});
-			return next;
-		});
-	};
-
-	const toggleStepExpansion = (index: number, isOpen: boolean) => {
-		setExpandedSteps((prev) => ({
-			...prev,
-			[index]: isOpen,
-		}));
-	};
-
 	const [previewOutput, setPreviewOutput] = createSignal<unknown>();
-	const [previewReasoning, setPreviewReasoning] = createSignal<string>();
+	const [_previewReasoning, setPreviewReasoning] = createSignal<string>();
 	const [previewError, setPreviewError] = createSignal<string>();
 	const [previewLoading, setPreviewLoading] = createSignal(false);
+	const [activePreviewTab, setActivePreviewTab] = createSignal<
+		"output" | "trace"
+	>("output");
 
 	let previewRunId = 0;
 
@@ -583,39 +562,6 @@ const PromptPage = () => {
 		const nextIndex = Math.max(0, Math.min(section, updatedSteps.length - 1));
 		setActiveSection(nextIndex);
 	};
-
-	const contextVariableMappings = createMemo(() => {
-		const mappings = [
-			{
-				label: t("promptStudio.contextLabels.text"),
-				variable: "{{text}}",
-				value: sampleText(),
-			},
-			{
-				label: t("promptStudio.contextLabels.src"),
-				variable: "{{lang.src}}",
-				value: resolveLanguageLabel(srcLang()),
-			},
-			{
-				label: t("promptStudio.contextLabels.dst"),
-				variable: "{{lang.dst}}",
-				value: resolveLanguageLabel(dstLang()),
-			},
-			{
-				label: t("promptStudio.contextLabels.title"),
-				variable: "{{page.title}}",
-				value: pageTitle(),
-			},
-		];
-		const customs = customVariables()
-			.filter((entry) => entry.key.trim())
-			.map((entry) => ({
-				label: entry.key.trim(),
-				variable: `{{${entry.key.trim()}}}`,
-				value: entry.value,
-			}));
-		return [...mappings, ...customs];
-	});
 
 	const addCustomVariable = () => {
 		setCustomVariables((prev) => [
@@ -707,7 +653,6 @@ const PromptPage = () => {
 				resetMap[index] = { status: "idle" };
 			});
 			setStepExecutions(resetMap);
-			setAllExpanded(compiled.steps.map((_, index) => index));
 
 			const snapshotPromptSteps = prompt.steps;
 			let aggregatedReasoning: string | undefined;
@@ -855,7 +800,7 @@ const PromptPage = () => {
 		})),
 	);
 
-	const editorTitle = createMemo(() => {
+	const _editorTitle = createMemo(() => {
 		const section = activeSection();
 		if (section === "system") return t("promptStudio.systemPrompt");
 		return t("promptStudio.step", [`${section + 1}`]);
@@ -886,297 +831,344 @@ const PromptPage = () => {
 		error: "error",
 	};
 
-	const STEP_STATUS_GRADIENT: Record<StepExecutionState["status"], string> = {
-		idle: "border border-base-200 bg-base-100/60",
-		running: "border border-info bg-linear-to-b from-info/30 to-transparent",
-		completed:
-			"border border-success bg-linear-to-b from-success/30 to-transparent",
-		error: "border border-error bg-linear-to-b from-error/30 to-transparent",
-	};
+	const PreviewPanels = () => {
+		const sampleLabelText = t("promptStudio.placeholders.sampleTextLabel");
+		const resolvedSampleLabel =
+			sampleLabelText === "promptStudio.placeholders.sampleTextLabel"
+				? t("promptStudio.placeholders.sampleText")
+				: sampleLabelText;
+		const tracePlaceholderText = t("promptStudio.tracePlaceholder");
+		const resolvedTracePlaceholder =
+			tracePlaceholderText === "promptStudio.tracePlaceholder"
+				? t("promptStudio.previewPlaceholder")
+				: tracePlaceholderText;
 
-	const PreviewPanels = () => (
-		<div class="flex flex-col h-full gap-2 overflow-hidden">
-			{/* Settings & Inputs */}
-			<Card.Root class="p-3 shrink-0">
-				<div class="grid grid-cols-2 gap-2 mb-3">
-					<Select
+		return (
+			<div class="flex h-full flex-col border-l border-base-200 bg-base-50">
+				<div class="grid grid-cols-3 gap-2 border-b border-base-200 bg-base-100 p-3 text-xs">
+					<select
+						class="select select-sm select-bordered w-full"
 						value={selectedModelId() ?? ""}
-						onInput={(e) => setSelectedModelId(e.currentTarget.value)}
-						options={llmServiceOptions()}
-						placeholder={t("promptStudio.placeholders.selectModel")}
-						disabled={llmServices().length === 0}
-						class="select-sm"
-					/>
-					<div class="flex gap-2">
-						<Select
-							value={srcLang()}
-							onInput={(e) => setSrcLang(e.currentTarget.value)}
-							options={languageOptions}
-							class="select-sm flex-1"
-						/>
-						<ArrowRight size={12} class="mt-3 opacity-50" />
-						<Select
-							value={dstLang()}
-							onInput={(e) => setDstLang(e.currentTarget.value)}
-							options={languageOptions.filter((o) => o.value !== "auto")}
-							class="select-sm flex-1"
-						/>
-					</div>
-				</div>
-
-				<div class="space-y-2">
-					<textarea
-						class="textarea textarea-bordered textarea-sm w-full h-16 leading-tight resize-none"
-						placeholder={t("promptStudio.placeholders.sampleText")}
-						value={sampleText()}
-						onInput={(e) => setSampleText(e.currentTarget.value)}
-					/>
-
-					<details class="collapse collapse-arrow border border-base-200 bg-base-100 rounded-md">
-						<summary class="collapse-title min-h-0 p-2 text-xs font-semibold bg-base-200/50 flex items-center gap-2">
-							<Variable size={14} /> {t("promptStudio.contextVariables")}
-						</summary>
-						<div class="collapse-content p-3 space-y-3 text-xs">
-							<div class="grid grid-cols-2 gap-2">
-								<Input
-									label={t("promptStudio.pageTitle")}
-									class="input-xs"
-									value={pageTitle()}
-									onInput={(e) => setPageTitle(e.currentTarget.value)}
-								/>
-								<Input
-									label={t("promptStudio.pageUrl")}
-									class="input-xs"
-									value={pageUrl()}
-									onInput={(e) => setPageUrl(e.currentTarget.value)}
-								/>
-								<Input
-									label={t("promptStudio.surroundingBefore")}
-									class="input-xs"
-									value={surrBefore()}
-									onInput={(e) => setSurrBefore(e.currentTarget.value)}
-								/>
-								<Input
-									label={t("promptStudio.surroundingAfter")}
-									class="input-xs"
-									value={surrAfter()}
-									onInput={(e) => setSurrAfter(e.currentTarget.value)}
-								/>
-							</div>
-
-							<div class="pt-2 border-t border-base-200">
-								<div class="flex items-center justify-between mb-2">
-									<span class="font-semibold">
-										{t("promptStudio.customVariables")}
-									</span>
-									<Button size="xs" variant="ghost" onClick={addCustomVariable}>
-										<ListPlus size={12} />
-									</Button>
-								</div>
-								<div class="space-y-2">
-									<For each={customVariables()}>
-										{(entry) => (
-											<div class="flex gap-1">
-												<input
-													class="input input-bordered input-xs flex-1"
-													placeholder={t(
-														"promptStudio.placeholders.keyPlaceholder",
-													)}
-													value={entry.key}
-													onInput={(e) =>
-														updateCustomVariable(entry.id, {
-															key: e.currentTarget.value,
-														})
-													}
-												/>
-												<input
-													class="input input-bordered input-xs flex-1"
-													placeholder={t(
-														"promptStudio.placeholders.valuePlaceholder",
-													)}
-													value={entry.value}
-													onInput={(e) =>
-														updateCustomVariable(entry.id, {
-															value: e.currentTarget.value,
-														})
-													}
-												/>
-												<button
-													type="button"
-													class="btn btn-ghost btn-xs text-error px-1"
-													onClick={() => removeCustomVariable(entry.id)}
-												>
-													<Trash2 size={12} />
-												</button>
-											</div>
-										)}
-									</For>
-								</div>
-							</div>
-
-							<div class="pt-2 border-t border-base-200">
-								<span class="font-semibold mb-1 block">
-									{t("promptStudio.resolvedMapping")}
-								</span>
-								<div class="grid grid-cols-2 gap-2">
-									<For each={contextVariableMappings()}>
-										{(m) => (
-											<div class="rounded-md border border-base-200/80 bg-base-100/70 p-2">
-												<span class="text-[10px] uppercase tracking-wide opacity-70">
-													{m.variable}
-												</span>
-												<div
-													class="text-sm font-semibold mt-1 wrap-break-word text-base-content"
-													title={m.value}
-												>
-													{m.value || (
-														<span class="opacity-60">
-															{t("promptStudio.empty")}
-														</span>
-													)}
-												</div>
-											</div>
-										)}
-									</For>
-								</div>
-							</div>
-						</div>
-					</details>
-
-					<Button
-						class="w-full"
-						size="sm"
-						onClick={sendPreview}
-						disabled={previewLoading() || !selectedPrompt()}
+						onChange={(e) =>
+							setSelectedModelId(e.currentTarget.value || undefined)
+						}
 					>
-						{previewLoading() ? <Loading size="xs" /> : <Play size={14} />}
-						{t("promptStudio.runPreview")}
-					</Button>
+						<option value="">
+							{t("promptStudio.placeholders.selectModel")}
+						</option>
+						<For each={llmServiceOptions()}>
+							{(option) => <option value={option.value}>{option.label}</option>}
+						</For>
+					</select>
+					<select
+						class="select select-sm select-bordered w-full"
+						value={srcLang()}
+						onChange={(e) => setSrcLang(e.currentTarget.value)}
+					>
+						<For each={languageOptions}>
+							{(option) => <option value={option.value}>{option.label}</option>}
+						</For>
+					</select>
+					<select
+						class="select select-sm select-bordered w-full"
+						value={dstLang()}
+						onChange={(e) => setDstLang(e.currentTarget.value)}
+					>
+						<For
+							each={languageOptions.filter((option) => option.value !== "auto")}
+						>
+							{(option) => <option value={option.value}>{option.label}</option>}
+						</For>
+					</select>
 				</div>
-			</Card.Root>
 
-			{/* Results Area */}
-			<div class="flex-1 overflow-y-auto min-h-0 space-y-2 p-1">
-				<Show when={previewError()}>
-					<Alert variant="error" class="text-xs p-2">
-						{previewError()}
-					</Alert>
-				</Show>
-
-				<Show when={!previewSteps().error && previewSteps().system}>
-					<Card.Root class="bg-linear-to-b from-primary/10 to-transparent border border-primary/30 text-xs">
-						<Card.Title class="mx-4 mt-2">
-							<div class="flex items-center gap-2 text-[10px] uppercase text-primary/70 mb-1">
-								<ScrollText size={12} />
-								<span>{t("promptStudio.systemPromptLabel")}</span>
-								<Badge size="xs" variant="ghost" class="ml-auto">
-									{t("promptStudio.preview")}
-								</Badge>
+				<div class="flex flex-1 flex-col overflow-hidden">
+					<div class="flex-1 space-y-4 overflow-y-auto p-4">
+						<div class="form-control text-xs">
+							<div class="label pb-1">
+								<span class="label-text font-semibold uppercase text-base-content/60">
+									{resolvedSampleLabel}
+								</span>
 							</div>
-						</Card.Title>
-						<Card.Body>
-							<pre class="text-xs whitespace-pre-wrap font-mono wrap-break-word max-h-32 overflow-auto">
-								{previewSteps().system}
-							</pre>
-						</Card.Body>
-					</Card.Root>
-				</Show>
-
-				<Show when={previewOutput() !== undefined}>
-					<Card.Root class="bg-linear-to-b from-primary/10 to-base-100/70 p-3 border border-primary/30 shadow-inner">
-						<div class="text-xs font-bold uppercase text-base-content/50 mb-1">
-							{t("promptStudio.result")}
+							<textarea
+								class="textarea textarea-bordered h-28 w-full resize-none font-mono text-sm"
+								value={sampleText()}
+								onInput={(e) => setSampleText(e.currentTarget.value)}
+								placeholder={t("promptStudio.placeholders.sampleText")}
+							/>
 						</div>
-						<pre class="text-xs whitespace-pre-wrap font-mono wrap-break-word">
-							{typeof previewOutput() === "string"
-								? (previewOutput() as string)
-								: JSON.stringify(previewOutput(), null, 2)}
-						</pre>
-						<Show when={previewReasoning()}>
-							<div class="mt-2 pt-2 border-t border-base-300/50">
-								<div class="text-xs font-bold uppercase text-base-content/50 mb-1">
-									{t("promptStudio.reasoning")}
-								</div>
-								<ScrollableReasoning text={previewReasoning() || ""} />
-							</div>
-						</Show>
-					</Card.Root>
-				</Show>
 
-				{/* Step Trace */}
-				<Show when={!previewSteps().error && previewSteps().steps.length > 0}>
-					<div class="divider text-xs text-base-content/50 my-1">
-						{t("promptStudio.trace")}
-					</div>
-					<For each={previewSteps().steps}>
-						{(step) => {
-							const exc = () =>
-								stepExecutions()[step.index] ?? { status: "idle" };
-							const statusClass =
-								STEP_STATUS_GRADIENT[exc().status] ?? STEP_STATUS_GRADIENT.idle;
-							const isExpanded = expandedSteps()[step.index] ?? true;
-							return (
-								<div
-									class={`collapse collapse-arrow rounded-md ${statusClass}`}
-								>
-									<input
-										type="checkbox"
-										checked={isExpanded}
-										onInput={(e) =>
-											toggleStepExpansion(step.index, e.currentTarget.checked)
-										}
-									/>
-									<div class="collapse-title p-2 min-h-0 flex items-center justify-between gap-2 text-xs">
-										<span class="font-semibold">{step.label}</span>
-										<Badge
-											variant={statusBadgeVariant[exc().status]}
-											size="sm"
-											class="text-[10px] h-5 mr-8"
-										>
-											{exc().status}
-										</Badge>
+						<div class="collapse collapse-arrow rounded-box border border-base-300 bg-base-200">
+							<input type="checkbox" />
+							<div class="collapse-title flex items-center gap-2 text-sm font-semibold">
+								<Variable size={16} />
+								{t("promptStudio.contextVariables")}
+							</div>
+							<div class="collapse-content space-y-3 text-xs">
+								<div class="grid grid-cols-2 gap-2">
+									<div class="form-control">
+										<label class="label-text text-[11px] mb-1">
+											{t("promptStudio.pageTitle")}
+										</label>
+										<input
+											class="input input-sm input-bordered"
+											value={pageTitle()}
+											onInput={(e) => setPageTitle(e.currentTarget.value)}
+										/>
 									</div>
-									<div class="collapse-content p-2 text-xs space-y-2 border-t border-base-100">
-										<div>
-											<span class="uppercase text-[10px] opacity-50 block">
-												{t("promptStudio.in")}
-											</span>
-											<pre class="bg-base-200 p-1 rounded opacity-80 overflow-auto max-h-20">
-												{step.message}
-											</pre>
-										</div>
-										<Show when={exc().output}>
-											<div>
-												<span class="uppercase text-[10px] opacity-50 block">
-													{t("promptStudio.out")}
-												</span>
-												<pre class="bg-base-200 p-1 rounded opacity-80 overflow-auto max-h-20">
-													{typeof exc().output === "string"
-														? (exc().output as string)
-														: JSON.stringify(exc().output)}
-												</pre>
-											</div>
-										</Show>
-										<Show when={exc().reasoning}>
-											<div>
-												<span class="flex items-center gap-1 uppercase text-[10px] opacity-50 mb-1">
-													<Brain size={12} />
-													{t("promptStudio.reasoning")}
-												</span>
-												<div class="rounded-box border border-base-200/70 bg-base-100/60 p-2">
-													<ScrollableReasoning text={exc().reasoning || ""} />
+									<div class="form-control">
+										<label class="label-text text-[11px] mb-1">
+											{t("promptStudio.pageUrl")}
+										</label>
+										<input
+											class="input input-sm input-bordered"
+											value={pageUrl()}
+											onInput={(e) => setPageUrl(e.currentTarget.value)}
+										/>
+									</div>
+									<div class="form-control">
+										<label class="label-text text-[11px] mb-1">
+											{t("promptStudio.surroundingBefore")}
+										</label>
+										<input
+											class="input input-sm input-bordered"
+											value={surrBefore()}
+											onInput={(e) => setSurrBefore(e.currentTarget.value)}
+										/>
+									</div>
+									<div class="form-control">
+										<label class="label-text text-[11px] mb-1">
+											{t("promptStudio.surroundingAfter")}
+										</label>
+										<input
+											class="input input-sm input-bordered"
+											value={surrAfter()}
+											onInput={(e) => setSurrAfter(e.currentTarget.value)}
+										/>
+									</div>
+								</div>
+
+								<div class="border-t border-base-300 pt-3">
+									<div class="mb-2 flex items-center justify-between">
+										<span class="font-semibold">
+											{t("promptStudio.customVariables")}
+										</span>
+										<button
+											type="button"
+											class="btn btn-ghost btn-xs gap-1"
+											onClick={addCustomVariable}
+										>
+											<ListPlus size={12} /> {t("common.add")}
+										</button>
+									</div>
+									<div class="space-y-2">
+										<For each={customVariables()}>
+											{(entry) => (
+												<div class="flex gap-1">
+													<input
+														class="input input-sm input-bordered flex-1"
+														placeholder={t(
+															"promptStudio.placeholders.keyPlaceholder",
+														)}
+														value={entry.key}
+														onInput={(e) =>
+															updateCustomVariable(entry.id, {
+																key: e.currentTarget.value,
+															})
+														}
+													/>
+													<input
+														class="input input-sm input-bordered flex-1"
+														placeholder={t(
+															"promptStudio.placeholders.valuePlaceholder",
+														)}
+														value={entry.value}
+														onInput={(e) =>
+															updateCustomVariable(entry.id, {
+																value: e.currentTarget.value,
+															})
+														}
+													/>
+													<button
+														type="button"
+														class="btn btn-ghost btn-xs text-error"
+														onClick={() => removeCustomVariable(entry.id)}
+													>
+														<Trash2 size={12} />
+													</button>
 												</div>
-											</div>
+											)}
+										</For>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<button
+							type="button"
+							class="btn btn-primary w-full gap-2"
+							onClick={() => {
+								setActivePreviewTab("output");
+								sendPreview();
+							}}
+							disabled={previewLoading() || !selectedPrompt()}
+						>
+							{previewLoading() ? <Loading size="xs" /> : <Play size={14} />}
+							{t("promptStudio.runPreview")}
+						</button>
+					</div>
+
+					<div class="flex h-1/2 flex-col border-t border-base-300 bg-base-100">
+						<div class="tabs tabs-lifted w-full px-2 pt-2 text-xs">
+							<button
+								type="button"
+								class={`tab ${activePreviewTab() === "output" ? "tab-active text-base-content" : ""}`}
+								onClick={() => setActivePreviewTab("output")}
+							>
+								<CodeXml size={12} class="mr-2" />
+								{t("promptStudio.result")}
+							</button>
+							<button
+								type="button"
+								class={`tab ${activePreviewTab() === "trace" ? "tab-active text-base-content" : ""}`}
+								onClick={() => setActivePreviewTab("trace")}
+							>
+								<Brain size={12} class="mr-2" />
+								{t("promptStudio.trace")}
+							</button>
+						</div>
+						<div class="flex-1 overflow-hidden">
+							<Show when={activePreviewTab() === "output"}>
+								<div class="flex h-full flex-col">
+									<Show when={previewError()}>
+										<Alert variant="error" class="rounded-none py-2 text-xs">
+											{previewError()}
+										</Alert>
+									</Show>
+									<div class="mockup-code h-full flex-1 overflow-auto rounded-none bg-neutral text-neutral-content text-xs">
+										<Show
+											when={previewOutput() !== undefined}
+											fallback={
+												<pre>
+													<code>{t("promptStudio.previewPlaceholder")}</code>
+												</pre>
+											}
+										>
+											<pre>
+												<code>
+													{typeof previewOutput() === "string"
+														? (previewOutput() as string)
+														: JSON.stringify(previewOutput(), null, 2)}
+												</code>
+											</pre>
 										</Show>
 									</div>
 								</div>
-							);
-						}}
-					</For>
-				</Show>
+							</Show>
+							<Show when={activePreviewTab() === "trace"}>
+								<div class="h-full overflow-y-auto p-4">
+									<Show
+										when={previewSteps().steps.length > 0}
+										fallback={
+											<p class="text-center text-xs text-base-content/60">
+												{previewSteps().error ?? resolvedTracePlaceholder}
+											</p>
+										}
+									>
+										<ul class="timeline timeline-vertical timeline-compact timeline-snap-icon">
+											<For each={previewSteps().steps}>
+												{(step, i) => {
+													const st = stepExecutions()[step.index] ?? {
+														status: "idle" as StepExecutionState["status"],
+													};
+													const icon =
+														st.status === "completed" ? (
+															<Badge variant="success" size="xs">
+																✓
+															</Badge>
+														) : st.status === "error" ? (
+															<Badge variant="error" size="xs">
+																!
+															</Badge>
+														) : (
+															<Badge variant="info" size="xs">
+																··
+															</Badge>
+														);
+													return (
+														<li>
+															<Show when={i() !== 0}>
+																<hr
+																	class={
+																		st.status === "error"
+																			? "bg-error"
+																			: st.status === "completed"
+																				? "bg-success"
+																				: "bg-base-300"
+																	}
+																/>
+															</Show>
+															<div class="timeline-middle">{icon}</div>
+															<div class="timeline-end mb-6 w-full">
+																<div class="flex items-center justify-between text-xs">
+																	<span class="font-semibold">
+																		{step.label}
+																	</span>
+																	<Badge
+																		variant={statusBadgeVariant[st.status]}
+																		size="xs"
+																	>
+																		{st.status}
+																	</Badge>
+																</div>
+																<div class="mt-2 rounded-box border border-base-200 bg-base-100 p-2 text-[11px] font-mono">
+																	<span class="uppercase text-[9px] opacity-60">
+																		{t("promptStudio.in")}
+																	</span>
+																	<pre class="max-h-24 overflow-auto">
+																		{step.message}
+																	</pre>
+																	<Show when={st.output}>
+																		<span class="mt-2 block uppercase text-[9px] opacity-60">
+																			{t("promptStudio.out")}
+																		</span>
+																		<pre class="max-h-32 overflow-auto">
+																			{typeof st.output === "string"
+																				? (st.output as string)
+																				: JSON.stringify(st.output, null, 2)}
+																		</pre>
+																	</Show>
+																	<Show when={st.reasoning}>
+																		<div class="mt-2 rounded border border-base-200 bg-base-50 p-2">
+																			<ScrollableReasoning
+																				text={st.reasoning || ""}
+																			/>
+																		</div>
+																	</Show>
+																	<Show when={st.error}>
+																		<Alert
+																			variant="error"
+																			class="mt-2 py-1 text-[11px]"
+																		>
+																			{st.error}
+																		</Alert>
+																	</Show>
+																</div>
+															</div>
+														</li>
+													);
+												}}
+											</For>
+										</ul>
+									</Show>
+								</div>
+							</Show>
+						</div>
+					</div>
+				</div>
 			</div>
-		</div>
-	);
+		);
+	};
 
 	const promptPreview = selectedPromptPreview();
 
@@ -1210,36 +1202,94 @@ const PromptPage = () => {
 
 			{/* Main Split Layout */}
 			<div class="flex-1 flex w-full max-w-7xl mx-auto overflow-hidden">
-				{/* Left Pane: Editor */}
 				<div
-					class={`flex flex-col gap-2 p-3 border-r border-base-200 overflow-hidden ${isWideLayout() ? "w-7/12" : "w-full"}`}
+					class={`flex h-full flex-col border-r border-base-300 bg-base-100 ${isWideLayout() ? "w-3/5" : "w-full"}`}
 				>
-					{/* Prompt Selector Row */}
-					<div class="flex gap-2 shrink-0 flex-wrap">
-						<div class="flex-1 min-w-0">
-							<Dropdown
-								trigger={
-									<div class="flex flex-col items-start gap-0.5 text-left">
-										<div class="flex items-center gap-2 text-sm font-semibold">
-											{promptPreview.icon}
-											<span class="truncate">{promptPreview.name}</span>
-										</div>
-										<span class="text-[10px] text-base-content/60 truncate w-full">
-											{promptPreview.snippet}
-										</span>
-									</div>
-								}
-								items={promptDropdownItems()}
-								triggerType="click"
-								closeOnSelect
-								align="start"
-								position="bottom"
-								triggerClass="btn btn-ghost btn-sm justify-between gap-2 normal-case w-full"
-								width="w-64"
-							/>
+					<div class="flex items-center justify-between border-b border-base-200 px-4 py-3">
+						<div>
+							<div class="flex items-center gap-2 text-sm font-semibold">
+								{promptPreview.icon}
+								<span>{promptPreview.name}</span>
+								<Badge size="xs" variant="ghost">
+									IDE
+								</Badge>
+							</div>
+							<p class="text-xs text-base-content/50 line-clamp-1">
+								{promptPreview.snippet}
+							</p>
 						</div>
+						<div class="flex items-center gap-2">
+							<div class="dropdown dropdown-end">
+								<label class="btn btn-ghost btn-xs gap-1">
+									<WandSparkles size={12} />
+									{t("promptStudio.templates")}
+								</label>
+								<div class="dropdown-content card card-compact w-72 gap-2 border border-base-200 bg-base-100 p-2 text-xs shadow">
+									<For each={TEMPLATE_SNIPPETS}>
+										{(snippet) => (
+											<div>
+												<p class="font-semibold text-base-content/70">
+													{t(snippet.titleKey)}
+												</p>
+												<pre class="rounded bg-base-200 p-1 font-mono">
+													{snippet.snippet}
+												</pre>
+											</div>
+										)}
+									</For>
+								</div>
+							</div>
+							<div class="join">
+								<button
+									type="button"
+									class="btn btn-ghost btn-xs join-item"
+									onClick={handleAddStep}
+									title={t("promptStudio.addStep")}
+								>
+									<ListPlus size={14} />
+								</button>
+								<button
+									type="button"
+									class="btn btn-ghost btn-xs join-item"
+									onClick={handleRemoveStep}
+									title={t("promptStudio.deleteStep")}
+									disabled={!canRemoveStep()}
+								>
+									<Trash2 size={14} />
+								</button>
+								<button
+									type="button"
+									class="btn btn-primary btn-xs join-item gap-1"
+									onClick={handleRestorePrompt}
+									title={t("promptStudio.reset")}
+								>
+									<RotateCcw size={14} />
+									{t("common.resetSection")}
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="flex items-center gap-3 border-b border-base-200 px-4 py-3">
+						<Dropdown
+							trigger={
+								<div class="flex w-full items-center gap-2 text-left">
+									<div class="flex items-center gap-2 font-semibold">
+										{promptPreview.icon}
+										<span>{promptPreview.name}</span>
+									</div>
+								</div>
+							}
+							items={promptDropdownItems()}
+							triggerType="click"
+							closeOnSelect
+							align="start"
+							position="bottom"
+							triggerClass="btn btn-ghost btn-sm w-full justify-between"
+							width="w-72"
+						/>
 						<input
-							class="input input-bordered input-sm flex-1"
+							class="input input-bordered input-sm w-full"
 							placeholder={t("promptStudio.promptName")}
 							value={selectedPrompt()?.name ?? ""}
 							onInput={(e) => {
@@ -1248,124 +1298,68 @@ const PromptPage = () => {
 								setSettings("prompts", id, "name", e.currentTarget.value);
 							}}
 						/>
-						<div class="join">
-							<Button
-								size="sm"
-								variant="ghost"
-								class="join-item"
-								onClick={handleAddStep}
-								title={t("promptStudio.addStep")}
-							>
-								<ListPlus size={16} />
-							</Button>
-							<Button
-								size="sm"
-								variant="ghost"
-								class="join-item"
-								onClick={handleRemoveStep}
-								title={t("promptStudio.deleteStep")}
-								disabled={!canRemoveStep()}
-							>
-								<Trash2 size={16} />
-							</Button>
-							<Button
-								size="sm"
-								variant="ghost"
-								class="btn join-item"
-								onClick={handleRestorePrompt}
-								title={t("promptStudio.reset")}
-							>
-								<RotateCcw size={16} />
-							</Button>
-						</div>
 					</div>
 
-					{/* Tabs & Cheatsheet Toggle */}
-					<div class="flex items-center justify-between shrink-0">
-						<div class="tabs tabs-boxed tabs-sm bg-transparent p-0 gap-1">
-							<Button
-								variant={activeSection() === "system" ? "primary" : "ghost"}
+					<div class="flex items-center justify-between border-b border-base-200 px-4 py-2 text-xs">
+						<div class="flex gap-2 overflow-x-auto">
+							<button
+								type="button"
+								class={`btn btn-xs ${activeSection() === "system" ? "btn-primary" : "btn-ghost"}`}
 								onClick={() => setActiveSection("system")}
 							>
-								<BookMarked size={14} class="mr-1.5" />{" "}
+								<BookMarked size={12} class="mr-1" />
 								{t("promptStudio.systemPrompt")}
-							</Button>
+							</button>
 							<For each={selectedPrompt()?.steps}>
-								{(_s, i) => (
-									<Button
-										variant={activeSection() === i() ? "secondary" : "ghost"}
+								{(_step, i) => (
+									<button
+										type="button"
+										class={`btn btn-xs ${activeSection() === i() ? "btn-secondary" : "btn-ghost"}`}
 										onClick={() => setActiveSection(i())}
 									>
-										<CodeXml size={14} class="mr-1.5" /> {i() + 1}
-									</Button>
+										<CodeXml size={12} class="mr-1" />
+										{i() + 1}
+									</button>
 								)}
 							</For>
 						</div>
-
-						<div class="dropdown dropdown-end">
-							<Button
-								variant="ghost"
-								size="xs"
-								tabindex="0"
-								class="gap-1 text-base-content/60"
-							>
-								<WandSparkles size={12} /> {t("promptStudio.templates")}
-							</Button>
-							<div
-								tabindex="0"
-								class="dropdown-content z-1 card card-compact w-72 p-2 shadow bg-base-100 border border-base-200 text-xs"
-							>
-								<For each={TEMPLATE_SNIPPETS}>
-									{(snippet) => (
-										<div class="mb-2 last:mb-0">
-											<div class="font-bold opacity-70 mb-1">
-												{t(snippet.titleKey)}
-											</div>
-											<pre class="bg-base-200 p-1 rounded">
-												{snippet.snippet}
-											</pre>
-										</div>
-									)}
-								</For>
-							</div>
-						</div>
+						{editorOutputLabel() && (
+							<Badge size="xs" variant="ghost">
+								{editorOutputLabel()}
+							</Badge>
+						)}
 					</div>
 
-					{/* Editor Area */}
-					<div class="flex-1 relative border border-base-300 rounded-box overflow-hidden bg-base-100 flex flex-col max-h-[70vh]">
-						<div class="h-8 shrink-0 bg-base-200/50 border-b border-base-200 flex items-center justify-between px-3">
-							<span class="text-xs font-mono font-semibold opacity-70">
-								{editorTitle()}
-							</span>
-							<Show when={editorOutputLabel()}>
-								<Badge size="sm" variant="ghost" class="h-5 text-[10px]">
-									{editorOutputLabel()}
-								</Badge>
-							</Show>
-						</div>
+					<div class="relative flex-1 overflow-hidden bg-base-100 group">
 						<Show when={editorError()}>
-							<Alert variant="error" class="mx-3 mt-2 text-xs py-1 px-2">
+							<Alert variant="error" class="absolute left-4 top-4 z-10 text-xs">
 								{editorError()}
 							</Alert>
 						</Show>
 						<MonacoEditor
 							value={currentEditorValue()}
 							onChange={updateEditorValue}
-							class="flex-1"
+							class="h-full"
 							options={{
 								fontSize: 13,
 								minimap: { enabled: false },
 								lineNumbersMinChars: 3,
+								scrollBeyondLastLine: false,
 							}}
 							markers={editorMarkers()}
 							markerOwner={MONACO_MARKER_OWNER}
 						/>
+						<div class="absolute bottom-4 right-4 opacity-0 transition-opacity group-hover:opacity-100">
+							<button type="button" class="btn btn-xs btn-neutral gap-1">
+								<Variable size={12} />
+								{t("promptStudio.insertVariable")}
+							</button>
+						</div>
 					</div>
 				</div>
 
-				{/* Right Pane: Preview (Visible on Desktop) */}
 				<Show when={isWideLayout()}>
-					<div class="w-5/12 bg-base-50/50">
+					<div class="w-2/5 bg-base-50">
 						<PreviewPanels />
 					</div>
 				</Show>

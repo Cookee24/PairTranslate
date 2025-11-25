@@ -2,7 +2,7 @@ import { RotateCcw, Trash2 } from "lucide-solid";
 import { createSignal } from "solid-js";
 import { browser } from "#imports";
 import { Button } from "~/components/Button";
-import { Card } from "~/components/Card";
+import { SettingsCard } from "~/components/settings/SettingsCard";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
 import { generateDefaultSettings } from "~/utils/settings/default";
@@ -66,75 +66,72 @@ export default (props: { navId: string }) => {
 	};
 
 	return (
-		<Card.Root class="rounded-box bg-base-200/30" data-nav={props.navId}>
-			<Card.Body>
-				<Card.Title>{t("settings.advanced.title")}</Card.Title>
-				<div class="space-y-6">
-					<div class="form-control">
-						<label class="label">
-							<span class="label-text font-semibold flex items-center gap-2">
-								<Trash2 size={16} />
-								{t("settings.advanced.cleanCache")}
-							</span>
-						</label>
-						<p class="text-sm text-base-content/70 mb-4">
-							{t("settings.advanced.cleanCacheDesc")}
-						</p>
-						<Button
-							variant="warning"
-							size="sm"
-							onClick={handleClearCache}
-							disabled={isClearingCache()}
-						>
-							{isClearingCache() ? (
-								<>
-									<span class="loading loading-spinner loading-xs"></span>
-									{t("settings.advanced.clearingCache")}
-								</>
-							) : (
-								t("settings.advanced.cleanCache")
-							)}
-						</Button>
-					</div>
-
-					<div class="form-control">
-						<label class="label">
-							<span class="label-text font-semibold flex items-center gap-2">
-								<RotateCcw size={16} />
-								{t("settings.advanced.resetSettings")}
-							</span>
-						</label>
-						<p class="text-sm text-base-content/70 mb-4">
-							{t("settings.advanced.resetSettingsDesc")}
-						</p>
-						<Button
-							variant="error"
-							size="sm"
-							onClick={handleResetSettings}
-							disabled={isResettingSettings()}
-						>
-							{isResettingSettings() ? (
-								<>
-									<span class="loading loading-spinner loading-xs"></span>
-									{t("settings.advanced.resettingSettings")}
-								</>
-							) : (
-								t("settings.advanced.resetSettings")
-							)}
-						</Button>
-					</div>
-
-					{feedback() && (
-						<div
-							class={`alert ${
-								feedback()?.type === "success" ? "alert-success" : "alert-error"
-							}`}
-						>
-							<span>{feedback()?.message}</span>
-						</div>
-					)}
+		<SettingsCard title={t("settings.advanced.title")} navId={props.navId}>
+			<div class="space-y-6">
+				<div class="form-control rounded-2xl border border-base-200 p-4">
+					<label class="label">
+						<span class="label-text flex items-center gap-2 font-semibold">
+							<Trash2 size={16} />
+							{t("settings.advanced.cleanCache")}
+						</span>
+					</label>
+					<p class="mb-4 text-sm text-base-content/70">
+						{t("settings.advanced.cleanCacheDesc")}
+					</p>
+					<Button
+						variant="warning"
+						size="sm"
+						onClick={handleClearCache}
+						disabled={isClearingCache()}
+					>
+						{isClearingCache() ? (
+							<>
+								<span class="loading loading-spinner loading-xs"></span>
+								{t("settings.advanced.clearingCache")}
+							</>
+						) : (
+							t("settings.advanced.cleanCache")
+						)}
+					</Button>
 				</div>
-			</Card.Body>
-		</Card.Root>
+
+				<div class="form-control rounded-2xl border border-base-200 p-4">
+					<label class="label">
+						<span class="label-text flex items-center gap-2 font-semibold">
+							<RotateCcw size={16} />
+							{t("settings.advanced.resetSettings")}
+						</span>
+					</label>
+					<p class="mb-4 text-sm text-base-content/70">
+						{t("settings.advanced.resetSettingsDesc")}
+					</p>
+					<Button
+						variant="error"
+						size="sm"
+						onClick={handleResetSettings}
+						disabled={isResettingSettings()}
+					>
+						{isResettingSettings() ? (
+							<>
+								<span class="loading loading-spinner loading-xs"></span>
+								{t("settings.advanced.resettingSettings")}
+							</>
+						) : (
+							t("settings.advanced.resetSettings")
+						)}
+					</Button>
+				</div>
+
+				{feedback() && (
+					<div
+						class={`alert ${
+							feedback()?.type === "success" ? "alert-success" : "alert-error"
+						}`}
+					>
+						<span>{feedback()?.message}</span>
+					</div>
+				)}
+			</div>
+		</SettingsCard>
 	);
 };

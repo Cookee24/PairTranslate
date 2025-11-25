@@ -1,4 +1,13 @@
-import { Check, CheckCheck, Download, Plus, X } from "lucide-solid";
+import {
+	ArrowRight,
+	Check,
+	CheckCheck,
+	CheckCircle2,
+	CloudDownload,
+	Download,
+	Plus,
+	X,
+} from "lucide-solid";
 import { createEffect, createMemo, createSignal, For, Show } from "solid-js";
 import { Alert } from "~/components/Alert";
 import { Badge } from "~/components/Badge";
@@ -24,7 +33,8 @@ interface BrowserTranslatorModalProps {
 interface LanguagePair {
 	source: string;
 	target: string;
-	label: string;
+	sourceName: string;
+	targetName: string;
 }
 
 // Generate language pairs from SUPPORTED_LANGUAGES
@@ -39,9 +49,10 @@ const generateLanguagePairs = (): LanguagePair[] => {
 				const targetLang = SUPPORTED_LANGUAGES.find((l) => l.code === target);
 				if (sourceLang && targetLang) {
 					pairs.push({
-						source: source,
-						target: target,
-						label: `${sourceLang.name} → ${targetLang.name}`,
+						source,
+						target,
+						sourceName: sourceLang.name,
+						targetName: targetLang.name,
 					});
 				}
 			}
@@ -126,6 +137,71 @@ export default (props: BrowserTranslatorModalProps) => {
 			case "unavailable":
 				return <X size={16} />;
 		}
+	};
+
+	const renderStatusBadge = (result?: TranslatorCheckResult) => {
+		if (result?.isSupported && result.availability === "available") {
+			return (
+				<Badge variant="success" class="gap-2 text-white">
+					<CheckCircle2 size={12} />
+					{t("settings.browserTranslator.status.supported")}
+				</Badge>
+			);
+		}
+
+		if (
+			result?.availability === "downloadable" ||
+			result?.availability === "downloading"
+		) {
+			return (
+				<Badge variant="warning" class="gap-2 text-base-content">
+					<CloudDownload size={12} />
+					{t("settings.browserTranslator.availability.downloadable")}
+				</Badge>
+			);
+		}
+
+		return (
+			<Badge variant="error" class="gap-2 text-white">
+				<X size={12} />
+				{t("settings.browserTranslator.status.unsupported")}
+			</Badge>
+		);
+	};
+
+	const renderActionCell = (result?: TranslatorCheckResult) => {
+		if (result?.availability === "available") {
+			return (
+				<span class="text-xs font-semibold uppercase tracking-wide text-success">
+					{t("common.enabled")}
+				</span>
+			);
+		}
+
+		if (
+			result?.availability === "downloadable" ||
+			result?.availability === "downloading"
+		) {
+			return (
+				<Button
+					type="button"
+					variant="ghost"
+					size="xs"
+					class="btn-outline gap-1"
+					title={t("settings.browserTranslator.availability.downloadable")}
+					disabled
+				>
+					<CloudDownload size={12} />
+					{t("settings.browserTranslator.availability.downloadable")}
+				</Button>
+			);
+		}
+
+		return (
+			<span class="text-xs text-base-content/50">
+				{t("settings.browserTranslator.availability.unavailable")}
+			</span>
+		);
 	};
 
 	const renderSteps = () => {
@@ -271,19 +347,21 @@ export default (props: BrowserTranslatorModalProps) => {
 
 				{/* Translator Results */}
 				<Show when={!isChecking() && translatorResults().size > 0}>
-					<div class="border border-base-300 rounded-box p-4 max-h-96 overflow-y-auto">
-						<h3 class="font-semibold text-lg mb-3">
+					<div class="space-y-3">
+						<h3 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">
 							{t("settings.browserTranslator.translator")}
 						</h3>
-						<div class="overflow-x-auto">
-							<table class="table table-zebra table-sm">
-								<thead>
+						<div class="overflow-x-auto h-96 rounded-box border border-base-300">
+							<table class="table table-pin-rows">
+								<thead class="bg-base-200">
 									<tr>
-										<th>
+										<th class="text-sm font-semibold">
 											{t("settings.browserTranslator.table.languagePair")}
 										</th>
-										<th>{t("settings.browserTranslator.table.status")}</th>
-										<th>
+										<th class="text-sm font-semibold">
+											{t("settings.browserTranslator.table.status")}
+										</th>
+										<th class="text-right text-sm font-semibold">
 											{t("settings.browserTranslator.table.availability")}
 										</th>
 									</tr>
@@ -294,67 +372,21 @@ export default (props: BrowserTranslatorModalProps) => {
 											const key = `${pair.source}-${pair.target}`;
 											const result = translatorResults().get(key);
 											return (
-												<tr>
-													<td>{pair.label}</td>
+												<tr class="hover">
 													<td>
-														<div class="flex items-center gap-2">
-															{result?.isSupported
-																? getAvailabilityIcon(result?.availability)
-																: getAvailabilityIcon("unavailable")}
-															<span
-																class={
-																	result?.isSupported
-																		? "text-success"
-																		: "text-error"
-																}
-															>
-																{result?.isSupported
-																	? t(
-																			"settings.browserTranslator.status.supported",
-																		)
-																	: t(
-																			"settings.browserTranslator.status.unsupported",
-																		)}
-															</span>
+														<div class="flex items-center gap-2 font-medium">
+															<span>{pair.sourceName}</span>
+															<ArrowRight class="h-3 w-3 opacity-50" />
+															<span>{pair.targetName}</span>
 														</div>
 													</td>
-													<td>
-														<Show when={result?.availability}>
-															<Badge
-																variant={
-																	result?.availability === "available"
-																		? "success"
-																		: result?.availability === "downloadable" ||
-																				result?.availability === "downloading"
-																			? "warning"
-																			: "error"
-																}
-															>
-																{(() => {
-																	const availability = result?.availability;
-																	if (availability === "available") {
-																		return t(
-																			"settings.browserTranslator.availability.available",
-																		);
-																	}
-																	if (availability === "downloadable") {
-																		return t(
-																			"settings.browserTranslator.availability.downloadable",
-																		);
-																	}
-																	if (availability === "downloading") {
-																		return t(
-																			"settings.browserTranslator.availability.downloading",
-																		);
-																	}
-																	return t(
-																		"settings.browserTranslator.availability.unavailable",
-																	);
-																})()}
-															</Badge>
-														</Show>
+													<td>{renderStatusBadge(result)}</td>
+													<td class="text-right">
+														<div class="flex justify-end">
+															{renderActionCell(result)}
+														</div>
 														<Show when={result?.error}>
-															<span class="text-error text-xs">
+															<span class="text-error text-[11px]">
 																{result?.error}
 															</span>
 														</Show>

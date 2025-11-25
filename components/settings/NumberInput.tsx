@@ -11,6 +11,8 @@ export interface NumberInputProps
 	min?: number;
 	max?: number;
 	step?: number;
+	icon?: JSX.Element;
+	suffix?: JSX.Element | string;
 }
 
 export const NumberInput: Component<NumberInputProps> = (props) => {
@@ -23,6 +25,8 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
 		"max",
 		"step",
 		"class",
+		"icon",
+		"suffix",
 	]);
 
 	return (
@@ -33,18 +37,25 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
 			required={local.required}
 			class={local.class}
 		>
-			<input
-				{...inputProps}
-				type="number"
+			<label
 				class={cn(
-					"input input-bordered w-full",
+					"input input-bordered flex items-center gap-2",
 					local.error && "input-error",
-					props.class,
 				)}
-				min={local.min}
-				max={local.max}
-				step={local.step}
-			/>
+			>
+				{local.icon && <span class="text-base-content/70">{local.icon}</span>}
+				<input
+					{...inputProps}
+					type="number"
+					class="grow bg-transparent text-base-content focus:outline-none"
+					min={local.min}
+					max={local.max}
+					step={local.step}
+				/>
+				{local.suffix && (
+					<span class="badge badge-ghost text-xs">{local.suffix}</span>
+				)}
+			</label>
 		</FormField>
 	);
 };

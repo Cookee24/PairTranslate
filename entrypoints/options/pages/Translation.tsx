@@ -1,4 +1,5 @@
 import { trackStore } from "@solid-primitives/deep";
+import { ArrowRight } from "lucide-solid";
 import { createEffect, createMemo, createSignal, on } from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import type z from "zod";
@@ -113,20 +114,6 @@ export default (props: { navId: string }) => {
 			actions={<SectionResetButton onReset={handleReset} />}
 		>
 			<FormGrid gap="lg">
-				<OptionSelect
-					label={t("settings.translation.sourceLanguage")}
-					options={sourceLanguageOptions()}
-					value={localSettings.sourceLang}
-					onChange={(e) => setLocalSettings("sourceLang", e.target.value)}
-				/>
-
-				<OptionSelect
-					label={t("settings.translation.targetLanguage")}
-					options={targetLanguageOptions()}
-					value={localSettings.targetLang}
-					onChange={(e) => setLocalSettings("targetLang", e.target.value)}
-				/>
-
 				<div class="form-control">
 					<label class="label">
 						<span class="label-text">
@@ -181,6 +168,44 @@ export default (props: { navId: string }) => {
 			</FormGrid>
 			<div class="divider m-0" />
 			<FormGrid gap="lg">
+				<div class="col-span-full rounded-2xl border border-dashed border-base-300 bg-base-50 p-4">
+					<p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+						{t("settings.translation.sourceLanguage")} →{" "}
+						{t("settings.translation.targetLanguage")}
+					</p>
+					<div class="mt-3 flex flex-wrap items-center gap-3">
+						<select
+							class="select select-bordered w-full flex-1"
+							value={localSettings.sourceLang}
+							onChange={(e) =>
+								setLocalSettings("sourceLang", e.currentTarget.value)
+							}
+						>
+							{sourceLanguageOptions().map((option) => (
+								<option value={option.value} disabled={option.disabled}>
+									{option.label}
+								</option>
+							))}
+						</select>
+						<div class="rounded-full bg-base-200 p-2">
+							<ArrowRight size={16} />
+						</div>
+						<select
+							class="select select-bordered w-full flex-1"
+							value={localSettings.targetLang}
+							onChange={(e) =>
+								setLocalSettings("targetLang", e.currentTarget.value)
+							}
+						>
+							{targetLanguageOptions().map((option) => (
+								<option value={option.value} disabled={option.disabled}>
+									{option.label}
+								</option>
+							))}
+						</select>
+					</div>
+				</div>
+
 				<OptionSelect
 					label={t("settings.translation.inTextTranslateModel")}
 					options={allOptions()}

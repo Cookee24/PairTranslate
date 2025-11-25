@@ -1,13 +1,11 @@
 import { Check, CircleX } from "lucide-solid";
 import {
-	createEffect,
 	createSignal,
 	type JSX,
 	onCleanup,
 	onMount,
 	splitProps,
 } from "solid-js";
-import { Button } from "~/components/Button";
 import { Loading } from "~/components/Loading";
 import { Menu } from "~/components/Menu";
 import { useSettings } from "~/hooks/settings";
@@ -19,25 +17,43 @@ interface ItemProps {
 	navId: string;
 }
 
-interface RootProps extends JSX.HTMLAttributes<HTMLDivElement> {}
+interface RootProps extends JSX.HTMLAttributes<HTMLDivElement> {
+	drawerId: string;
+}
 
 const Root = (props: RootProps) => {
-	const [local, rest] = splitProps(props, ["children", "class"]);
+	const [local, rest] = splitProps(props, ["children", "class", "drawerId"]);
 	return (
-		<div
-			class={cn(
-				"flex flex-col items-center fixed top-4 left-1/2 -translate-x-1/2 z-50 rounded-box shadow-lg shadow-base-200 overflow-hidden",
-				local.class,
-			)}
-			{...rest}
-		>
-			<Status />
-			<Menu.Root
-				class="max-w-96 md:max-w-lg gap-2 bg-base-100/80 text-base-content backdrop-blur-md flex-nowrap overflow-x-auto"
-				orientation="horizontal"
+		<div class="drawer-side" {...rest}>
+			<label
+				for={local.drawerId}
+				aria-label="close sidebar"
+				class="drawer-overlay"
+			/>
+			<aside
+				class={cn(
+					"min-h-full w-72 lg:w-80 bg-base-100 text-base-content border-r border-base-300",
+					local.class,
+				)}
 			>
-				{local.children}
-			</Menu.Root>
+				<div class="flex h-full flex-col">
+					<div class="border-b border-base-200 px-6 pb-4 pt-6">
+						<p class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+							{t("settings.title")}
+						</p>
+						<p class="text-2xl font-bold text-base-content">{t("meta.name")}</p>
+						<p class="mt-1 text-xs text-base-content/60">
+							{t("meta.description")}
+						</p>
+					</div>
+					<div class="px-4 pt-4">
+						<Status />
+					</div>
+					<Menu.Root class="w-full menu-lg flex-1 gap-1 px-2 py-4">
+						{local.children}
+					</Menu.Root>
+				</div>
+			</aside>
 		</div>
 	);
 };
@@ -62,7 +78,6 @@ const observer = new IntersectionObserver(
 );
 
 const Item = (props: ItemProps) => {
-	let ref: HTMLButtonElement | undefined;
 	const [active, setActive] = createSignal(false);
 	const handleClick = () => {
 		const element = document.querySelector(`[data-nav='${props.navId}']`);
@@ -86,35 +101,37 @@ const Item = (props: ItemProps) => {
 		}
 	});
 
-	createEffect(() => {
-		if (active() && ref) {
-			ref.scrollIntoView({ behavior: "smooth", inline: "center" });
-		}
-	});
-
 	return (
 		<Menu.Item>
-			<Button
-				variant={active() ? "info" : "ghost"}
+			<button
+				type="button"
 				onClick={handleClick}
-				ref={ref}
+				class={cn(
+					"flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-base-200",
+					active() ? "bg-primary/10 text-primary" : "text-base-content/70",
+				)}
 			>
 				{props.children}
-			</Button>
+			</button>
 		</Menu.Item>
 	);
 };
 
-const Status = () => {
+interface StatusProps extends JSX.HTMLAttributes<HTMLDivElement> {}
+
+const Status = (props: StatusProps) => {
+	const [local, divProps] = splitProps(props, ["class"]);
 	const { loading, error } = useSettings();
 	return (
 		<div
-			class="w-full p-2 flex items-center content-center gap-2 font-mono text-xs backdrop-blur-md"
-			classList={{
-				"bg-success/60": !loading() && !error(),
-				"bg-accent/60": loading(),
-				"bg-error/60": error() !== null,
-			}}
+			{...divProps}
+			class={cn(
+				"flex items-center gap-2 rounded-box px-3 py-2 text-xs font-semibold",
+				!loading() && !error() && "bg-success text-success-content",
+				loading() && "bg-info text-info-content",
+				error() && "bg-error text-error-content",
+				local.class,
+			)}
 		>
 			{loading() && <Loading size="xs" />}
 			{error() && <CircleX size={16} />}
@@ -128,4 +145,4 @@ const Status = () => {
 	);
 };
 
-export default { Root, Item };
+export default { Root, Item, Status };

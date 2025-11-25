@@ -1,8 +1,19 @@
-import { createEffect, createSignal, on } from "solid-js";
+import {
+	Box,
+	Eye,
+	EyeOff,
+	Globe,
+	KeyRound,
+	Package,
+	RefreshCcw,
+	SquarePen,
+	Thermometer,
+} from "lucide-solid";
+import { createEffect, createSignal, on, Show } from "solid-js";
 import type z from "zod";
 import { Button } from "~/components/Button";
-import { Loading } from "~/components/Loading";
 import { Modal } from "~/components/Modal";
+import { cn } from "~/utils/cn";
 import { t } from "~/utils/i18n";
 import { createLLMClient } from "~/utils/llm";
 import {
@@ -41,6 +52,7 @@ export default (props: LLMModalProps) => {
 	const [modelFetchError, setModelFetchError] = createSignal<string | null>(
 		null,
 	);
+	const [apiKeyVisible, setApiKeyVisible] = createSignal(false);
 
 	createEffect(
 		on(
@@ -60,6 +72,7 @@ export default (props: LLMModalProps) => {
 				baseUrl: template.baseUrl,
 				apiSpec: template.apiSpec,
 			});
+			setApiKeyVisible(false);
 		}
 	};
 
@@ -123,6 +136,17 @@ export default (props: LLMModalProps) => {
 		);
 	};
 
+	const renderError = (fieldPath: string[]) => {
+		const error = getFieldError(fieldPath);
+		return (
+			error && (
+				<div class="label py-1">
+					<span class="label-text-alt text-xs text-error">{error.message}</span>
+				</div>
+			)
+		);
+	};
+
 	return (
 		<Modal
 			open={props.open}
@@ -144,130 +168,191 @@ export default (props: LLMModalProps) => {
 				</>
 			}
 		>
-			<div class="space-y-4">
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">
-							{t("settings.llmModal.serviceTemplate")}
-						</span>
-					</label>
-					<select
-						class="select select-bordered"
-						value={selectedTemplate()}
-						onChange={(e) => handleTemplateChange(e.target.value)}
-					>
-						<option value="">{t("settings.llmModal.customService")}</option>
-						{LLMServiceTemplates.map((template) => (
-							<option value={template.name}>{template.name}</option>
-						))}
-					</select>
-				</div>
-
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">{t("settings.llmModal.serviceName")}</span>
-					</label>
-					<input
-						type="text"
-						class={`input input-bordered ${getFieldError(["name"]) ? "input-error" : ""}`}
-						value={formData().name}
-						onChange={(e) =>
-							setFormData({ ...formData(), name: e.target.value })
-						}
-						placeholder={t("settings.llmModal.serviceNamePlaceholder")}
-					/>
-					{getFieldError(["name"]) && (
-						<label class="label m-2">
-							<span class="label-text-alt text-error">
-								{getFieldError(["name"])?.message}
+			<div class="space-y-6">
+				<div class="grid gap-4 md:grid-cols-2">
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.serviceTemplate")}
 							</span>
-						</label>
-					)}
-				</div>
+						</div>
+						<select
+							class="select select-bordered w-full"
+							value={selectedTemplate()}
+							onChange={(e) => handleTemplateChange(e.target.value)}
+						>
+							<option value="">{t("settings.llmModal.customService")}</option>
+							{LLMServiceTemplates.map((template) => (
+								<option value={template.name}>{template.name}</option>
+							))}
+						</select>
+					</div>
 
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">{t("settings.llmModal.baseUrl")}</span>
-					</label>
-					<input
-						type="url"
-						class={`input input-bordered ${getFieldError(["baseUrl"]) ? "input-error" : ""}`}
-						value={formData().baseUrl}
-						onChange={(e) =>
-							setFormData({ ...formData(), baseUrl: e.target.value })
-						}
-						placeholder={t("settings.llmModal.baseUrlPlaceholder")}
-					/>
-					{getFieldError(["baseUrl"]) && (
-						<label class="label m-2">
-							<span class="label-text-alt text-error">
-								{getFieldError(["baseUrl"])?.message}
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.serviceName")}
 							</span>
+						</div>
+						<label
+							class={cn(
+								"input input-bordered flex items-center gap-2",
+								getFieldError(["name"]) && "input-error",
+							)}
+						>
+							<SquarePen size={16} class="text-base-content/60" />
+							<input
+								type="text"
+								class="grow bg-transparent"
+								value={formData().name}
+								onChange={(e) =>
+									setFormData({ ...formData(), name: e.currentTarget.value })
+								}
+								placeholder={t("settings.llmModal.serviceNamePlaceholder")}
+							/>
 						</label>
-					)}
+						{renderError(["name"])}
+					</div>
 				</div>
 
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">{t("settings.llmModal.apiSpec")}</span>
-					</label>
-					<select
-						class="select select-bordered"
-						value={formData().apiSpec}
-						onChange={(e) =>
-							setFormData({
-								...formData(),
-								apiSpec: e.target.value as "openai" | "anthropic" | "google",
-							})
-						}
-					>
-						<option value="openai">
-							{t("settings.llmModal.apiSpecs.openai")}
-						</option>
-						<option value="anthropic">
-							{t("settings.llmModal.apiSpecs.anthropic")}
-						</option>
-						<option value="google">
-							{t("settings.llmModal.apiSpecs.gemini")}
-						</option>
-					</select>
-				</div>
-
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">{t("settings.llmModal.apiKey")}</span>
-					</label>
-					<input
-						type="password"
-						class="input input-bordered"
-						value={formData().apiKey || ""}
-						onChange={(e) =>
-							setFormData({ ...formData(), apiKey: e.target.value })
-						}
-						placeholder={t("settings.llmModal.apiKeyPlaceholder")}
-					/>
-				</div>
-
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">{t("settings.llmModal.modelName")}</span>
-					</label>
-					<div class="join">
-						<input
-							type="text"
-							class={`input input-bordered join-item ${getFieldError(["model"]) ? "input-error" : ""}`}
-							value={formData().model || ""}
+				<div class="grid gap-4 md:grid-cols-2">
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.apiSpec")}
+							</span>
+						</div>
+						<select
+							class="select select-bordered w-full"
+							value={formData().apiSpec}
 							onChange={(e) =>
-								setFormData({ ...formData(), model: e.target.value })
+								setFormData({
+									...formData(),
+									apiSpec: e.currentTarget.value as
+										| "openai"
+										| "anthropic"
+										| "google",
+								})
 							}
-							placeholder={t("settings.llmModal.modelNamePlaceholder")}
-						/>
+						>
+							<option value="openai">
+								{t("settings.llmModal.apiSpecs.openai")}
+							</option>
+							<option value="anthropic">
+								{t("settings.llmModal.apiSpecs.anthropic")}
+							</option>
+							<option value="google">
+								{t("settings.llmModal.apiSpecs.gemini")}
+							</option>
+						</select>
+					</div>
+
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.baseUrl")}
+							</span>
+						</div>
+						<label
+							class={cn(
+								"input input-bordered flex items-center gap-2",
+								getFieldError(["baseUrl"]) && "input-error",
+							)}
+						>
+							<Globe size={16} class="text-base-content/60" />
+							<input
+								type="url"
+								class="grow bg-transparent"
+								value={formData().baseUrl}
+								onChange={(e) =>
+									setFormData({ ...formData(), baseUrl: e.currentTarget.value })
+								}
+								placeholder={t("settings.llmModal.baseUrlPlaceholder")}
+							/>
+						</label>
+						{renderError(["baseUrl"])}
+					</div>
+				</div>
+
+				<div class="grid gap-4 md:grid-cols-2">
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.apiKey")}
+							</span>
+						</div>
+						<label class="input input-bordered flex items-center gap-2">
+							<KeyRound size={16} class="text-base-content/60" />
+							<input
+								type={apiKeyVisible() ? "text" : "password"}
+								class="grow bg-transparent"
+								value={formData().apiKey || ""}
+								onChange={(e) =>
+									setFormData({ ...formData(), apiKey: e.currentTarget.value })
+								}
+								placeholder={t("settings.llmModal.apiKeyPlaceholder")}
+							/>
+							<button
+								type="button"
+								class="btn btn-ghost btn-xs btn-circle"
+								onClick={() => setApiKeyVisible((v) => !v)}
+							>
+								<Show
+									when={apiKeyVisible()}
+									fallback={<Eye size={14} class="text-base-content/60" />}
+								>
+									<EyeOff size={14} class="text-base-content/60" />
+								</Show>
+							</button>
+						</label>
+					</div>
+
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.modelName")}
+							</span>
+						</div>
+						<div class="join w-full">
+							<label
+								class={cn(
+									"input input-bordered join-item flex items-center gap-2 w-full",
+									getFieldError(["model"]) && "input-error",
+								)}
+							>
+								<Box size={16} class="text-base-content/60" />
+								<input
+									type="text"
+									class="grow bg-transparent"
+									value={formData().model || ""}
+									onChange={(e) =>
+										setFormData({
+											...formData(),
+											model: e.currentTarget.value,
+										})
+									}
+									placeholder={t("settings.llmModal.modelNamePlaceholder")}
+								/>
+							</label>
+							<Button
+								type="button"
+								variant="primary"
+								size="sm"
+								class="join-item gap-2"
+								onClick={handleFetchModels}
+								loading={isLoadingModels()}
+								disabled={isLoadingModels() || !formData().baseUrl}
+							>
+								<RefreshCcw size={14} />
+								<span class="hidden sm:inline">{t("actions.fetchModels")}</span>
+							</Button>
+						</div>
 						{availableModels().length > 0 && (
 							<select
-								class="select select-bordered join-item"
+								class="select select-bordered select-sm mt-2"
 								value={formData().model}
 								onChange={(e) =>
-									setFormData({ ...formData(), model: e.target.value })
+									setFormData({ ...formData(), model: e.currentTarget.value })
 								}
 							>
 								<option value="">{t("common.selectModel")}</option>
@@ -276,85 +361,79 @@ export default (props: LLMModalProps) => {
 								))}
 							</select>
 						)}
-						<Button
-							variant="ghost"
-							size="sm"
-							class="join-item"
-							onClick={handleFetchModels}
-							disabled={isLoadingModels() || !formData().baseUrl}
-						>
-							{isLoadingModels() ? <Loading /> : t("actions.fetchModels")}
-						</Button>
+						{renderError(["model"])}
+						{modelFetchError() && (
+							<div class="label py-1">
+								<span class="label-text-alt text-xs text-error">
+									{modelFetchError()}
+								</span>
+							</div>
+						)}
+						{availableModels().length > 0 && (
+							<div class="label py-1">
+								<span class="label-text-alt text-xs">
+									{t("common.modelsLoaded", [
+										availableModels().length.toString(),
+									])}
+								</span>
+							</div>
+						)}
 					</div>
-					{getFieldError(["model"]) && (
-						<label class="label m-2">
-							<span class="label-text-alt text-error">
-								{getFieldError(["model"])?.message}
-							</span>
-						</label>
-					)}
-					{modelFetchError() && (
-						<label class="label m-2">
-							<span class="label-text-alt text-error text-wrap">
-								{modelFetchError()}
-							</span>
-						</label>
-					)}
-					{availableModels().length > 0 && (
-						<label class="label m-2">
-							<span class="label-text-alt text-xs">
-								{t("common.modelsLoaded", [
-									availableModels().length.toString(),
-								])}
-							</span>
-						</label>
-					)}
 				</div>
 
-				<div class="grid grid-cols-2 gap-4">
+				<div class="grid gap-4 md:grid-cols-2">
 					<div class="form-control">
-						<label class="label m-2">
-							<span class="label-text">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
 								{t("settings.llmModal.temperature")}
 							</span>
+						</div>
+						<label class="input input-bordered flex items-center gap-2">
+							<Thermometer size={16} class="text-base-content/60" />
+							<input
+								type="number"
+								step="0.1"
+								class="grow bg-transparent"
+								value={formData().temperature ?? ""}
+								onChange={(e) =>
+									setFormData({
+										...formData(),
+										temperature: e.currentTarget.value
+											? Number(e.currentTarget.value)
+											: undefined,
+									})
+								}
+								placeholder="0.7"
+							/>
 						</label>
-						<input
-							type="number"
-							class="input input-bordered"
-							step="0.1"
-							value={formData().temperature}
-							onChange={(e) =>
-								setFormData({
-									...formData(),
-									temperature: e.target.value
-										? Number(e.target.value)
-										: undefined,
-								})
-							}
-						/>
 					</div>
 
 					<div class="form-control">
-						<label class="label m-2">
-							<span class="label-text">{t("settings.llmModal.maxTokens")}</span>
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.maxTokens")}
+							</span>
+						</div>
+						<label class="input input-bordered flex items-center gap-2">
+							<Package size={16} class="text-base-content/60" />
+							<input
+								type="number"
+								class="grow bg-transparent"
+								value={formData().maxOutputTokens ?? ""}
+								onChange={(e) =>
+									setFormData({
+										...formData(),
+										maxOutputTokens: e.currentTarget.value
+											? Number(e.currentTarget.value)
+											: undefined,
+									})
+								}
+								placeholder="2048"
+							/>
 						</label>
-						<input
-							type="number"
-							class="input input-bordered"
-							value={formData().maxOutputTokens}
-							onChange={(e) =>
-								setFormData({
-									...formData(),
-									maxOutputTokens: e.target.value
-										? Number(e.target.value)
-										: undefined,
-								})
-							}
-						/>
 					</div>
 				</div>
 
-				<div class="divider" />
 				<QueueOverrideFields
 					value={formData().queue}
 					defaults={props.queueDefaults}

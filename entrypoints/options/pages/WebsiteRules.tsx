@@ -1,4 +1,4 @@
-import { Edit, Plus, Trash2 } from "lucide-solid";
+import { Edit, GlobeLock, Plus, Trash2 } from "lucide-solid";
 import { createSignal, For, Show } from "solid-js";
 import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
@@ -113,9 +113,19 @@ export default (props: { navId: string }) => {
 				</div>
 
 				<Show when={rules().length === 0}>
-					<div class="text-center py-8 text-base-content/70">
-						<p>{t("options.websiteRules.noRulesConfigured")}</p>
-						<p class="text-sm mt-2">{t("options.websiteRules.noRulesDesc")}</p>
+					<div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-base-300 bg-base-50 p-8 text-base-content/70">
+						<GlobeLock size={36} class="mb-3 text-base-content/60" />
+						<p class="text-base font-semibold">
+							{t("options.websiteRules.noRulesConfigured")}
+						</p>
+						<p class="mt-2 text-sm">{t("options.websiteRules.noRulesDesc")}</p>
+						<button
+							type="button"
+							class="btn btn-xs btn-outline mt-4"
+							onClick={handleAddRule}
+						>
+							{t("options.websiteRules.addRule")}
+						</button>
 					</div>
 				</Show>
 

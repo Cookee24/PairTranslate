@@ -1,4 +1,5 @@
 import { trackStore } from "@solid-primitives/deep";
+import { Gauge, Layers, Package, Users, Warehouse } from "lucide-solid";
 import { createEffect, createSignal, on } from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import type z from "zod";
@@ -65,6 +66,8 @@ export default (props: { navId: string }) => {
 					error={getFieldError(["requestConcurrency"])?.message}
 					min={1}
 					max={64}
+					icon={<Users size={16} />}
+					suffix="req"
 					value={localQueue.requestConcurrency}
 					onChange={(e) =>
 						setLocalQueue("requestConcurrency", Number(e.target.value))
@@ -77,6 +80,8 @@ export default (props: { navId: string }) => {
 					error={getFieldError(["tokensPerMinute"])?.message}
 					min={1}
 					step={1000}
+					icon={<Gauge size={16} />}
+					suffix="tpm"
 					value={localQueue.tokensPerMinute}
 					onChange={(e) =>
 						setLocalQueue("tokensPerMinute", Number(e.target.value))
@@ -89,6 +94,8 @@ export default (props: { navId: string }) => {
 					error={getFieldError(["maxBatchSize"])?.message}
 					min={1}
 					max={100}
+					icon={<Layers size={16} />}
+					suffix="req"
 					value={localQueue.maxBatchSize}
 					onChange={(e) =>
 						setLocalQueue("maxBatchSize", Number(e.target.value))
@@ -102,6 +109,8 @@ export default (props: { navId: string }) => {
 					min={1}
 					max={200000}
 					step={100}
+					icon={<Package size={16} />}
+					suffix="tokens"
 					value={localQueue.maxTokensPerBatch}
 					onChange={(e) =>
 						setLocalQueue("maxTokensPerBatch", Number(e.target.value))
@@ -114,6 +123,8 @@ export default (props: { navId: string }) => {
 					error={getFieldError(["cacheSize"])?.message}
 					min={0}
 					max={50000}
+					icon={<Warehouse size={16} />}
+					suffix="items"
 					value={localQueue.cacheSize}
 					onChange={(e) => setLocalQueue("cacheSize", Number(e.target.value))}
 				/>

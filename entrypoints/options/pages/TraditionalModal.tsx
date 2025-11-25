@@ -1,7 +1,9 @@
+import { Eye, EyeOff, Globe, KeyRound, MapPin, SquarePen } from "lucide-solid";
 import { createEffect, createSignal, on } from "solid-js";
 import type z from "zod";
 import { Button } from "~/components/Button";
 import { Modal } from "~/components/Modal";
+import { cn } from "~/utils/cn";
 import { t } from "~/utils/i18n";
 import {
 	type QueueControlSettings,
@@ -33,6 +35,7 @@ export default (props: TraditionalModalProps) => {
 
 	const [validationErrors, setValidationErrors] =
 		createSignal<z.ZodError | null>(null);
+	const [apiKeyVisible, setApiKeyVisible] = createSignal(false);
 
 	createEffect(
 		on(
@@ -62,6 +65,17 @@ export default (props: TraditionalModalProps) => {
 		);
 	};
 
+	const renderError = (fieldPath: string[]) => {
+		const error = getFieldError(fieldPath);
+		return (
+			error && (
+				<div class="label py-1">
+					<span class="label-text-alt text-xs text-error">{error.message}</span>
+				</div>
+			)
+		);
+	};
+
 	return (
 		<Modal
 			open={props.open}
@@ -83,137 +97,169 @@ export default (props: TraditionalModalProps) => {
 				</>
 			}
 		>
-			<div class="space-y-4">
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">
-							{t("settings.traditionalModal.serviceName")}
-						</span>
-					</label>
-					<input
-						type="text"
-						class={`input input-bordered ${getFieldError(["name"]) ? "input-error" : ""}`}
-						value={formData().name}
-						onChange={(e) =>
-							setFormData({ ...formData(), name: e.target.value })
-						}
-						placeholder={t("settings.traditionalModal.serviceNamePlaceholder")}
-					/>
-					{getFieldError(["name"]) && (
-						<label class="label m-2">
-							<span class="label-text-alt text-error">
-								{getFieldError(["name"])?.message}
+			<div class="space-y-6">
+				<div class="grid gap-4 md:grid-cols-2">
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.traditionalModal.serviceName")}
 							</span>
+						</div>
+						<label
+							class={cn(
+								"input input-bordered flex items-center gap-2",
+								getFieldError(["name"]) && "input-error",
+							)}
+						>
+							<SquarePen size={16} class="text-base-content/60" />
+							<input
+								type="text"
+								class="grow bg-transparent"
+								value={formData().name}
+								onChange={(e) =>
+									setFormData({ ...formData(), name: e.currentTarget.value })
+								}
+								placeholder={t(
+									"settings.traditionalModal.serviceNamePlaceholder",
+								)}
+							/>
 						</label>
-					)}
-				</div>
+						{renderError(["name"])}
+					</div>
 
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">
-							{t("settings.traditionalModal.apiSpec")}
-						</span>
-					</label>
-					<select
-						class="select select-bordered"
-						value={formData().apiSpec}
-						onChange={(e) =>
-							setFormData({
-								...formData(),
-								apiSpec: e.target.value as TraditionalApiSpec,
-							})
-						}
-					>
-						{(["microsoft", "google", "deepl", "deeplx"] as const).map(
-							(spec) => (
-								<option value={spec}>
-									{t(`settings.traditionalModal.apiSpecs.${spec}`)}
-								</option>
-							),
-						)}
-					</select>
-				</div>
-
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">
-							{t("settings.traditionalModal.baseUrl")}
-						</span>
-					</label>
-					<input
-						type="url"
-						class={`input input-bordered ${getFieldError(["baseUrl"]) ? "input-error" : ""}`}
-						value={formData().baseUrl || ""}
-						onChange={(e) => {
-							const value =
-								e.target.value.trim() === "" ? undefined : e.target.value;
-							setFormData({ ...formData(), baseUrl: value });
-						}}
-						placeholder={t("settings.traditionalModal.baseUrlPlaceholder")}
-					/>
-					{getFieldError(["baseUrl"]) && (
-						<label class="label m-2">
-							<span class="label-text-alt text-error">
-								{getFieldError(["baseUrl"])?.message}
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.traditionalModal.apiSpec")}
 							</span>
+						</div>
+						<select
+							class="select select-bordered w-full"
+							value={formData().apiSpec}
+							onChange={(e) =>
+								setFormData({
+									...formData(),
+									apiSpec: e.currentTarget.value as TraditionalApiSpec,
+								})
+							}
+						>
+							{(["microsoft", "google", "deepl", "deeplx"] as const).map(
+								(spec) => (
+									<option value={spec}>
+										{t(`settings.traditionalModal.apiSpecs.${spec}`)}
+									</option>
+								),
+							)}
+						</select>
+					</div>
+				</div>
+
+				<div class="grid gap-4 md:grid-cols-2">
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.traditionalModal.baseUrl")}
+							</span>
+						</div>
+						<label
+							class={cn(
+								"input input-bordered flex items-center gap-2",
+								getFieldError(["baseUrl"]) && "input-error",
+							)}
+						>
+							<Globe size={16} class="text-base-content/60" />
+							<input
+								type="url"
+								class="grow bg-transparent"
+								value={formData().baseUrl || ""}
+								onChange={(e) => {
+									const value =
+										e.currentTarget.value.trim() === ""
+											? undefined
+											: e.currentTarget.value;
+									setFormData({ ...formData(), baseUrl: value });
+								}}
+								placeholder={t("settings.traditionalModal.baseUrlPlaceholder")}
+							/>
 						</label>
-					)}
-					<label class="label m-2">
-						<span class="label-text-alt text-xs">
-							{t("settings.traditionalModal.baseUrlDesc")}
-						</span>
-					</label>
+						{renderError(["baseUrl"])}
+						<div class="label py-1">
+							<span class="label-text-alt text-xs">
+								{t("settings.traditionalModal.baseUrlDesc")}
+							</span>
+						</div>
+					</div>
+
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.traditionalModal.region")}
+							</span>
+						</div>
+						<label class="input input-bordered flex items-center gap-2">
+							<MapPin size={16} class="text-base-content/60" />
+							<input
+								type="text"
+								class="grow bg-transparent"
+								value={formData().region || ""}
+								onChange={(e) => {
+									const value =
+										e.currentTarget.value.trim() === ""
+											? undefined
+											: e.currentTarget.value;
+									setFormData({ ...formData(), region: value });
+								}}
+								placeholder={t("settings.traditionalModal.regionPlaceholder")}
+							/>
+						</label>
+						<div class="label py-1">
+							<span class="label-text-alt text-xs">
+								{t("settings.traditionalModal.regionDesc")}
+							</span>
+						</div>
+					</div>
 				</div>
 
 				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">
+					<div class="label pb-1">
+						<span class="label-text text-xs font-semibold uppercase text-base-content/60">
 							{t("settings.traditionalModal.apiKey")}
 						</span>
+					</div>
+					<label class="input input-bordered flex items-center gap-2">
+						<KeyRound size={16} class="text-base-content/60" />
+						<input
+							type={apiKeyVisible() ? "text" : "password"}
+							class="grow bg-transparent"
+							value={formData().apiKey || ""}
+							onChange={(e) => {
+								const value =
+									e.currentTarget.value.trim() === ""
+										? undefined
+										: e.currentTarget.value;
+								setFormData({ ...formData(), apiKey: value });
+							}}
+							placeholder={t("settings.traditionalModal.apiKeyPlaceholder")}
+						/>
+						<button
+							type="button"
+							class="btn btn-ghost btn-xs btn-circle"
+							onClick={() => setApiKeyVisible((value) => !value)}
+						>
+							{apiKeyVisible() ? (
+								<EyeOff size={14} class="text-base-content/60" />
+							) : (
+								<Eye size={14} class="text-base-content/60" />
+							)}
+						</button>
 					</label>
-					<input
-						type="password"
-						class="input input-bordered"
-						value={formData().apiKey || ""}
-						onChange={(e) => {
-							const value =
-								e.target.value.trim() === "" ? undefined : e.target.value;
-							setFormData({ ...formData(), apiKey: value });
-						}}
-						placeholder={t("settings.traditionalModal.apiKeyPlaceholder")}
-					/>
-					<label class="label m-2">
+					<div class="label py-1">
 						<span class="label-text-alt text-xs">
 							{t("settings.traditionalModal.apiKeyDesc")}
 						</span>
-					</label>
+					</div>
 				</div>
 
-				<div class="form-control">
-					<label class="label m-2">
-						<span class="label-text">
-							{t("settings.traditionalModal.region")}
-						</span>
-					</label>
-					<input
-						type="text"
-						class="input input-bordered"
-						value={formData().region || ""}
-						onChange={(e) => {
-							const value =
-								e.target.value.trim() === "" ? undefined : e.target.value;
-							setFormData({ ...formData(), region: value });
-						}}
-						placeholder={t("settings.traditionalModal.regionPlaceholder")}
-					/>
-					<label class="label m-2">
-						<span class="label-text-alt text-xs">
-							{t("settings.traditionalModal.regionDesc")}
-						</span>
-					</label>
-				</div>
-
-				<div class="divider" />
 				<QueueOverrideFields
 					value={formData().queue}
 					defaults={props.queueDefaults}

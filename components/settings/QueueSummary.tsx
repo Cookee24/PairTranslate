@@ -1,10 +1,13 @@
-import { type Component, For, Show } from "solid-js";
+import { type Component, For } from "solid-js";
+import { Stats } from "~/components/Stats";
+import { cn } from "~/utils/cn";
 import { t } from "~/utils/i18n";
 import type { QueueControlSettings, QueueOverride } from "~/utils/settings/def";
 
 interface QueueSummaryProps {
 	queue?: QueueOverride;
 	defaults: QueueControlSettings;
+	class?: string;
 }
 
 const fields: Array<{ key: keyof QueueOverride }> = [
@@ -34,50 +37,56 @@ const labelKeyForField = (
 };
 
 export const QueueSummary: Component<QueueSummaryProps> = (props) => {
+	const metrics = fields.map((field) => {
+		const overrideValue = props.queue?.[field.key];
+		const fallback = props.defaults[field.key];
+		const value =
+			overrideValue !== undefined
+				? overrideValue
+				: fallback !== undefined
+					? fallback
+					: "-";
+		return {
+			key: field.key,
+			label: t(labelKeyForField(field.key)),
+			value,
+			isOverride: overrideValue !== undefined,
+		};
+	});
+
+	const formatValue = (value: number | string) =>
+		typeof value === "number" ? value.toLocaleString() : value;
+
 	return (
-		<div class="mt-3 border-t border-base-200 pt-3 text-xs">
-			<p class="text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
+		<div class={cn("mt-4", props.class)}>
+			<p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-base-content/60">
 				{t("settings.services.flowControl.title")}
 			</p>
-			<Show
-				when={props.queue}
-				fallback={
-					<p class="mt-1 text-base-content/60">
-						{t("settings.services.flowControl.usingGlobal")}
-					</p>
-				}
+			<Stats.Root
+				responsive
+				shadow={false}
+				class="w-full border border-base-300 bg-base-200/70"
 			>
-				<ul class="mt-1 space-y-1 text-base-content/70">
-					<For each={fields}>
-						{(field) => {
-							const overrideValue = props.queue?.[field.key];
-							const value =
-								overrideValue !== undefined
-									? overrideValue
-									: (props.defaults[field.key] ?? "-");
-							return (
-								<li class="flex items-center justify-between gap-3">
-									<span>{t(labelKeyForField(field.key))}</span>
-									<span
-										class={
-											overrideValue !== undefined
-												? "text-primary font-semibold"
-												: ""
-										}
-									>
-										{value}
-										{overrideValue === undefined && (
-											<span class="text-base-content/60">
-												{` (${t("common.globalDefault")})`}
-											</span>
-										)}
-									</span>
-								</li>
-							);
-						}}
-					</For>
-				</ul>
-			</Show>
+				<For each={metrics}>
+					{(metric) => (
+						<Stats.Stat centered class="px-4 py-3">
+							<Stats.Title class="stat-title text-xs uppercase tracking-wide text-base-content/60">
+								{metric.label}
+							</Stats.Title>
+							<Stats.Value
+								class={cn("text-lg", metric.isOverride && "text-primary")}
+							>
+								{formatValue(metric.value)}
+							</Stats.Value>
+							{!metric.isOverride && (
+								<Stats.Desc class="text-[11px] text-base-content/60">
+									{t("common.globalDefault")}
+								</Stats.Desc>
+							)}
+						</Stats.Stat>
+					)}
+				</For>
+			</Stats.Root>
 		</div>
 	);
 };
