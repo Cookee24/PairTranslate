@@ -1075,6 +1075,16 @@ const PromptPage = () => {
 											</p>
 										}
 									>
+										<div class="mb-4 rounded-box border border-base-200 bg-base-100 p-3 text-[11px]">
+											<div class="flex items-center gap-2 text-xs font-semibold">
+												<BookMarked size={12} />
+												<span>{t("promptStudio.systemPromptLabel")}</span>
+											</div>
+											<pre class="mt-2 max-h-32 overflow-auto whitespace-pre-wrap rounded bg-base-200 p-2 font-mono">
+												{previewSteps().system?.trim() ||
+													t("promptStudio.empty")}
+											</pre>
+										</div>
 										<ul class="timeline timeline-vertical timeline-compact timeline-snap-icon">
 											<For each={previewSteps().steps}>
 												{(step, i) => {
