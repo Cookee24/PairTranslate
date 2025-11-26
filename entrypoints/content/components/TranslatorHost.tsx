@@ -4,6 +4,7 @@ import { useKeyboardShortcut } from "~/hooks/keyboard-shortcut";
 import { useSettings } from "~/hooks/settings";
 import { useWebsiteRule } from "~/hooks/website-rule";
 import FloatingBall from "./FloatingBall";
+import FourFingerTap from "./FourFingerTap";
 import InputTranslator from "./InputTranslator";
 import InTextTranslator from "./InTextTranslator";
 import SelectionInTextTranslator from "./SelectionInTextTranslator";
@@ -54,6 +55,7 @@ export default () => {
 					onSwitch={() => setInTextTranslateEnabled((v) => !v)}
 				/>
 			</Show>
+			<FourFingerTap onToggle={() => setInTextTranslateEnabled((v) => !v)} />
 			<InTextTranslator enabled={inTextTranslateEnabled()} />
 			<Show when={settings.basic.inputTranslateEnabled}>
 				<InputTranslator
