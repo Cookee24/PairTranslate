@@ -468,6 +468,7 @@ step = "Шаг $1"
 tracePlaceholder = "Трассировка выполнения еще недоступна. Запустите предпросмотр, чтобы увидеть пошаговые детали выполнения."
 previewPlaceholder = "Пока нет вывода. Запустите предпросмотр, чтобы увидеть результаты."
 insertVariable = "Вставить переменную"
+stepOutput = "Вывод шага"
 status = "Статус"
 idle = "Неактивно"
 running = "Выполняется"
@@ -500,6 +501,25 @@ dst = "Целевой язык"
 title = "Заголовок"
 
 # Error Messages
+
+[promptStudio.outputModal]
+title = "Настроить вывод шага"
+typeLabel = "Тип выхода"
+string = "Строка"
+stringArray = "Массив строк"
+structured = "Структурированный JSON"
+stringDescription = "Обрабатывает ответ как одну строку."
+stringArrayDescription = "Разбивает ответ на массив, используя разделитель."
+delimiterLabel = "Разделитель"
+delimiterPlaceholder = "например, пустая строка"
+regexToggle = "Использовать разделитель регулярных выражений"
+regexPattern = "Шаблон регулярного выражения"
+regexFlags = "Флаги"
+structuredDescription = "Ожидаем корректный JSON от модели."
+schemaLabel = "JSON схема"
+schemaPlaceholder = "{ \"type\": \"object\" }"
+invalidSchema = "Схема должна быть корректным JSON."
+invalidRegex = "Требуется шаблон регулярного выражения."
 
 [errors]
 modelNotFound = "Модель с ID '$1' не найдена в параметрах"

@@ -35,10 +35,10 @@ import { Modal } from "~/components/Modal";
 import { MonacoEditor } from "~/components/Monaco";
 import { ScrollableReasoning } from "~/components/Reasoning";
 import type { SelectOption } from "~/components/Select";
+import { t } from "~/hooks/i18n";
 import { useSettings } from "~/hooks/settings";
 import { PROMPT_ID, SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { convertGenericError } from "~/utils/errors";
-import { t } from "~/utils/i18n";
 import { createLLMClient } from "~/utils/llm";
 import { appendReasoningContent } from "~/utils/llm/reasoning";
 import type { PromptStepOutput } from "~/utils/prompt/delimiter";
@@ -189,6 +189,121 @@ const describeStepOutput = (output: PromptStepOutput | undefined): string => {
 		return "JSON";
 	}
 	return "String";
+};
+
+type StepOutputFormState =
+	| { type: "string" }
+	| {
+			type: "stringArray";
+			delimiterMode: "text" | "regex";
+			textDelimiter: string;
+			regexPattern: string;
+			regexFlags: string;
+	  }
+	| { type: "structured"; schemaText: string };
+
+const createStepOutputDraft = (
+	output: PromptStepOutput | undefined,
+): StepOutputFormState => {
+	if (!output || output === "string") {
+		return { type: "string" };
+	}
+	if (
+		typeof output === "object" &&
+		output !== null &&
+		"type" in output &&
+		output.type === "stringArray"
+	) {
+		if (
+			output.delimiter &&
+			typeof output.delimiter === "object" &&
+			"type" in output.delimiter &&
+			output.delimiter.type === "regex"
+		) {
+			return {
+				type: "stringArray",
+				delimiterMode: "regex",
+				textDelimiter: "\n",
+				regexPattern: output.delimiter.pattern ?? "",
+				regexFlags: output.delimiter.flags ?? "gm",
+			};
+		}
+		return {
+			type: "stringArray",
+			delimiterMode: "text",
+			textDelimiter:
+				typeof output.delimiter === "string" && output.delimiter
+					? output.delimiter
+					: "\n",
+			regexPattern: "",
+			regexFlags: "gm",
+		};
+	}
+	if (isStructuredOutput(output)) {
+		let schemaText = "";
+		if (output.schema !== undefined) {
+			try {
+				schemaText =
+					typeof output.schema === "string"
+						? output.schema
+						: JSON.stringify(output.schema, null, 2);
+			} catch {
+				schemaText = "";
+			}
+		}
+		return {
+			type: "structured",
+			schemaText,
+		};
+	}
+	return { type: "string" };
+};
+
+const buildPromptOutputFromDraft = (
+	draft: StepOutputFormState,
+): PromptStepOutput => {
+	if (draft.type === "string") {
+		return "string";
+	}
+	if (draft.type === "stringArray") {
+		if (draft.delimiterMode === "regex") {
+			const pattern = draft.regexPattern.trim();
+			if (!pattern) {
+				throw new Error("invalidRegex");
+			}
+			return {
+				type: "stringArray",
+				delimiter: {
+					type: "regex",
+					pattern,
+					flags: draft.regexFlags.trim() || "gm",
+				},
+			};
+		}
+		const delimiter = draft.textDelimiter;
+		return {
+			type: "stringArray",
+			delimiter: delimiter ? delimiter : "\n",
+		};
+	}
+	if (draft.type === "structured") {
+		const schemaText = draft.schemaText.trim();
+		if (!schemaText) {
+			return {
+				type: "structured",
+				schema: {},
+			};
+		}
+		try {
+			return {
+				type: "structured",
+				schema: JSON.parse(schemaText),
+			};
+		} catch {
+			throw new Error("invalidSchema");
+		}
+	}
+	return "string";
 };
 
 const makeCustomVariableId = () => Math.random().toString(36).slice(2, 9);
@@ -563,6 +678,68 @@ const PromptPage = () => {
 		setActiveSection(nextIndex);
 	};
 
+	const handleStepOutputTypeChange = (type: StepOutputFormState["type"]) => {
+		setStepOutputModalError(undefined);
+		setStepOutputDraft((prev) => {
+			if (prev.type === type) return prev;
+			if (type === "string") return { type: "string" };
+			if (type === "stringArray") {
+				return {
+					type: "stringArray",
+					delimiterMode: "text",
+					textDelimiter: "\n",
+					regexPattern: "",
+					regexFlags: "gm",
+				};
+			}
+			return { type: "structured", schemaText: "" };
+		});
+	};
+
+	const openStepOutputModal = () => {
+		const section = activeSection();
+		const prompt = selectedPrompt();
+		if (!prompt || typeof section !== "number") return;
+		const step = prompt.steps[section];
+		if (!step) return;
+		setStepOutputDraft(createStepOutputDraft(step.output));
+		setStepOutputSection(section);
+		setStepOutputModalError(undefined);
+		setStepOutputModalOpen(true);
+	};
+
+	const handleStepOutputSave = () => {
+		const promptId = selectedPromptId();
+		const section = stepOutputSection();
+		if (
+			!promptId ||
+			section === undefined ||
+			!selectedPrompt()?.steps[section]
+		) {
+			return;
+		}
+		setStepOutputModalError(undefined);
+		try {
+			const nextOutput = buildPromptOutputFromDraft(stepOutputDraft());
+			setSettings("prompts", promptId, "steps", section, "output", nextOutput);
+			closeStepOutputModal();
+		} catch (error) {
+			if (error instanceof Error) {
+				if (error.message === "invalidSchema") {
+					setStepOutputModalError(t("promptStudio.outputModal.invalidSchema"));
+					return;
+				}
+				if (error.message === "invalidRegex") {
+					setStepOutputModalError(t("promptStudio.outputModal.invalidRegex"));
+					return;
+				}
+				setStepOutputModalError(error.message);
+			} else {
+				setStepOutputModalError(String(error));
+			}
+		}
+	};
+
 	const addCustomVariable = () => {
 		setCustomVariables((prev) => [
 			...prev,
@@ -585,6 +762,20 @@ const PromptPage = () => {
 
 	const [isWideLayout, setIsWideLayout] = createSignal(false);
 	const [previewModalOpen, setPreviewModalOpen] = createSignal(false);
+	const [stepOutputModalOpen, setStepOutputModalOpen] = createSignal(false);
+	const [stepOutputDraft, setStepOutputDraft] =
+		createSignal<StepOutputFormState>({ type: "string" });
+	const [stepOutputModalError, setStepOutputModalError] = createSignal<
+		string | undefined
+	>();
+	const [stepOutputSection, setStepOutputSection] = createSignal<
+		number | undefined
+	>();
+	const closeStepOutputModal = () => {
+		setStepOutputModalOpen(false);
+		setStepOutputModalError(undefined);
+		setStepOutputSection(undefined);
+	};
 
 	createEffect(() => {
 		if (typeof window === "undefined") return;
@@ -598,6 +789,18 @@ const PromptPage = () => {
 		updateMatch();
 		media.addEventListener("change", updateMatch);
 		onCleanup(() => media.removeEventListener("change", updateMatch));
+	});
+
+	createEffect(() => {
+		if (!stepOutputModalOpen()) return;
+		const lockedSection = stepOutputSection();
+		const section = activeSection();
+		if (
+			lockedSection !== undefined &&
+			(typeof section !== "number" || section !== lockedSection)
+		) {
+			closeStepOutputModal();
+		}
 	});
 
 	const sendPreview = async () => {
@@ -814,6 +1017,12 @@ const PromptPage = () => {
 		return undefined;
 	});
 
+	const canConfigureStepOutput = createMemo(() => {
+		const section = activeSection();
+		if (typeof section !== "number") return false;
+		return Boolean(selectedPrompt()?.steps[section]);
+	});
+
 	const canRemoveStep = createMemo(() => {
 		const prompt = selectedPrompt();
 		return (
@@ -953,13 +1162,14 @@ const PromptPage = () => {
 										<span class="font-semibold">
 											{t("promptStudio.customVariables")}
 										</span>
-										<button
-											type="button"
-											class="btn btn-ghost btn-xs gap-1"
+										<Button
+											variant="ghost"
+											size="xs"
+											class="gap-1"
 											onClick={addCustomVariable}
 										>
 											<ListPlus size={12} /> {t("common.add")}
-										</button>
+										</Button>
 									</div>
 									<div class="space-y-2">
 										<For each={customVariables()}>
@@ -989,13 +1199,14 @@ const PromptPage = () => {
 															})
 														}
 													/>
-													<button
-														type="button"
-														class="btn btn-ghost btn-xs text-error"
+													<Button
+														variant="ghost"
+														size="xs"
+														class="text-error"
 														onClick={() => removeCustomVariable(entry.id)}
 													>
 														<Trash2 size={12} />
-													</button>
+													</Button>
 												</div>
 											)}
 										</For>
@@ -1004,9 +1215,9 @@ const PromptPage = () => {
 							</div>
 						</div>
 
-						<button
-							type="button"
-							class="btn btn-primary w-full gap-2"
+						<Button
+							variant="primary"
+							class="w-full gap-2"
 							onClick={() => {
 								setActivePreviewTab("output");
 								sendPreview();
@@ -1015,27 +1226,27 @@ const PromptPage = () => {
 						>
 							{previewLoading() ? <Loading size="xs" /> : <Play size={14} />}
 							{t("promptStudio.runPreview")}
-						</button>
+						</Button>
 					</div>
 
 					<div class="flex h-1/2 flex-col border-t border-base-300 bg-base-100">
 						<div class="tabs tabs-lifted w-full px-2 pt-2 text-xs">
-							<button
-								type="button"
+							<Button
+								variant="ghost"
 								class={`tab ${activePreviewTab() === "output" ? "tab-active text-base-content" : ""}`}
 								onClick={() => setActivePreviewTab("output")}
 							>
 								<CodeXml size={12} class="mr-2" />
 								{t("promptStudio.result")}
-							</button>
-							<button
-								type="button"
+							</Button>
+							<Button
+								variant="ghost"
 								class={`tab ${activePreviewTab() === "trace" ? "tab-active text-base-content" : ""}`}
 								onClick={() => setActivePreviewTab("trace")}
 							>
 								<Brain size={12} class="mr-2" />
 								{t("promptStudio.trace")}
-							</button>
+							</Button>
 						</div>
 						<div class="flex-1 overflow-hidden">
 							<Show when={activePreviewTab() === "output"}>
@@ -1187,13 +1398,14 @@ const PromptPage = () => {
 			{/* Compact Header */}
 			<header class="shrink-0 h-12 px-4 flex items-center justify-between border-b border-base-200 bg-base-100 z-10">
 				<div class="flex items-center gap-3">
-					<button
-						type="button"
-						class="btn btn-ghost btn-sm btn-square"
+					<Button
+						variant="ghost"
+						size="sm"
+						class="btn-square"
 						onClick={() => navigate("/settings")}
 					>
 						<ArrowLeft size={16} />
-					</button>
+					</Button>
 					<div class="flex items-center gap-2 font-semibold text-sm">
 						<Sparkles size={16} class="text-primary" />
 						<span>{t("promptStudio.title")}</span>
@@ -1250,32 +1462,35 @@ const PromptPage = () => {
 								</div>
 							</div>
 							<div class="join">
-								<button
-									type="button"
-									class="btn btn-ghost btn-xs join-item"
+								<Button
+									variant="ghost"
+									size="xs"
+									class="join-item"
 									onClick={handleAddStep}
 									title={t("promptStudio.addStep")}
 								>
 									<ListPlus size={14} />
-								</button>
-								<button
-									type="button"
-									class="btn btn-ghost btn-xs join-item"
+								</Button>
+								<Button
+									variant="ghost"
+									size="xs"
+									class="join-item"
 									onClick={handleRemoveStep}
 									title={t("promptStudio.deleteStep")}
 									disabled={!canRemoveStep()}
 								>
 									<Trash2 size={14} />
-								</button>
-								<button
-									type="button"
-									class="btn btn-primary btn-xs join-item gap-1"
+								</Button>
+								<Button
+									variant="primary"
+									size="xs"
+									class="join-item gap-1"
 									onClick={handleRestorePrompt}
 									title={t("promptStudio.reset")}
 								>
 									<RotateCcw size={14} />
 									{t("common.resetSection")}
-								</button>
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -1312,32 +1527,41 @@ const PromptPage = () => {
 
 					<div class="flex items-center justify-between border-b border-base-200 px-4 py-2 text-xs">
 						<div class="flex gap-2 overflow-x-auto">
-							<button
-								type="button"
-								class={`btn btn-xs ${activeSection() === "system" ? "btn-primary" : "btn-ghost"}`}
+							<Button
+								variant={activeSection() === "system" ? "primary" : "ghost"}
+								size="xs"
 								onClick={() => setActiveSection("system")}
 							>
 								<BookMarked size={12} class="mr-1" />
 								{t("promptStudio.systemPrompt")}
-							</button>
+							</Button>
 							<For each={selectedPrompt()?.steps}>
 								{(_step, i) => (
-									<button
-										type="button"
-										class={`btn btn-xs ${activeSection() === i() ? "btn-secondary" : "btn-ghost"}`}
+									<Button
+										variant={activeSection() === i() ? "secondary" : "ghost"}
+										size="xs"
 										onClick={() => setActiveSection(i())}
 									>
 										<CodeXml size={12} class="mr-1" />
 										{i() + 1}
-									</button>
+									</Button>
 								)}
 							</For>
 						</div>
-						{editorOutputLabel() && (
-							<Badge size="xs" variant="ghost">
-								{editorOutputLabel()}
-							</Badge>
-						)}
+						<Show when={canConfigureStepOutput()}>
+							<Button
+								variant="ghost"
+								size="xs"
+								class="gap-2 whitespace-nowrap"
+								onClick={openStepOutputModal}
+							>
+								<Variable size={12} />
+								<span>{t("promptStudio.stepOutput")}</span>
+								<Badge size="xs" variant="ghost">
+									{editorOutputLabel() || t("promptStudio.stepOutput")}
+								</Badge>
+							</Button>
+						</Show>
 					</div>
 
 					<div class="relative flex-1 overflow-hidden bg-base-100 group">
@@ -1360,10 +1584,10 @@ const PromptPage = () => {
 							markerOwner={MONACO_MARKER_OWNER}
 						/>
 						<div class="absolute bottom-4 right-4 opacity-0 transition-opacity group-hover:opacity-100">
-							<button type="button" class="btn btn-xs btn-neutral gap-1">
+							<Button variant="ghost" size="xs" class="gap-1">
 								<Variable size={12} />
 								{t("promptStudio.insertVariable")}
-							</button>
+							</Button>
 						</div>
 					</div>
 				</div>
@@ -1374,6 +1598,227 @@ const PromptPage = () => {
 					</div>
 				</Show>
 			</div>
+
+			<Modal
+				open={stepOutputModalOpen()}
+				onClose={closeStepOutputModal}
+				title={t("promptStudio.outputModal.title")}
+				boxClass="w-full max-w-lg p-0 overflow-hidden rounded-t-xl sm:rounded-xl"
+				actions={
+					<>
+						<Button
+							variant="ghost"
+							onClick={closeStepOutputModal}
+						>
+							{t("common.cancel")}
+						</Button>
+						<Button
+							variant="primary"
+							onClick={handleStepOutputSave}
+						>
+							{t("common.save")}
+						</Button>
+					</>
+				}
+			>
+				<div class="space-y-4 px-6 pb-6 text-sm">
+					<div class="form-control">
+						<label class="label-text mb-1 text-xs font-semibold">
+							{t("promptStudio.outputModal.typeLabel")}
+						</label>
+						<select
+							class="select select-bordered select-sm w-full"
+							value={stepOutputDraft().type}
+							onChange={(e) =>
+								handleStepOutputTypeChange(
+									e.currentTarget.value as StepOutputFormState["type"],
+								)
+							}
+						>
+							<option value="string">
+								{t("promptStudio.outputModal.string")}
+							</option>
+							<option value="stringArray">
+								{t("promptStudio.outputModal.stringArray")}
+							</option>
+							<option value="structured">
+								{t("promptStudio.outputModal.structured")}
+							</option>
+						</select>
+					</div>
+
+					<Show when={stepOutputModalError()}>
+						<Alert variant="error" class="py-2 text-xs">
+							{stepOutputModalError()}
+						</Alert>
+					</Show>
+
+					<Show when={stepOutputDraft().type === "string"}>
+						<p class="text-xs text-base-content/70">
+							{t("promptStudio.outputModal.stringDescription")}
+						</p>
+					</Show>
+
+					<Show when={stepOutputDraft().type === "stringArray"}>
+						<div class="space-y-3 text-xs">
+							<p class="text-base-content/70">
+								{t("promptStudio.outputModal.stringArrayDescription")}
+							</p>
+
+							<Show
+								when={(() => {
+									const draft = stepOutputDraft();
+									return (
+										draft.type === "stringArray" &&
+										draft.delimiterMode === "text"
+									);
+								})()}
+							>
+								<div class="form-control">
+									<label class="label-text mb-1">
+										{t("promptStudio.outputModal.delimiterLabel")}
+									</label>
+									<textarea
+										class="textarea textarea-bordered h-20 w-full resize-none"
+										value={(() => {
+											const draft = stepOutputDraft();
+											return draft.type === "stringArray"
+												? draft.textDelimiter
+												: "";
+										})()}
+										onInput={(e) => {
+											setStepOutputModalError(undefined);
+											setStepOutputDraft((prev) =>
+												prev.type === "stringArray"
+													? { ...prev, textDelimiter: e.currentTarget.value }
+													: prev,
+											);
+										}}
+										placeholder={t(
+											"promptStudio.outputModal.delimiterPlaceholder",
+										)}
+									/>
+								</div>
+							</Show>
+
+							<label class="label cursor-pointer justify-start gap-3">
+								<input
+									type="checkbox"
+									class="toggle toggle-sm"
+									checked={(() => {
+										const draft = stepOutputDraft();
+										return (
+											draft.type === "stringArray" &&
+											draft.delimiterMode === "regex"
+										);
+									})()}
+									onChange={(e) => {
+										setStepOutputModalError(undefined);
+										setStepOutputDraft((prev) => {
+											if (prev.type !== "stringArray") return prev;
+											return {
+												...prev,
+												delimiterMode: e.currentTarget.checked
+													? "regex"
+													: "text",
+											};
+										});
+									}}
+								/>
+								<span class="label-text text-xs">
+									{t("promptStudio.outputModal.regexToggle")}
+								</span>
+							</label>
+
+							<Show
+								when={(() => {
+									const draft = stepOutputDraft();
+									return (
+										draft.type === "stringArray" &&
+										draft.delimiterMode === "regex"
+									);
+								})()}
+							>
+								<div class="grid gap-3 sm:grid-cols-2">
+									<div class="form-control">
+										<label class="label-text mb-1">
+											{t("promptStudio.outputModal.regexPattern")}
+										</label>
+										<input
+											class="input input-sm input-bordered"
+											value={(() => {
+												const draft = stepOutputDraft();
+												return draft.type === "stringArray"
+													? draft.regexPattern
+													: "";
+											})()}
+											onInput={(e) => {
+												setStepOutputModalError(undefined);
+												setStepOutputDraft((prev) =>
+													prev.type === "stringArray"
+														? { ...prev, regexPattern: e.currentTarget.value }
+														: prev,
+												);
+											}}
+										/>
+									</div>
+									<div class="form-control">
+										<label class="label-text mb-1">
+											{t("promptStudio.outputModal.regexFlags")}
+										</label>
+										<input
+											class="input input-sm input-bordered"
+											value={(() => {
+												const draft = stepOutputDraft();
+												return draft.type === "stringArray"
+													? draft.regexFlags
+													: "";
+											})()}
+											onInput={(e) => {
+												setStepOutputModalError(undefined);
+												setStepOutputDraft((prev) =>
+													prev.type === "stringArray"
+														? { ...prev, regexFlags: e.currentTarget.value }
+														: prev,
+												);
+											}}
+										/>
+									</div>
+								</div>
+							</Show>
+						</div>
+					</Show>
+
+					<Show when={stepOutputDraft().type === "structured"}>
+						<div class="space-y-3 text-xs">
+							<p class="text-base-content/70">
+								{t("promptStudio.outputModal.structuredDescription")}
+							</p>
+							<div class="form-control">
+								<label class="label-text mb-1">
+									{t("promptStudio.outputModal.schemaLabel")}
+								</label>
+								<textarea
+									class="textarea textarea-bordered h-48 w-full font-mono text-xs"
+									value={(() => {
+										const draft = stepOutputDraft();
+										return draft.type === "structured" ? draft.schemaText : "";
+									})()}
+									onInput={(e) => {
+										setStepOutputModalError(undefined);
+										setStepOutputDraft((prev) =>
+											prev.type === "structured"
+												? { ...prev, schemaText: e.currentTarget.value }
+												: prev,
+										);
+									}}
+									placeholder={t("promptStudio.outputModal.schemaPlaceholder")}
+								/>
+							</div>
+						</div>
+					</Show>
+				</div>
+			</Modal>
 
 			{/* Mobile Modal Preview */}
 			<Modal

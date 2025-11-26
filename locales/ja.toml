@@ -468,6 +468,7 @@ step = "ステップ $1"
 tracePlaceholder = "実行トレースはまだ利用できません。プレビューを実行してステップバイステップの実行詳細を確認してください。"
 previewPlaceholder = "まだ出力がありません。プレビューを実行して結果を確認してください。"
 insertVariable = "変数を挿入"
+stepOutput = "ステップ出力"
 status = "ステータス"
 idle = "アイドル"
 running = "実行中"
@@ -500,6 +501,25 @@ dst = "ターゲット言語"
 title = "タイトル"
 
 # Error Messages
+
+[promptStudio.outputModal]
+title = "ステップ出力を構成"
+typeLabel = "出力タイプ"
+string = "文字列"
+stringArray = "文字列配列"
+structured = "構造化 JSON"
+stringDescription = "レスポンスを単一の文字列として扱います。"
+stringArrayDescription = "区切り文字を使用してレスポンスを配列に分割します。"
+delimiterLabel = "区切り文字"
+delimiterPlaceholder = "例：空行"
+regexToggle = "正規表現区切り文字を使用"
+regexPattern = "正規表現パターン"
+regexFlags = "フラグ"
+structuredDescription = "モデルから有効な JSON を期待します。"
+schemaLabel = "JSON スキーマ"
+schemaPlaceholder = "{ \"type\": \"object\" }"
+invalidSchema = "スキーマは有効な JSON である必要があります。"
+invalidRegex = "正規表現パターンが必要です。"
 
 [errors]
 modelNotFound = "設定にID '$1' のモデルが見つかりません"

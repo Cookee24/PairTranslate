@@ -468,6 +468,7 @@ step = "Etapa $1"
 tracePlaceholder = "Sem rastreamento de execução disponível ainda. Execute a visualização para ver os detalhes de execução passo a passo."
 previewPlaceholder = "Sem saída ainda. Execute a visualização para ver os resultados."
 insertVariable = "Inserir variável"
+stepOutput = "Saída da etapa"
 status = "Status"
 idle = "Inativo"
 running = "Em execução"
@@ -500,6 +501,25 @@ dst = "Idioma de destino"
 title = "Título"
 
 # Error Messages
+
+[promptStudio.outputModal]
+title = "Configurar saída da etapa"
+typeLabel = "Tipo de saída"
+string = "Texto"
+stringArray = "Matriz de textos"
+structured = "JSON estruturado"
+stringDescription = "Trata a resposta como uma única cadeia de texto."
+stringArrayDescription = "Divide a resposta em uma matriz usando o delimitador."
+delimiterLabel = "Delimitador"
+delimiterPlaceholder = "p. ex. linha em branco"
+regexToggle = "Usar delimitador regex"
+regexPattern = "Padrão regex"
+regexFlags = "Sinalizadores"
+structuredDescription = "Espera JSON válido do modelo."
+schemaLabel = "Esquema JSON"
+schemaPlaceholder = "{ \"type\": \"object\" }"
+invalidSchema = "O esquema deve ser um JSON válido."
+invalidRegex = "Padrão regex é obrigatório."
 
 [errors]
 modelNotFound = "Modelo com ID '$1' não encontrado nas configurações"

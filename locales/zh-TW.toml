@@ -468,6 +468,7 @@ step = "步驟 $1"
 tracePlaceholder = "暫無執行追蹤。執行預覽以查看分步執行詳情。"
 previewPlaceholder = "暫無輸出。執行預覽以查看結果。"
 insertVariable = "插入變數"
+stepOutput = "步驟輸出"
 status = "狀態"
 idle = "空閒"
 running = "運行中"
@@ -500,6 +501,25 @@ dst = "目標語言"
 title = "標題"
 
 # Error Messages
+
+[promptStudio.outputModal]
+title = "配置步驟輸出"
+typeLabel = "輸出類型"
+string = "字符串"
+stringArray = "字符串數組"
+structured = "結構化 JSON"
+stringDescription = "將響應視為單個字符串。"
+stringArrayDescription = "使用分隔符將響應拆分為數組。"
+delimiterLabel = "分隔符"
+delimiterPlaceholder = "例如：空行"
+regexToggle = "使用正則表達式分隔符"
+regexPattern = "正則表達式模式"
+regexFlags = "標誌"
+structuredDescription = "期望來自模型的有效 JSON。"
+schemaLabel = "JSON 架構"
+schemaPlaceholder = "{ \"type\": \"object\" }"
+invalidSchema = "架構必須是有效的 JSON。"
+invalidRegex = "需要正則表達式模式。"
 
 [errors]
 modelNotFound = "設置中未找到 ID 為 '$1' 的模型"
