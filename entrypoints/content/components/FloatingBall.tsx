@@ -1,7 +1,18 @@
 import { Check, Loader } from "lucide-solid";
 import { spring } from "motion";
-import { createEffect, createMemo, createSignal, Show } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	on,
+	onCleanup,
+	Show,
+} from "solid-js";
 import { browser } from "#imports";
+import {
+	DATA_GRABBING_CONTAINER,
+	DATA_PREVENT_SCROLL,
+} from "@/utils/constants";
 import { Button } from "~/components/Button";
 import { animatedHover } from "~/hooks/animation";
 import { useProgressIndicator } from "~/hooks/progress-indicator";
@@ -68,9 +79,8 @@ export default (props: Props) => {
 		startY = touch ? e.touches[0].clientY : e.clientY;
 		initialTop = top();
 
-		document.documentElement.style.overflow = "hidden";
-		document.body.style.userSelect = "none";
-		document.body.style.cursor = "grabbing";
+		document.documentElement.setAttribute(DATA_PREVENT_SCROLL, "");
+		document.body.setAttribute(DATA_GRABBING_CONTAINER, "");
 	};
 
 	const handleDragMove = (e: MouseEvent | TouchEvent) => {
@@ -117,25 +127,32 @@ export default (props: Props) => {
 		const ref_ = ref();
 		ref_ && exit(ref_);
 
-		document.documentElement.style.overflow = "unset";
-		document.body.style.userSelect = "auto";
-		document.body.style.cursor = "auto";
+		document.documentElement.removeAttribute(DATA_PREVENT_SCROLL);
+		document.body.removeAttribute(DATA_GRABBING_CONTAINER);
 	};
 
-	createEffect(() => {
-		if (isDragging()) {
-			window.addEventListener("mousemove", handleDragMove);
-			window.addEventListener("mouseup", handleDragEnd);
-			window.addEventListener("touchmove", handleDragMove);
-			window.addEventListener("touchend", handleDragEnd);
-		} else {
-			document.documentElement.style.overflow = "unset";
-			window.removeEventListener("mousemove", handleDragMove);
-			window.removeEventListener("mouseup", handleDragEnd);
-			window.removeEventListener("touchmove", handleDragMove);
-			window.removeEventListener("touchend", handleDragEnd);
-		}
-	});
+	createEffect(
+		on(
+			isDragging,
+			(dragging) => {
+				if (dragging) {
+					window.addEventListener("mousemove", handleDragMove);
+					window.addEventListener("mouseup", handleDragEnd);
+					window.addEventListener("touchmove", handleDragMove);
+					window.addEventListener("touchend", handleDragEnd);
+
+					onCleanup(() => {
+						document.documentElement.removeAttribute(DATA_PREVENT_SCROLL);
+						window.removeEventListener("mousemove", handleDragMove);
+						window.removeEventListener("mouseup", handleDragEnd);
+						window.removeEventListener("touchmove", handleDragMove);
+						window.removeEventListener("touchend", handleDragEnd);
+					});
+				}
+			},
+			{ defer: true },
+		),
+	);
 
 	return (
 		<div

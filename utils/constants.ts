@@ -82,6 +82,7 @@ export const getNativeName = (input: string): string => {
 export const DATA_STYLE = "data-pt-style";
 export const DATA_CONTAINER = "data-pt-container";
 export const DATA_TRANSLATED = "data-pt-translated";
+export const DATA_GRABBING_CONTAINER = "data-pt-grabbing-container";
 export const DATA_PREVENT_SCROLL = "data-pt-prevent-scroll";
 
 export const TEXT_SELECTORS = [
