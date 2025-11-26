@@ -1,7 +1,7 @@
-import type { IframeServices } from "@/utils/rpc";
-import { IFRAME_AUDIO_CHANNEL } from "@/utils/rpc/iframe-def";
+import type { IframeServices } from "~/utils/rpc";
 import type { Server } from "~/utils/rpc/factory";
 import { setupIframeServer } from "~/utils/rpc/iframe";
+import { IFRAME_AUDIO_CHANNEL } from "~/utils/rpc/iframe-def";
 
 const audio = new Audio();
 audio.preload = "auto";

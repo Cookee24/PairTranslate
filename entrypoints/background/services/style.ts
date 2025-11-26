@@ -1,4 +1,4 @@
-import { getContentStyles } from "@/utils/css";
+import { getContentStyles } from "~/utils/css";
 import type { StyleService } from "~/utils/rpc";
 
 type CssPair = [documentCss: string, shadowCss: string];

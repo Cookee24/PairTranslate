@@ -1,6 +1,6 @@
 import { GlobeLock, Pencil, Plus, Trash2 } from "lucide-solid";
 import { createSignal, For, Show } from "solid-js";
-import { Badge } from "@/components/Badge";
+import { Badge } from "~/components/Badge";
 import { Button } from "~/components/Button";
 import { Modal } from "~/components/Modal";
 import { SectionResetButton } from "~/components/settings/SectionResetButton";

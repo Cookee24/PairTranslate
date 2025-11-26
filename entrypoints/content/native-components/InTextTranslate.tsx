@@ -7,7 +7,6 @@ import {
 	on,
 	onCleanup,
 } from "solid-js";
-import { estimateTokens } from "@/utils/token-estimate";
 import { Md } from "~/components/MD/Md";
 import { InTextPortal } from "~/components/MPortal";
 import { useSettings } from "~/hooks/settings";
@@ -16,6 +15,7 @@ import { useWebsiteRule } from "~/hooks/website-rule";
 import { DATA_TRANSLATED } from "~/utils/constants";
 import { copyToClipboard } from "~/utils/copy";
 import { extractMarkdownContent } from "~/utils/markdown";
+import { estimateTokens } from "~/utils/token-estimate";
 import InTextTooltip from "../components/InTextTooltip";
 import { extractTextContext } from "../context/element";
 import { NativeLoading } from "./Loading";

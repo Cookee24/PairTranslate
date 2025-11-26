@@ -1,5 +1,5 @@
 import "~/utils/rpc/wxt-def";
-import { untilAlive } from "@/utils/alive";
+import { untilAlive } from "~/utils/alive";
 import { waitRpc } from "~/utils/rpc/wxt-def";
 import App from "./App";
 

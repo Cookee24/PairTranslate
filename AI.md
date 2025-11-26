@@ -40,9 +40,19 @@ Unlike the traditional translation implementation, the extension will append the
 ## Notes
 
 1. Always use context7 when code generation is needed, setup or configuration steps, or library/API documentation. This means you should automatically use the Context7 MCP tools to resolve library id and get library docs without me having to explicitly ask.
-2. ```tsx function MyComponent(props) {
-  const { name } = props; // ❌: breaks reactivity and will not update when the prop value changes
-  const name = props.name; // ❌: another example of breaking reactivity
-  const name = () => props.name; // ✓: by wrapping `props.name` into a function, `name()` always retrieves its current value
-  // Same for `createStore` and `createSignal`.
-}```
+2. Keep reactivity in SolidJS by avoiding direct destructuring of props or store/signal values. For example, avoid:
+  ```tsx 
+  export default (props: Props) => {
+    const { name } = props; // ❌: breaks reactivity and will not update when the prop value changes
+    const name = props.name; // ❌: another example of breaking reactivity
+    const name = () => props.name; // ✓: by wrapping `props.name` into a function, `name()` always retrieves its current value
+    // Same for `createStore` and `createSignal`.
+  }
+  ```
+3. When implementing new features including text content, first add a placeholder key in `locales/en.toml`, then use the key by:
+  ```tsx
+  import { t } from '~/utils/i18n';
+  export default () => {
+    return <div>{t('your_placeholder_key')}</div>;
+  };
+  ```

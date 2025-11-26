@@ -9,15 +9,15 @@ import {
 	Show,
 } from "solid-js";
 import { browser } from "#imports";
-import {
-	DATA_GRABBING_CONTAINER,
-	DATA_PREVENT_SCROLL,
-} from "@/utils/constants";
 import { Button } from "~/components/Button";
 import { animatedHover } from "~/hooks/animation";
 import { useProgressIndicator } from "~/hooks/progress-indicator";
 import { useSettings } from "~/hooks/settings";
 import { animate } from "~/utils/animate";
+import {
+	DATA_GRABBING_CONTAINER,
+	DATA_PREVENT_SCROLL,
+} from "~/utils/constants";
 import { t } from "~/utils/i18n";
 
 interface Props {

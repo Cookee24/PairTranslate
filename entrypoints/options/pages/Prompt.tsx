@@ -35,10 +35,10 @@ import { Modal } from "~/components/Modal";
 import { MonacoEditor } from "~/components/Monaco";
 import { ScrollableReasoning } from "~/components/Reasoning";
 import type { SelectOption } from "~/components/Select";
-import { t } from "~/hooks/i18n";
 import { useSettings } from "~/hooks/settings";
 import { PROMPT_ID, SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { convertGenericError } from "~/utils/errors";
+import { t } from "~/utils/i18n";
 import { createLLMClient } from "~/utils/llm";
 import { appendReasoningContent } from "~/utils/llm/reasoning";
 import type { PromptStepOutput } from "~/utils/prompt/delimiter";
@@ -1526,7 +1526,7 @@ const PromptPage = () => {
 					</div>
 
 					<div class="flex items-center justify-between border-b border-base-200 px-4 py-2 text-xs">
-						<div class="flex gap-2 overflow-x-auto">
+						<div class="flex p-1 gap-2 overflow-x-auto">
 							<Button
 								variant={activeSection() === "system" ? "primary" : "ghost"}
 								size="xs"
@@ -1606,16 +1606,10 @@ const PromptPage = () => {
 				boxClass="w-full max-w-lg p-0 overflow-hidden rounded-t-xl sm:rounded-xl"
 				actions={
 					<>
-						<Button
-							variant="ghost"
-							onClick={closeStepOutputModal}
-						>
+						<Button variant="ghost" onClick={closeStepOutputModal}>
 							{t("common.cancel")}
 						</Button>
-						<Button
-							variant="primary"
-							onClick={handleStepOutputSave}
-						>
+						<Button variant="primary" onClick={handleStepOutputSave}>
 							{t("common.save")}
 						</Button>
 					</>

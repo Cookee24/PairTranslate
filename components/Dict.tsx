@@ -15,11 +15,11 @@ import {
 	Show,
 	Switch,
 } from "solid-js";
-import { getIframeClient } from "@/utils/rpc/iframe-def";
 import { createTranslation } from "~/hooks/translation";
 import { PROMPT_ID } from "~/utils/constants";
 import type { DictionaryEntry } from "~/utils/dictionary";
 import { t } from "~/utils/i18n";
+import { getIframeClient } from "~/utils/rpc/iframe-def";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { Loading } from "./Loading";

@@ -1,13 +1,13 @@
 import { Globe, KeyRound, Link, Pencil, TestTube2, Trash2 } from "lucide-solid";
 import { createSignal } from "solid-js";
 import type { StoreSetter } from "solid-js/store";
-import type { ServicesSettings } from "@/utils/settings";
 import { Button } from "~/components/Button";
 import { QueueSummary } from "~/components/settings/QueueSummary";
 import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { ServiceManager } from "~/components/settings/ServiceManager";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
+import type { ServicesSettings } from "~/utils/settings";
 import {
 	type ServiceByType,
 	selectServicesByType,

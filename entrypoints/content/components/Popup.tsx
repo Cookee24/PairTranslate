@@ -13,7 +13,6 @@ import {
 	useContext,
 } from "solid-js";
 import { createStore, type SetStoreFunction, type Store } from "solid-js/store";
-import { DATA_PREVENT_SCROLL } from "@/utils/constants";
 import { Button } from "~/components/Button";
 import {
 	animateDown,
@@ -21,6 +20,7 @@ import {
 	createAnimatedAppearance,
 	onOuterClick,
 } from "~/hooks/animation";
+import { DATA_PREVENT_SCROLL } from "~/utils/constants";
 import { t } from "~/utils/i18n";
 
 const DEFAULT_STATE = {

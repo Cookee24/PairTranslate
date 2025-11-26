@@ -1,5 +1,3 @@
-import type { TranslateOptions, TranslateService } from "@/utils/rpc";
-import { estimateTokens } from "@/utils/token-estimate";
 import { createQueueHub } from "~/utils/async/queue-hub";
 import { STORAGE_KEYS } from "~/utils/constants";
 import {
@@ -37,9 +35,11 @@ import {
 	buildContextWithTranslateParams,
 	tokensToString,
 } from "~/utils/prompt/parser";
+import type { TranslateOptions, TranslateService } from "~/utils/rpc";
 import type { ServiceSettings } from "~/utils/settings";
 import { getSettings, listenSettings } from "~/utils/settings/helper";
 import { createLRUStorage } from "~/utils/storage";
+import { estimateTokens } from "~/utils/token-estimate";
 import {
 	translate as runTraditionalService,
 	type TranslationConfig,
