@@ -4,6 +4,7 @@ import {
 	createEffect,
 	createSignal,
 	type JSX,
+	Show,
 	splitProps,
 } from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
@@ -32,6 +33,7 @@ export interface ModalProps
 	title?: string;
 	actions?: JSX.Element;
 	closable?: boolean;
+	keyed?: boolean;
 }
 
 export const Modal: Component<ModalProps> = (props) => {
@@ -47,11 +49,12 @@ export const Modal: Component<ModalProps> = (props) => {
 		"children",
 		"class",
 		"ref",
+		"keyed",
 	]);
 
 	let dialogRef: HTMLDialogElement | undefined;
 	const [ref, setRef] = createSignal<HTMLDivElement>();
-	createAnimatedAppearance(ref, () => local.open === true);
+	const shouldRender = createAnimatedAppearance(ref, () => local.open === true);
 	createEffect(() => {
 		if (local.open) {
 			dialogRef?.showModal();
@@ -86,7 +89,9 @@ export const Modal: Component<ModalProps> = (props) => {
 					</div>
 				)}
 
-				<div class="flex-1 overflow-y-auto">{local.children}</div>
+				<Show when={shouldRender()} keyed={(local.keyed || false) as false}>
+					<div class="flex-1 overflow-y-auto">{local.children}</div>
+				</Show>
 
 				{local.actions && (
 					<div class="modal-action sticky bottom-0 border-t border-base-200 bg-base-100 px-6 py-4">

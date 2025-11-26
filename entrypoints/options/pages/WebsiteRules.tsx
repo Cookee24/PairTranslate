@@ -1,7 +1,7 @@
-import { Edit, GlobeLock, Plus, Trash2 } from "lucide-solid";
+import { GlobeLock, Pencil, Plus, Trash2 } from "lucide-solid";
 import { createSignal, For, Show } from "solid-js";
+import { Badge } from "@/components/Badge";
 import { Button } from "~/components/Button";
-import { Card } from "~/components/Card";
 import { Modal } from "~/components/Modal";
 import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { SettingsCard } from "~/components/settings/SettingsCard";
@@ -31,44 +31,6 @@ export default (props: { navId: string }) => {
 	} = useWebsiteRuleManagement(
 		() => settings.websiteRules,
 		(updater) => setSettings("websiteRules", updater),
-	);
-
-	const renderRuleDetails = (rule: WebsiteRuleSettings) => (
-		<div class="space-y-2 text-sm text-base-content/70">
-			<div>
-				<strong>{t("options.websiteRules.urlPatterns")}:</strong>
-				<div class="flex flex-wrap gap-1 mt-1">
-					<For each={rule.urlPatterns}>
-						{(pattern) => (
-							<span class="badge badge-sm badge-neutral">{pattern}</span>
-						)}
-					</For>
-				</div>
-			</div>
-			<Show when={rule.enableTranslation !== undefined}>
-				<p>
-					<strong>{t("options.websiteRules.translationEnabled")}:</strong>{" "}
-					{rule.enableTranslation ? t("common.yes") : t("common.no")}
-				</p>
-			</Show>
-			<Show when={rule.translateMode !== undefined}>
-				<p>
-					<strong>{t("options.websiteRules.translationMode")}:</strong>{" "}
-					{rule.translateMode === "parallel"
-						? t("websiteRule.modeParallel")
-						: t("websiteRule.modeReplace")}
-				</p>
-			</Show>
-			<Show
-				when={rule.sourceLang !== undefined || rule.targetLang !== undefined}
-			>
-				<p>
-					<strong>{t("options.websiteRules.languages")}:</strong>{" "}
-					{rule.sourceLang || t("settings.translation.autoDetect")} →{" "}
-					{rule.targetLang || t("common.globalDefault")}
-				</p>
-			</Show>
-		</div>
 	);
 
 	const handleSave = () => {
@@ -102,10 +64,10 @@ export default (props: { navId: string }) => {
 				navId={props.navId}
 				actions={<SectionResetButton onReset={handleReset} />}
 			>
-				<div class="flex justify-between items-center mb-4">
-					<div class="text-sm text-base-content/70">
+				<div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-base-200 bg-base-50 px-4 py-3">
+					<p class="text-sm text-base-content/70 flex-1">
 						{t("options.websiteRules.description")}
-					</div>
+					</p>
 					<Button variant="primary" size="sm" onClick={handleAddRule}>
 						<Plus size={16} />
 						{t("options.websiteRules.addRule")}
@@ -113,7 +75,7 @@ export default (props: { navId: string }) => {
 				</div>
 
 				<Show when={rules().length === 0}>
-					<div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-base-300 bg-base-50 p-8 text-base-content/70">
+					<div class="mt-4 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-base-300 bg-base-50 p-8 text-base-content/70">
 						<GlobeLock size={36} class="mb-3 text-base-content/60" />
 						<p class="text-base font-semibold">
 							{t("options.websiteRules.noRulesConfigured")}
@@ -129,40 +91,118 @@ export default (props: { navId: string }) => {
 					</div>
 				</Show>
 
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<For each={rules()}>
-						{([index, rule]) => (
-							<Card.Root dash class="rounded-box">
-								<Card.Body class="p-4">
-									<div class="flex justify-between items-start mb-2">
-										<h3 class="font-semibold text-lg">
-											{t("options.websiteRules.ruleNumber", [
-												(index + 1).toString(),
-											])}
-										</h3>
-										<div class="flex gap-2">
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() => handleEditRule(index)}
-											>
-												<Edit size={14} />
-											</Button>
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() => handleDeleteRule(index)}
-											>
-												<Trash2 size={14} />
-											</Button>
-										</div>
-									</div>
-									{renderRuleDetails(rule)}
-								</Card.Body>
-							</Card.Root>
-						)}
-					</For>
-				</div>
+				<Show when={rules().length > 0}>
+					<div class="mt-4 overflow-x-auto rounded-2xl border border-base-200 bg-base-100">
+						<table class="table w-full text-sm">
+							<thead>
+								<tr class="text-xs uppercase tracking-wide text-base-content/60">
+									<th class="w-12 font-medium">#</th>
+									<th class="font-medium">
+										{t("options.websiteRules.urlPatterns")}
+									</th>
+									<th class="font-medium">
+										{t("options.websiteRules.translationMode")}
+									</th>
+									<th class="font-medium">
+										{t("options.websiteRules.languages")}
+									</th>
+									<th
+										class="w-32 text-right font-medium"
+										aria-label={`${t("common.edit")}/${t("common.delete")}`}
+									></th>
+								</tr>
+							</thead>
+							<tbody>
+								<For each={rules()}>
+									{([index, rule]) => (
+										<tr>
+											<td class="align-top py-4 text-sm font-semibold text-base-content">
+												{index + 1}
+											</td>
+											<td class="align-top py-4">
+												<div class="flex flex-wrap gap-1">
+													<For each={rule.urlPatterns}>
+														{(pattern) => (
+															<Badge variant="secondary" size="sm">
+																{pattern}
+															</Badge>
+														)}
+													</For>
+												</div>
+											</td>
+											<td class="align-top py-4 text-sm text-base-content/70">
+												<div class="space-y-1">
+													<Show when={rule.enableTranslation !== undefined}>
+														<p class="text-base-content">
+															<span class="font-medium">
+																{t("options.websiteRules.translationEnabled")}:
+															</span>{" "}
+															{rule.enableTranslation
+																? t("common.yes")
+																: t("common.no")}
+														</p>
+													</Show>
+													<Show when={rule.translateMode !== undefined}>
+														<p>
+															<span class="font-medium">
+																{t("options.websiteRules.translationMode")}:
+															</span>{" "}
+															{rule.translateMode === "parallel"
+																? t("websiteRule.modeParallel")
+																: t("websiteRule.modeReplace")}
+														</p>
+													</Show>
+												</div>
+											</td>
+											<td class="align-top py-4 text-sm text-base-content/70">
+												<Show
+													when={
+														rule.sourceLang !== undefined ||
+														rule.targetLang !== undefined
+													}
+													fallback={
+														<span class="text-base-content">
+															{t("settings.translation.autoDetect")} →{" "}
+															{t("common.globalDefault")}
+														</span>
+													}
+												>
+													<span class="text-base-content">
+														{rule.sourceLang ||
+															t("settings.translation.autoDetect")}{" "}
+														→ {rule.targetLang || t("common.globalDefault")}
+													</span>
+												</Show>
+											</td>
+											<td class="align-top py-4 text-right">
+												<div class="join justify-end">
+													<Button
+														variant="ghost"
+														size="sm"
+														class="join-item tooltip"
+														data-tip={t("common.edit")}
+														onClick={() => handleEditRule(index)}
+													>
+														<Pencil size={16} />
+													</Button>
+													<Button
+														variant="ghost"
+														size="sm"
+														class="join-item tooltip"
+														data-tip={t("common.delete")}
+														onClick={() => handleDeleteRule(index)}
+													>
+														<Trash2 size={16} />
+													</Button>
+												</div>
+											</td>
+										</tr>
+									)}
+								</For>
+							</tbody>
+						</table>
+					</div>
+				</Show>
 			</SettingsCard>
 
 			<Modal
