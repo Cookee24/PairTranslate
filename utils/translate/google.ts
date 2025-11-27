@@ -20,6 +20,7 @@ export const googleTranslate = async (
 			headers: {
 				"Content-Type": "application/json; charset=utf-8",
 			},
+			signal: params.signal,
 			body: JSON.stringify({
 				q: params.text,
 				source: params.sourceLang === "auto" ? undefined : params.sourceLang,
@@ -65,6 +66,9 @@ export const googleTranslate = async (
 		);
 		return { translatedText };
 	} catch (error) {
+		if (error instanceof Error && error.name === "AbortError") {
+			throw error;
+		}
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
 			const networkError: TranslationError = {
 				type: "NETWORK_ERROR",

@@ -1,79 +1,103 @@
-import { createEffect, createSignal, on, onCleanup } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
+import { createElementObserver } from "@/hooks/observer";
 import { useSettings } from "~/hooks/settings";
 import { useWebsiteRule } from "~/hooks/website-rule";
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
-import {
-	destroyObservers,
-	listenIntersectionOrRemove,
-	listenRemove,
-} from "../observer";
 import { getDomListener } from "../parser";
 
-interface Props {
-	enabled?: boolean;
-}
-
-export default (props: Props) => {
+export default () => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
-	const [set, setSet] = createSignal(new Set<HTMLElement>(), { equals: false });
 
-	createEffect(
-		on(
-			() => props.enabled,
-			async (enabled) => {
-				if (!enabled) return;
-				let cancelled = false;
+	const [elements, setElements] = createSignal(new Set<HTMLElement>(), {
+		equals: false,
+	});
 
-				onCleanup(() => {
-					cancelled = true;
-					destroyObservers();
-					setSet(new Set<HTMLElement>());
-				});
+	createEffect(() => {
+		const [listenIntersectionOrRemove, listenRemove] = createElementObserver();
 
-				const listener = await getDomListener(window.location.hostname, {
-					filterInteractive:
-						websiteRule.filterInteractive ??
-						settings.translate.filterInteractive,
-				});
-				for await (const element of listener) {
-					if (cancelled) break;
+		const filterInteractive =
+			websiteRule.filterInteractive ?? settings.translate.filterInteractive;
+		const fullPage =
+			websiteRule.translateFullPage ?? settings.translate.translateFullPage;
+		const hostname = window.location.hostname;
 
-					const fullPage =
-						websiteRule.translateFullPage ??
-						settings.translate.translateFullPage;
-					if (fullPage) {
-						setSet((s) => s.add(element));
-						listenRemove(element, () => {
-							setSet((s) => {
-								s.delete(element);
-								return s;
-							});
-						});
-					} else {
-						listenIntersectionOrRemove(element, (shouldRender) => {
-							shouldRender
-								? setSet((s) => s.add(element))
-								: setSet((s) => {
-										s.delete(element);
-										return s;
-									});
-						});
-					}
+		let alive = true;
+
+		const buffer = {
+			add: new Set<HTMLElement>(),
+			del: new Set<HTMLElement>(),
+			handle: null as number | null,
+		};
+
+		const flush = () => {
+			if (!alive) return;
+			setElements((prev) => {
+				if (buffer.add.size === 0 && buffer.del.size === 0) return prev;
+
+				for (const el of buffer.add) prev.add(el);
+				for (const el of buffer.del) prev.delete(el);
+
+				buffer.add.clear();
+				buffer.del.clear();
+				buffer.handle = null;
+
+				return prev;
+			});
+		};
+
+		const scheduleFlush = () => {
+			if (buffer.handle !== null) return;
+			buffer.handle = requestAnimationFrame(flush);
+		};
+
+		const handleAdd = (el: HTMLElement) => {
+			buffer.del.delete(el);
+			buffer.add.add(el);
+			scheduleFlush();
+		};
+
+		const handleRemove = (el: HTMLElement) => {
+			buffer.add.delete(el);
+			buffer.del.add(el);
+			scheduleFlush();
+		};
+
+		(async () => {
+			const listener = await getDomListener(hostname, {
+				filterInteractive,
+			});
+
+			for await (const element of listener) {
+				if (!alive) break;
+
+				if (fullPage) {
+					handleAdd(element);
+					listenRemove(element, () => handleRemove(element));
+				} else {
+					listenIntersectionOrRemove(element, (shouldRender) => {
+						shouldRender ? handleAdd(element) : handleRemove(element);
+					});
 				}
-			},
-		),
-	);
-
-	return (
-		<BatchInTextTranslation
-			elements={set()}
-			onDelete={(element) =>
-				setSet((prev) => {
-					prev.delete(element);
-					return prev;
-				})
 			}
-		/>
-	);
+		})();
+
+		onCleanup(() => {
+			alive = false;
+			if (buffer.handle !== null) cancelAnimationFrame(buffer.handle);
+			setElements((prev) => {
+				prev.clear();
+				return prev;
+			});
+		});
+	});
+
+	const onDelete = (element: HTMLElement) => {
+		setElements((prev) => {
+			prev.delete(element);
+			return prev;
+		});
+	};
+
+	return <BatchInTextTranslation elements={elements()} onDelete={onDelete} />;
 };

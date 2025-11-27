@@ -16,6 +16,7 @@ export interface TranslationParams {
 	text: string[];
 	sourceLang: string;
 	targetLang: string;
+	signal?: AbortSignal;
 }
 
 export interface TranslationResult {

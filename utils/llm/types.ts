@@ -79,10 +79,12 @@ export interface LLMClient {
 	chat<S extends JSONSchema, O extends S extends undefined ? string : object>(
 		request: ChatRequest,
 		schema?: S,
+		signal?: AbortSignal,
 	): Promise<ChatResponse<O>>;
 	chatStream<S extends JSONSchema>(
 		request: ChatRequest,
 		schema?: S,
+		signal?: AbortSignal,
 	): AsyncGenerator<StreamChunk, EndResponse>;
 }
 

@@ -1,10 +1,10 @@
-import { createSignal, onCleanup, Show } from "solid-js";
+import { createSignal, onCleanup } from "solid-js";
 import { animateBlink } from "~/hooks/animation";
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import ControlFloat from "./ControlFloat";
 import TripleTouch from "./TripleTouch";
 
-export default (props: { enabled?: boolean }) => {
+export default () => {
 	const [set, setSet] = createSignal(new Set<HTMLElement>(), { equals: false });
 
 	onCleanup(() => {
@@ -22,7 +22,7 @@ export default (props: { enabled?: boolean }) => {
 	};
 
 	return (
-		<Show when={props.enabled}>
+		<>
 			<BatchInTextTranslation
 				elements={set()}
 				onDelete={(element) =>
@@ -34,6 +34,6 @@ export default (props: { enabled?: boolean }) => {
 			/>
 			<ControlFloat onSelection={onSelection} />
 			<TripleTouch onSelection={onSelection} />
-		</Show>
+		</>
 	);
 };

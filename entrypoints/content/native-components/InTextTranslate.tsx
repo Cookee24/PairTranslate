@@ -4,9 +4,11 @@ import {
 	createMemo,
 	createSignal,
 	For,
+	Index,
 	on,
 	onCleanup,
 } from "solid-js";
+import { createIdleDebounce } from "@/hooks/throttle";
 import { Md } from "~/components/MD/Md";
 import { InTextPortal } from "~/components/MPortal";
 import { useSettings } from "~/hooks/settings";
@@ -63,35 +65,9 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 		equals: false,
 	});
 
-	let lastTimeout: NodeJS.Timeout | null = null;
-	let lastIdleCallback: number | null = null;
-	let lastAnimationFrame: number | null = null;
-	const throttle = (fn: () => void) => {
-		const DELAY = 200;
-		if (lastTimeout) clearTimeout(lastTimeout);
-		if (lastIdleCallback) cancelIdleCallback(lastIdleCallback);
-		if (lastAnimationFrame) cancelAnimationFrame(lastAnimationFrame);
-
-		lastTimeout = setTimeout(() => {
-			lastIdleCallback = requestIdleCallback(
-				() => {
-					lastIdleCallback = null;
-					lastAnimationFrame = requestAnimationFrame(() => {
-						lastAnimationFrame = null;
-						fn();
-					});
-				},
-				{ timeout: DELAY },
-			);
-		}, DELAY);
-	};
-
 	const batchIds = new Map<HTMLElement, number>();
 
 	const clear = () => {
-		lastTimeout && clearTimeout(lastTimeout);
-		lastIdleCallback && cancelIdleCallback(lastIdleCallback);
-		lastAnimationFrame && cancelAnimationFrame(lastAnimationFrame);
 		setRenderList([]);
 		batchIds.clear();
 	};
@@ -100,7 +76,12 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 		on(
 			[() => props.elements],
 			([currentElements]) => {
-				throttle(() => {
+				if (currentElements.size === 0) {
+					clear();
+					return;
+				}
+
+				createIdleDebounce(() => {
 					const currentModelQueueSettings =
 						settings.services[
 							websiteRule.inTextTranslateModel ||
@@ -110,8 +91,6 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 					const maxBatchSize =
 						currentModelQueueSettings?.maxBatchSize ||
 						settings.queue.maxBatchSize;
-
-					if (currentElements.size === 0) clear();
 
 					setRenderList((prev) => {
 						const maxTokensPerBatch =
@@ -176,14 +155,12 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 		),
 	);
 
-	onCleanup(() => clear());
-
 	return (
-		<For each={renderList()}>
+		<Index each={renderList()}>
 			{(elements) => (
-				<BatchRender elements={elements} onDelete={props.onDelete} />
+				<BatchRender elements={elements()} onDelete={props.onDelete} />
 			)}
-		</For>
+		</Index>
 	);
 };
 

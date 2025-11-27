@@ -74,6 +74,9 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 					displayName: model.id,
 				}));
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw handleError(error);
 			}
 		},
@@ -81,26 +84,30 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 		async chat<S, O extends S extends undefined ? string : object>(
 			request: ChatRequest,
 			schema?: S,
+			signal?: AbortSignal,
 		) {
 			try {
 				const messages = request.messages;
 
-				const response = await client.chat.completions.create({
-					model: request.model,
-					messages,
-					temperature: request.temperature,
-					max_tokens: request.maxTokens,
-					top_p: request.topP,
-					...(schema && {
-						response_format: {
-							type: "json_schema",
-							json_schema: {
-								name: "response",
-								schema: schema,
+				const response = await client.chat.completions.create(
+					{
+						model: request.model,
+						messages,
+						temperature: request.temperature,
+						max_tokens: request.maxTokens,
+						top_p: request.topP,
+						...(schema && {
+							response_format: {
+								type: "json_schema",
+								json_schema: {
+									name: "response",
+									schema: schema,
+								},
 							},
-						},
-					}),
-				});
+						}),
+					},
+					signal ? { signal } : undefined,
+				);
 
 				const message = response.choices[0]?.message;
 				const content = message?.content || "";
@@ -121,6 +128,9 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 					providerResponse: response,
 				};
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw handleError(error);
 			}
 		},
@@ -128,28 +138,32 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 		async *chatStream<S>(
 			request: ChatRequest,
 			schema?: S,
+			signal?: AbortSignal,
 		): AsyncGenerator<StreamChunk, EndResponse> {
 			try {
 				const messages = request.messages;
 
-				const stream = await client.chat.completions.create({
-					model: request.model,
-					messages,
-					temperature: request.temperature,
-					max_tokens: request.maxTokens,
-					top_p: request.topP,
-					stream: true,
-					stream_options: { include_usage: true },
-					...(schema && {
-						response_format: {
-							type: "json_schema",
-							json_schema: {
-								name: "response",
-								schema: schema,
+				const stream = await client.chat.completions.create(
+					{
+						model: request.model,
+						messages,
+						temperature: request.temperature,
+						max_tokens: request.maxTokens,
+						top_p: request.topP,
+						stream: true,
+						stream_options: { include_usage: true },
+						...(schema && {
+							response_format: {
+								type: "json_schema",
+								json_schema: {
+									name: "response",
+									schema: schema,
+								},
 							},
-						},
-					}),
-				});
+						}),
+					},
+					{ signal },
+				);
 
 				for await (const chunk of stream) {
 					const delta = chunk.choices[0]?.delta;
@@ -175,6 +189,9 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 
 				return {};
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw handleError(error);
 			}
 		},

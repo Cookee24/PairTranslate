@@ -41,7 +41,9 @@ export const microsoftTranslate = async (
 			apiKey = cachedApiKey;
 		} else {
 			try {
-				const result = await fetch("https://edge.microsoft.com/translate/auth");
+				const result = await fetch("https://edge.microsoft.com/translate/auth", {
+					signal: params.signal,
+				});
 				if (!result.ok) {
 					throw new Error(t("errors.additional.microsoftFetchFailed"));
 				}
@@ -66,6 +68,7 @@ export const microsoftTranslate = async (
 		const response = await fetch(url, {
 			method: "POST",
 			headers,
+			signal: params.signal,
 			body: JSON.stringify(params.text.map((text) => ({ Text: text }))),
 		});
 
@@ -111,6 +114,9 @@ export const microsoftTranslate = async (
 		);
 		return { translatedText };
 	} catch (error) {
+		if (error instanceof Error && error.name === "AbortError") {
+			throw error;
+		}
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
 			const networkError: TranslationError = {
 				type: "NETWORK_ERROR",

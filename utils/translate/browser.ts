@@ -19,6 +19,11 @@ export async function browserTranslate(
 	_config: TranslationConfig,
 	params: TranslationParams,
 ): Promise<TranslationResult> {
+	const ensureNotAborted = () => {
+		if (params.signal?.aborted) {
+			throw new DOMException("Aborted", "AbortError");
+		}
+	};
 	try {
 		let sourceLang = params.sourceLang;
 
@@ -26,7 +31,9 @@ export async function browserTranslate(
 		if (sourceLang === "auto") {
 			const detector = _detector
 				? _detector
-				: await createBrowserLanguageDetector();
+				: await createBrowserLanguageDetector(undefined, {
+						signal: params.signal,
+					});
 			_detector ||= detector;
 
 			const detectionResults = await Promise.all(
@@ -46,8 +53,10 @@ export async function browserTranslate(
 		const translator = await createBrowserTranslator(
 			sourceLang,
 			params.targetLang,
+			{ signal: params.signal },
 		);
 
+		ensureNotAborted();
 		// Translate all texts
 		const translatedTexts = await Promise.all(
 			params.text.map((text) => translator.translate(text)),
@@ -60,6 +69,9 @@ export async function browserTranslate(
 			translatedText: translatedTexts,
 		};
 	} catch (error) {
+		if (error instanceof Error && error.name === "AbortError") {
+			throw error;
+		}
 		throw {
 			type: "API_ERROR",
 			message:

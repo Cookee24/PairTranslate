@@ -24,6 +24,7 @@ export const deepLTranslate = async (
 				Authorization: `DeepL-Auth-Key ${config.apiKey}`,
 				"Content-Type": "application/x-www-form-urlencoded",
 			},
+			signal: params.signal,
 			body: JSON.stringify({
 				text: params.text,
 				source_lang: sourceLang,
@@ -71,6 +72,9 @@ export const deepLTranslate = async (
 		);
 		return { translatedText };
 	} catch (error) {
+		if (error instanceof Error && error.name === "AbortError") {
+			throw error;
+		}
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
 			const networkError: TranslationError = {
 				type: "NETWORK_ERROR",

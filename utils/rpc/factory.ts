@@ -41,9 +41,9 @@ export type RpcCallable<A extends any[], U, S> = (
 
 export type Client<T extends RpcService> = {
 	[K in keyof T]: T[K] extends (...args: infer A) => Promise<infer R>
-		? (...args: A) => Promise<R>
+		? (...args: [...A, AbortSignal?]) => Promise<R>
 		: T[K] extends (...args: infer A) => AsyncGenerator<infer Y, any, any>
-			? (...args: A) => AsyncGenerator<Y, void, unknown>
+			? (...args: [...A, AbortSignal?]) => AsyncGenerator<Y, void, unknown>
 			: never;
 };
 
@@ -63,6 +63,14 @@ export function createClient<
 					const { state } = stateController;
 					const id = generateId();
 
+					let abortSignal: AbortSignal | undefined;
+					if (
+						payload.length > 0 &&
+						payload[payload.length - 1] instanceof AbortSignal
+					) {
+						abortSignal = payload.pop() as AbortSignal;
+					}
+
 					const startGenerator = (async function* () {
 						yield {
 							id,
@@ -72,7 +80,11 @@ export function createClient<
 						} as NoMetaMessage<M, P, E>;
 					})();
 
-					const responseMessages = internalCall(state, startGenerator);
+					const responseMessages = internalCall(
+						state,
+						startGenerator,
+						abortSignal,
+					);
 
 					let promise: Promise<unknown> | null = null;
 
@@ -111,12 +123,8 @@ export function createClient<
 								}
 							}
 						},
-						return: (val?: unknown) => {
-							responseMessages.return(val);
-						},
-						throw: (error: E) => {
-							responseMessages.throw(error);
-						},
+						return: (val?: unknown) => responseMessages.return(val),
+						throw: (error: E) => responseMessages.throw(error),
 					};
 				};
 			},

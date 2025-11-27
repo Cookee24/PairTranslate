@@ -22,26 +22,22 @@ const ProgressIndicatorContext = createContext<ProgressIndicatorContextValue>();
 
 export function ProgressIndicatorProvider(props: { children: JSX.Element }) {
 	const { settings } = useSettings();
-	const [modelId, setModelId] = createSignal<string>();
-	const [counter, setCounter] = createSignal(0);
+	const [requests, setRequests] = createSignal<
+		[key: symbol, modelId: string][]
+	>([]);
 	const [status, setStatus] = createSignal<TranslateQueueStatus>();
 	const enabled = createMemo(() => settings.basic.progressIndicationEnabled);
 
 	const beginRequest = (id: string) => {
-		setModelId(id);
-		setCounter((prev) => prev + 1);
-		let released = false;
-		return () => {
-			if (released) return;
-			released = true;
-			setCounter((prev) => Math.max(0, prev - 1));
-		};
+		const key = Symbol();
+		setRequests((prev) => [...prev, [key, id]]);
+		return () => setRequests((prev) => prev.filter(([k]) => k !== key));
 	};
 
 	const activeModel = createMemo(() => {
-		if (!enabled()) return null;
-		if (counter() <= 0) return null;
-		return modelId();
+		const reqs = requests();
+		if (reqs.length === 0) return undefined;
+		return reqs[reqs.length - 1][1];
 	});
 
 	createEffect(() => {
@@ -73,8 +69,8 @@ export function ProgressIndicatorProvider(props: { children: JSX.Element }) {
 	});
 
 	const contextValue: ProgressIndicatorContextValue = {
-		counter,
-		modelId,
+		counter: () => requests().length,
+		modelId: activeModel,
 		status,
 		beginRequest,
 		enabled,

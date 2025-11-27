@@ -87,23 +87,26 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 		async chat<
 			S extends JSONSchema,
 			O extends S extends undefined ? string : object,
-		>(request: ChatRequest, schema?: S) {
+		>(request: ChatRequest, schema?: S, signal?: AbortSignal) {
 			try {
 				const [systemMessage, messages] = convertMessages(request.messages);
 
-				const response = await client.beta.messages.create({
-					model: request.model,
-					messages,
-					system: systemMessage,
-					max_tokens: request.maxTokens || 2 ** 16,
-					...(schema && {
-						betas: ["structured-outputs-2025-11-13"],
-						output_format: {
-							type: "json_schema",
-							schema: schema,
-						},
-					}),
-				});
+				const response = await client.beta.messages.create(
+					{
+						model: request.model,
+						messages,
+						system: systemMessage,
+						max_tokens: request.maxTokens || 2 ** 16,
+						...(schema && {
+							betas: ["structured-outputs-2025-11-13"],
+							output_format: {
+								type: "json_schema",
+								schema: schema,
+							},
+						}),
+					},
+					{ signal },
+				);
 
 				const content =
 					response.content[0]?.type === "text" ? response.content[0].text : "";
@@ -126,6 +129,9 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 					providerResponse: response,
 				};
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw handleError(error);
 			}
 		},
@@ -133,24 +139,28 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 		async *chatStream<S>(
 			request: ChatRequest,
 			schema?: S,
+			signal?: AbortSignal,
 		): AsyncGenerator<StreamChunk, EndResponse> {
 			try {
 				const [systemMessage, messages] = convertMessages(request.messages);
 
-				const responseStream = await client.beta.messages.create({
-					model: request.model,
-					messages,
-					system: systemMessage,
-					max_tokens: request.maxTokens || 2 ** 16,
-					stream: true,
-					...(schema && {
-						betas: ["structured-outputs-2025-11-13"],
-						output_format: {
-							type: "json_schema",
-							schema: schema,
-						},
-					}),
-				});
+				const responseStream = await client.beta.messages.create(
+					{
+						model: request.model,
+						messages,
+						system: systemMessage,
+						max_tokens: request.maxTokens || 2 ** 16,
+						stream: true,
+						...(schema && {
+							betas: ["structured-outputs-2025-11-13"],
+							output_format: {
+								type: "json_schema",
+								schema: schema,
+							},
+						}),
+					},
+					signal ? { signal } : undefined,
+				);
 
 				const usage = {
 					promptTokens: 0,
@@ -184,6 +194,9 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 					usage,
 				};
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw handleError(error);
 			}
 		},

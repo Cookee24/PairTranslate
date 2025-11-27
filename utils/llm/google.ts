@@ -91,6 +91,7 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 		async chat<S, O extends S extends undefined ? string : object>(
 			request: ChatRequest,
 			schema?: S,
+			signal?: AbortSignal,
 		) {
 			try {
 				const [systemInstruction, contents] = convertMessages(request.messages);
@@ -107,6 +108,7 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 						thinkingConfig: {
 							includeThoughts: true,
 						},
+						abortSignal: signal,
 						...(schema && {
 							responseMimeType: "application/json",
 							// biome-ignore lint/suspicious/noExplicitAny: Bypass type check for SDK compatibility
@@ -137,6 +139,9 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 					providerResponse: response,
 				};
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw handleError(error);
 			}
 		},
@@ -144,6 +149,7 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 		async *chatStream<S>(
 			request: ChatRequest,
 			schema?: S,
+			signal?: AbortSignal,
 		): AsyncGenerator<StreamChunk, EndResponse> {
 			try {
 				const [systemInstruction, contents] = convertMessages(request.messages);
@@ -158,6 +164,7 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 						thinkingConfig: {
 							includeThoughts: true,
 						},
+						abortSignal: signal,
 						...(schema && {
 							responseMimeType: "application/json",
 							// biome-ignore lint/suspicious/noExplicitAny: Bypass type check for SDK compatibility
@@ -200,6 +207,9 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 					usage,
 				};
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw handleError(error);
 			}
 		},

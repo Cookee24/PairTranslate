@@ -17,12 +17,18 @@ export const deeplxTranslate = async (
 		sourceLang = undefined;
 	}
 	const targetLang = transformDeeplLangCode(params.targetLang.toUpperCase());
+	const ensureNotAborted = () => {
+		if (params.signal?.aborted) {
+			throw new DOMException("Aborted", "AbortError");
+		}
+	};
 
 	try {
 		// DeepLX translates one text at a time, so we need to handle batch translations
 		const translatedText: string[] = [];
 
 		for (const text of params.text) {
+			ensureNotAborted();
 			const requestBody: Record<string, unknown> = {
 				text: text,
 				source_lang: sourceLang,
@@ -35,6 +41,7 @@ export const deeplxTranslate = async (
 					"Content-Type": "application/json",
 					...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` }),
 				},
+				signal: params.signal,
 				body: JSON.stringify(requestBody),
 			});
 
@@ -83,6 +90,9 @@ export const deeplxTranslate = async (
 
 		return { translatedText };
 	} catch (error) {
+		if (error instanceof Error && error.name === "AbortError") {
+			throw error;
+		}
 		if (error instanceof Error && error.message.includes("Failed to fetch")) {
 			const networkError: TranslationError = {
 				type: "NETWORK_ERROR",

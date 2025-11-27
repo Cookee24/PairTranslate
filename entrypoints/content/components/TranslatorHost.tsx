@@ -49,23 +49,30 @@ export default () => {
 				when={
 					websiteRule.floatingBallEnabled ?? settings.basic.floatingBallEnabled
 				}
+				keyed
 			>
 				<FloatingBall
 					translateEnabled={inTextTranslateEnabled()}
 					onSwitch={() => setInTextTranslateEnabled((v) => !v)}
 				/>
 			</Show>
+
 			<FourFingerTap onToggle={() => setInTextTranslateEnabled((v) => !v)} />
-			<InTextTranslator enabled={inTextTranslateEnabled()} />
-			<Show when={settings.basic.inputTranslateEnabled}>
+
+			<Show when={inTextTranslateEnabled()} keyed>
+				<InTextTranslator />
+			</Show>
+
+			<Show when={settings.basic.inputTranslateEnabled} keyed>
 				<InputTranslator
 					element={inputTranslateElement()}
 					onClose={() => setInputTranslateElement(undefined)}
 				/>
 			</Show>
-			<SelectionInTextTranslator
-				enabled={settings.basic.selectionTranslateEnabled}
-			/>
+
+			<Show when={settings.basic.selectionTranslateEnabled} keyed>
+				<SelectionInTextTranslator />
+			</Show>
 		</>
 	);
 };

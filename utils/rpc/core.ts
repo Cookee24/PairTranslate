@@ -177,7 +177,7 @@ export async function createStateController<M, T, E>(
 			val.notifier.notify();
 		});
 
-		await state.transportation.dispose();
+		state.transportation.dispose();
 	};
 
 	initializeStreams();
@@ -214,6 +214,7 @@ async function sendStream<M, T, E>(state: State<M, T, E>): Promise<void> {
 export async function* internalCall<M, T, E>(
 	state: State<M, T, E>,
 	generator: AsyncGenerator<NoMetaMessage<M, T, E>, void, unknown>,
+	signal?: AbortSignal,
 ): AsyncGenerator<Message<M, T, E>> {
 	const { inc, out, logger } = state;
 	let id: RpcId | undefined;
@@ -239,11 +240,25 @@ export async function* internalCall<M, T, E>(
 
 		const queue = inc.get(id)!;
 
+		const { reject: abort, promise: aborted } = Promise.withResolvers<void>();
+		aborted.catch(() => {}); // Prevent unhandled rejection
+		if (signal) {
+			if (signal.aborted) {
+				abort(signal.reason);
+			} else {
+				const onAbort = () =>
+					abort(signal.reason || new DOMException("Aborted", "AbortError"));
+
+				signal.addEventListener("abort", onAbort);
+				aborted.finally(() => signal.removeEventListener("abort", onAbort));
+			}
+		}
+
 		while (true) {
 			const sendPromise = generator.next();
 			const recvPromise = queue.notifier.wait();
 
-			const winner = await Promise.race([sendPromise, recvPromise]);
+			const winner = await Promise.race([sendPromise, recvPromise, aborted]);
 
 			if (winner && typeof winner === "object" && "done" in winner) {
 				const sendResult = winner as IteratorResult<NoMetaMessage<M, T, E>>;
@@ -269,10 +284,12 @@ export async function* internalCall<M, T, E>(
 					return;
 				}
 			}
-			await queue.notifier.wait();
+			await Promise.race([queue.notifier.wait(), aborted]);
 		}
 	} catch (error) {
-		if (error instanceof Closed) {
+		if (signal?.aborted) {
+			logger.debug(`[${id!}] Aborted.`);
+		} else if (error instanceof Closed) {
 			logger.info(
 				"Transport closed during an active call.",
 				error.reason,
@@ -282,14 +299,13 @@ export async function* internalCall<M, T, E>(
 			throw error;
 		}
 	} finally {
-		if (id) {
-			if (!isEnded) {
-				logger.debug(
-					`[${id}] Call cancelled by client, sending 'cancel' message.`,
-				);
-				sendMessage({ id, type: "cancel" });
-			}
-			inc.delete(id);
+		if (!isEnded) {
+			logger.debug(
+				`[${id!}] Call cancelled by client, sending 'cancel' message.`,
+			);
+			sendMessage({ id: id!, type: "cancel" });
 		}
+		inc.delete(id!);
+		generator.return();
 	}
 }

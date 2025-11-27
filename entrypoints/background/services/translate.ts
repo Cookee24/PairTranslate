@@ -126,12 +126,6 @@ const createChatRequest = (
 	...overrides,
 });
 
-const throwIfAborted = (signal?: AbortSignal) => {
-	if (signal?.aborted) {
-		throw new DOMException("Aborted", "AbortError");
-	}
-};
-
 export const createTranslateService = async (): Promise<TranslateService> => {
 	let settings = await getSettings();
 	if (!settings) {
@@ -146,33 +140,29 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		settings.queue.cacheSize,
 	);
 
-	const debugState = () => settings.debug;
-
-	const isCacheEnabled = () => !debugState().disableCache;
-
 	const getCacheEntry = async (key: ArrayBuffer) => {
-		if (!isCacheEnabled()) {
+		if (settings.debug.disableCache) {
 			return undefined;
 		}
 		return resultCache.get(key);
 	};
 
 	const setCacheEntry = async (key: ArrayBuffer, value: CachedValue) => {
-		if (!isCacheEnabled()) {
+		if (settings.debug.disableCache) {
 			return;
 		}
 		await resultCache.set(key, value);
 	};
 
 	const applyDebugLatency = async () => {
-		const latency = debugState().simulateLatencyMs;
+		const latency = settings.debug.simulateLatencyMs;
 		if (latency > 0) {
 			await new Promise((resolve) => setTimeout(resolve, latency));
 		}
 	};
 
 	const debugLog = (...args: unknown[]) => {
-		if (!debugState().verboseLogging) {
+		if (!settings.debug.verboseLogging) {
 			return;
 		}
 		console.info("[PairTranslate][Debug]", ...args);
@@ -196,7 +186,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		meta: Record<string, unknown>,
 	) => {
 		logGroup(
-			debugState().traceLlms,
+			settings.debug.traceLlms,
 			`[LLM ${phase}] ${meta.model ?? meta.service ?? ""}`,
 			() => {
 				console.log(meta);
@@ -209,7 +199,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		meta: Record<string, unknown>,
 	) => {
 		logGroup(
-			debugState().traceTraditional,
+			settings.debug.traceTraditional,
 			`[Traditional ${phase}] ${meta.apiSpec ?? meta.service ?? ""}`,
 			() => {
 				console.log(meta);
@@ -289,6 +279,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		texts: string[],
 		srcLang: string,
 		dstLang: string,
+		signal?: AbortSignal,
 	): Promise<{ result: string[]; tokens: number }> => {
 		const runOnce = async (texts: string[]) => {
 			try {
@@ -299,10 +290,14 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 						text: texts,
 						sourceLang: srcLang,
 						targetLang: dstLang,
+						signal,
 					},
 				);
 				return response;
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw convertFromTranslationError(error);
 			}
 		};
@@ -344,8 +339,12 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		srcLang: string,
 		dstLang: string,
 		onResult: (value: string[]) => void,
+		signal?: AbortSignal,
 	): StreamRunner => {
 		return async () => {
+			await applyDebugLatency();
+			signal?.throwIfAborted();
+
 			const texts = toTextArray(payload);
 			if (texts.length === 0) {
 				onResult([]);
@@ -361,6 +360,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				texts,
 				srcLang,
 				dstLang,
+				signal,
 			);
 			onResult(result);
 			const combined = result.join("\n");
@@ -397,7 +397,6 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		let stepIndex = 0;
 		for (const step of prompt.steps) {
 			stepIndex += 1;
-			throwIfAborted(signal);
 			conversation.push({
 				role: "user",
 				content: tokensToString(promptCtx, step.messageTokens),
@@ -421,7 +420,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				const schema = isStructuredOutput(step.output)
 					? (step.output.schema as JSONSchema)
 					: undefined;
-				const response = await client.chat(request, schema);
+				const response = await client.chat(request, schema, signal);
 				totalTokens +=
 					response.usage?.totalTokens ?? response.usage?.promptTokens ?? 0;
 				reasoning = appendReasoningContent(reasoning, response.reasoning);
@@ -449,6 +448,9 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 						0,
 				});
 			} catch (error) {
+				if (error instanceof Error && error.name === "AbortError") {
+					throw error;
+				}
 				throw convertFromLLMError(error);
 			}
 		}
@@ -470,6 +472,9 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		signal?: AbortSignal,
 	): StreamRunner => {
 		return async () => {
+			await applyDebugLatency();
+			signal?.throwIfAborted();
+
 			const client = ensureLLMClient(modelId, service);
 			const promptCtx = buildContextWithTranslateParams(
 				ctx,
@@ -505,7 +510,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					const schema = isStructuredOutput(step.output)
 						? (step.output.schema as JSONSchema)
 						: undefined;
-					const response = await client.chat(request, schema);
+					const response = await client.chat(request, schema, signal);
 					const output = normalizeLLMStepOutput(step, response.output);
 					outputs.push(output);
 					conversation.push({
@@ -525,6 +530,9 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 									: typeof output,
 					});
 				} catch (error) {
+					if (error instanceof Error && error.name === "AbortError") {
+						throw error;
+					}
 					throw convertFromLLMError(error);
 				}
 			}
@@ -558,12 +566,11 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 
 			const { promise: completion, resolve: resolveCompletion } =
 				Promise.withResolvers<number>();
-			const source = client.chatStream(request);
+			const source = client.chatStream(request, undefined, signal);
 			return {
 				iterator: (async function* () {
 					try {
 						while (true) {
-							throwIfAborted(signal);
 							const next = await source.next();
 							if (next.done) {
 								if (next.value.reasoning) {
@@ -598,6 +605,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 		ctx: TranslateContext,
 		options: TranslateOptions,
 		text: string | string[] | undefined,
+		signal?: AbortSignal,
 		// biome-ignore lint/suspicious/noExplicitAny: result can be any type
 	): Promise<UnaryResult<any>> => {
 		const modelId = options.modelId;
@@ -746,6 +754,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				texts,
 				options.srcLang,
 				options.dstLang,
+				signal,
 			);
 			translationResult = traditionalResult.result;
 			completionTokens = traditionalResult.tokens;
@@ -759,6 +768,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				ctx,
 				options.srcLang,
 				options.dstLang,
+				signal,
 			);
 			translationResult = llmResult.result;
 			completionTokens = llmResult.tokens;
@@ -828,6 +838,8 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			ctx: TranslateContext,
 			options: TranslateOptions,
 			text?: string | string[],
+			_meta?: unknown,
+			signal?: AbortSignal,
 		) {
 			const payload = text ?? "";
 			const service = resolveService(options.modelId);
@@ -839,7 +851,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			const estimated = estimateTokens(normalized);
 			const queue = queueHub.queue(options.modelId);
 			return queue.enqueueUnary(
-				() => executeUnary(ctx, options, payload),
+				() => executeUnary(ctx, options, payload, signal),
 				estimated,
 			);
 		},
@@ -922,17 +934,13 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 								(result) => {
 									traditionalResult = result;
 								},
+								signal,
 							);
 				const iterator = await queue.enqueueStream(streamRunner, estimated);
 				let translationAggregate = "";
 				let reasoningAggregate = "";
-				let emitted = false;
 				try {
 					for await (const chunk of iterator) {
-						if (!emitted) {
-							emitted = true;
-							await applyDebugLatency();
-						}
 						if (chunk.content) {
 							translationAggregate += chunk.content;
 						}
