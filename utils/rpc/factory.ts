@@ -220,6 +220,10 @@ export function createServer<
 		}
 	};
 
+	const interval = setInterval(() => {
+		transport.send({ type: "heartbeat" } as NoMetaMessage<M, P, E>);
+	}, 30000);
+
 	transport.onRecv((msg) => {
 		if (msg.type === "start") {
 			handleRequest(msg as Message<M, P, E> & MessageStart<P>).catch(
@@ -255,5 +259,6 @@ export function createServer<
 			controller.abort();
 		});
 		activeRequests.clear();
+		clearInterval(interval);
 	});
 }

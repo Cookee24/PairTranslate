@@ -45,10 +45,15 @@ export type MessageCancel = {
 	type: "cancel";
 };
 
+export type MessageHeartbeat = {
+	type: "heartbeat";
+};
+
 export type MessageBody<T, E> =
 	| MessageStart<T>
 	| MessageProgress<T>
 	| MessageEnd<T, E>
+	| MessageHeartbeat
 	| MessageCancel;
 
 export type MessageListener<M, T, E> = (
