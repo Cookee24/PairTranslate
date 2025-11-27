@@ -91,6 +91,7 @@ const elementsAtPoint = async (point: { x: number; y: number }) => {
 		judgeFns: [
 			(element) => {
 				const rect = element.getBoundingClientRect();
+				if (rect.width === 0 && rect.height === 0) return true;
 				return (
 					point.x >= rect.x &&
 					point.x <= rect.x + rect.width &&

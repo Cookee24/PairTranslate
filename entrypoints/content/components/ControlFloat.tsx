@@ -151,6 +151,8 @@ const elementsInBox = async (box: SelectionBox) => {
 		judgeFns: [
 			(element) => {
 				const rect = element.getBoundingClientRect();
+				// Some elements with "display: content" may have 0 width/height, and we want the elements inside them
+				if (rect.width === 0 && rect.height === 0) return true;
 				const elementX = rect.x + window.scrollX;
 				const elementY = rect.y + window.scrollY;
 
