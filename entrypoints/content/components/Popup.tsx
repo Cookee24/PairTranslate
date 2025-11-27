@@ -20,7 +20,6 @@ import {
 	createAnimatedAppearance,
 	onOuterClick,
 } from "~/hooks/animation";
-import { DATA_PREVENT_SCROLL } from "~/utils/constants";
 import { t } from "~/utils/i18n";
 
 const DEFAULT_STATE = {
@@ -157,27 +156,6 @@ const PopupImpl = (props: ImplProps) => {
 
 		window.addEventListener("resize", resize, { passive: true });
 		onCleanup(() => window.removeEventListener("resize", resize));
-	});
-
-	const [contentRef, setContentRef] = createSignal<HTMLDivElement>();
-	createEffect(() => {
-		const ref = contentRef();
-		if (!ref) return;
-
-		const start = () => {
-			document.body.setAttribute(DATA_PREVENT_SCROLL, "");
-		};
-		const end = () => {
-			document.body.removeAttribute(DATA_PREVENT_SCROLL);
-		};
-
-		ref.addEventListener("pointerenter", start, { passive: true });
-		ref.addEventListener("pointerleave", end, { passive: true });
-		onCleanup(() => {
-			ref.removeEventListener("pointerenter", start);
-			ref.removeEventListener("pointerleave", end);
-			end();
-		});
 	});
 
 	// Track last touch position for movement calculations
@@ -394,9 +372,7 @@ const PopupImpl = (props: ImplProps) => {
 						<X size={16} />
 					</Button>
 				</div>
-				<div ref={setContentRef} class="overflow-y-auto">
-					{props.content()}
-				</div>
+				<div class="overflow-y-auto overscroll-contain">{props.content()}</div>
 				<button
 					type="button"
 					class="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize touch-none"
