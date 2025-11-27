@@ -9,9 +9,17 @@ import type {
 } from "./types";
 import { LLMError, LLMErrorType } from "./types";
 
-type MaybeReasoning = {
-	reasoning?: string;
-	reasoning_content?: string;
+const extractReasoning = (content: object | undefined): string | undefined => {
+	if (!content) return undefined;
+	const KEYS = ["reasoning", "reasoning_content", "think"];
+	for (const key of KEYS) {
+		if (
+			key in content &&
+			typeof content[key as keyof typeof content] === "string"
+		) {
+			return content[key as keyof typeof content] as string;
+		}
+	}
 };
 
 export function createOpenAIClient(config: ClientConfig): LLMClient {
@@ -97,10 +105,7 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 				const message = response.choices[0]?.message;
 				const content = message?.content || "";
 				const output = (schema ? autoStripMarkdown(content) : content) as O;
-				const reasoning =
-					message &&
-					((message as MaybeReasoning).reasoning ||
-						(message as MaybeReasoning).reasoning_content);
+				const reasoning = extractReasoning(message);
 
 				return {
 					output,
@@ -148,10 +153,9 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 
 				for await (const chunk of stream) {
 					const delta = chunk.choices[0]?.delta;
-					const content = delta.content;
-					const reasoning =
-						(delta as MaybeReasoning).reasoning ||
-						(delta as MaybeReasoning).reasoning_content;
+					const content = delta?.content;
+					const reasoning = extractReasoning(delta);
+
 					if (content) {
 						yield { content };
 					}
