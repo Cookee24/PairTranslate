@@ -139,18 +139,12 @@ export async function createStateController<M, T, E>(
 				queue.queue.push(msg);
 				queue.notifier.notify();
 			} else {
-				// This block handles messages for which there is no active call handler.
-				// This can happen in a few legitimate scenarios due to race conditions:
-				// 1. On the server, receiving a 'cancel' for a call that has already finished.
-				// 2. On the client, receiving 'progress' or 'end' for a call that was just
-				//    cancelled, because the server sent them before processing the 'cancel' message.
-				// We log these expected cases at a 'debug' level to avoid unnecessary noise.
 				if (msg.type === "end" || msg.type === "progress") {
 					logger.debug(
 						`Received a late '${msg.type}' message for a completed or cancelled call.`,
 						msg,
 					);
-				} else if (msg.type !== "cancel") {
+				} else if (msg.type !== "cancel" && msg.type !== "heartbeat") {
 					// A 'start' message with an unknown ID, or other unexpected types,
 					// should still be warned about. We also ignore late 'cancel' messages.
 					logger.warn("Received message with unknown id:", msg);
