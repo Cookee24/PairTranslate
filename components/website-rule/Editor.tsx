@@ -219,8 +219,8 @@ export const WebsiteRuleEditor = (props: Props) => {
 						<ButtonGroup
 							options={[
 								{ value: "default", label: t("common.globalDefault") },
-								{ value: "true", label: t("settings.translation.fullPage") },
-								{ value: "false", label: t("settings.translation.visible") },
+								{ value: "true", label: t("common.yes") },
+								{ value: "false", label: t("common.no") },
 							]}
 							value={
 								local.enableTranslation === undefined
@@ -322,8 +322,8 @@ export const WebsiteRuleEditor = (props: Props) => {
 						<ButtonGroup
 							options={[
 								{ value: "default", label: t("common.globalDefault") },
-								{ value: "true", label: t("settings.translation.fullPage") },
-								{ value: "false", label: t("settings.translation.visible") },
+								{ value: "true", label: t("common.yes") },
+								{ value: "false", label: t("common.no") },
 							]}
 							value={
 								local.floatingBallEnabled === undefined
