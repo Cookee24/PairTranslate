@@ -648,7 +648,7 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 					: 0,
 		});
 
-		if (options.cleanCache) {
+		if (options.cleanCache && !supportsThinCache) {
 			await resultCache.del(cacheKey);
 		}
 
@@ -687,7 +687,6 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 				});
 				if (cacheState.missing.length === 0) {
 					const cachedValue = cacheState.values.slice() as string[];
-					await setCacheEntry(cacheKey, { output: cachedValue });
 					await applyDebugLatency();
 					debugLog("unary/cache-hit", {
 						modelId,
@@ -812,10 +811,12 @@ export const createTranslateService = async (): Promise<TranslateService> => {
 			);
 		}
 
-		await setCacheEntry(cacheKey, {
-			output: finalValue,
-			reasoning,
-		});
+		if (!supportsThinCache) {
+			await setCacheEntry(cacheKey, {
+				output: finalValue,
+				reasoning,
+			});
+		}
 		await applyDebugLatency();
 		debugLog("unary/complete", {
 			modelId,
