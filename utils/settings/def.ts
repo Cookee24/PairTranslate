@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const SETTINGS_VERSION = 2;
+export const SETTINGS_VERSION = 3;
 
 export const FloatingBallPosition = z.object({
 	side: z.enum(["left", "right"]).default("right"),

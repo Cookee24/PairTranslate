@@ -125,10 +125,9 @@ export function generatePromptSettings(): s.PromptsSettings {
 					message: BATCH().user,
 					output: {
 						type: "stringArray",
-						// %% Paragraph <index>
 						delimiter: {
 							type: "regex",
-							pattern: "^%% Paragraph \\d+",
+							pattern: "^==== \\d+",
 							flags: "gm",
 						},
 					},

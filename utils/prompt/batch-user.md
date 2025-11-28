@@ -1,10 +1,7 @@
-<instructions>Output {{text.length}} paragraphs</instructions>
-{{#if page}}<page>
-{{#for key, item: page}}{{key}}: {{item}}
-{{/for}}
-</page>{{/if}}
+<instructions>You must output exactly {{text.length}} paragraphs divided by `==== <index>`, directly output your translations without any explanation or context information</instructions>
 
-{{#for idx, item: text}}
-%% Paragraph {{idx}}
+{{#for key, item:text}}
+==== {{key}}
+
 {{item}}
 {{/for}}

@@ -74,6 +74,11 @@ export const migrateSettings = (raw: unknown): SettingsSchema => {
 			version = 2;
 			continue;
 		}
+		if (version === 2) {
+			working = migrateV2ToV3(working as SettingsSchema);
+			version = 3;
+			continue;
+		}
 		throw new Error(`Unsupported settings version: ${version}`);
 	}
 
@@ -106,6 +111,15 @@ function migrateV1ToV2(oldSettings: SettingsV1): SettingsSchema {
 		...oldSettings,
 		debug: generateDebugSettings(),
 		__v: 2,
+	};
+}
+
+function migrateV2ToV3(oldSettings: SettingsSchema): SettingsSchema {
+	// For v3 we reset prompts to the new defaults. Keep other settings as-is.
+	return {
+		...oldSettings,
+		prompts: generatePromptSettings(),
+		__v: 3,
 	};
 }
 
