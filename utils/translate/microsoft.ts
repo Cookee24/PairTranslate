@@ -41,9 +41,12 @@ export const microsoftTranslate = async (
 			apiKey = cachedApiKey;
 		} else {
 			try {
-				const result = await fetch("https://edge.microsoft.com/translate/auth", {
-					signal: params.signal,
-				});
+				const result = await fetch(
+					"https://edge.microsoft.com/translate/auth",
+					{
+						signal: params.signal,
+					},
+				);
 				if (!result.ok) {
 					throw new Error(t("errors.additional.microsoftFetchFailed"));
 				}
