@@ -1,4 +1,4 @@
-import { MathMLToLaTeX } from "@pie-framework/mathml-to-latex";
+import { MathMLToLaTeX } from "mathml-to-latex";
 /**
  * Replace full-width characters with half-width characters in markdown syntax.
  */
@@ -59,263 +59,424 @@ export const fixMarkdown = (text: string): string => {
 	return fixedText;
 };
 
-/**
- * Extracts the content of an element and converts nodes to markdown.
- * @param element The HTML element to extract and convert.
- * @returns A string containing the markdown representation of the element's content.
- */
-export const extractMarkdownContent = (element: HTMLElement): string => {
-	let markdownContent = "";
-	// Process each direct child of the element
-	for (const child of element.childNodes) {
-		if (child.nodeType === Node.TEXT_NODE) {
-			// Append text content without trimming to preserve spacing between elements
-			markdownContent += child.textContent || "";
-		} else if (child.nodeType === Node.ELEMENT_NODE) {
-			const childElement = child as HTMLElement;
-			const tagName = childElement.tagName.toLowerCase();
-			switch (tagName) {
-				case "strong":
-				case "b":
-					markdownContent += `**${extractMarkdownContent(childElement)}**`;
-					break;
-				case "em":
-				case "i":
-					markdownContent += `*${extractMarkdownContent(childElement)}*`;
-					break;
-				case "code":
-					markdownContent += `\`${extractMarkdownContent(childElement)}\``;
-					break;
-				case "pre":
-					// Code blocks with language detection if possible
-					markdownContent += `\n\`\`\`\n${childElement.textContent || ""}\n\`\`\`\n`;
-					break;
-				case "a": {
-					const href = childElement.getAttribute("href");
-					const text = extractMarkdownContent(childElement);
-					markdownContent += `[${text}](${href})`;
-					break;
-				}
-				case "img": {
-					// Skip
-					break;
-				}
-				case "br":
-					markdownContent += "\n\n"; // Markdown line break
-					break;
-				case "hr":
-					markdownContent += "\n\n---\n\n"; // Horizontal rule
-					break;
-				case "h1":
-					markdownContent += `# ${extractMarkdownContent(childElement)}\n\n`;
-					break;
-				case "h2":
-					markdownContent += `## ${extractMarkdownContent(childElement)}\n\n`;
-					break;
-				case "h3":
-					markdownContent += `### ${extractMarkdownContent(childElement)}\n\n`;
-					break;
-				case "h4":
-					markdownContent += `#### ${extractMarkdownContent(childElement)}\n\n`;
-					break;
-				case "h5":
-					markdownContent += `##### ${extractMarkdownContent(childElement)}\n\n`;
-					break;
-				case "h6":
-					markdownContent += `###### ${extractMarkdownContent(childElement)}\n\n`;
-					break;
-				case "p":
-					markdownContent += `${extractMarkdownContent(childElement)}\n\n`;
-					break;
-				case "blockquote":
-					{
-						// Add '> ' prefix to each line
-						const quoteContent = extractMarkdownContent(childElement);
-						markdownContent += `> ${quoteContent.split("\n").join("\n> ")}\n\n`;
-					}
-					break;
-				case "ul":
-				case "ol": {
-					const isOrdered = childElement.tagName.toLowerCase() === "ol";
-					const items = Array.from(
-						childElement.querySelectorAll(":scope > li"),
-					);
-					items.forEach((item, index) => {
-						const prefix = isOrdered ? `${index + 1}. ` : "- ";
-						markdownContent += `${prefix}${extractMarkdownContent(item as HTMLElement)}\n`;
-					});
-					markdownContent += "\n";
-					break;
-				}
-				case "li":
-					// Handle nested lists - this case is for standalone li elements
-					markdownContent += extractMarkdownContent(childElement);
-					break;
-				case "del":
-				case "s":
-				case "strike":
-					markdownContent += `~~${extractMarkdownContent(childElement)}~~`;
-					break;
-				case "u":
-					// Markdown doesn't have native underline, use HTML
-					markdownContent += `<u>${extractMarkdownContent(childElement)}</u>`;
-					break;
-				case "mark":
-					// Markdown doesn't have native highlight, use HTML or ==text==
-					markdownContent += `==${extractMarkdownContent(childElement)}==`;
-					break;
-				case "sup":
-					markdownContent += `[^${extractMarkdownContent(childElement)}]`;
-					break;
-				case "sub":
-					markdownContent += `[_${extractMarkdownContent(childElement)}]`;
-					break;
+type ElementHandler = (
+	element: HTMLElement,
+) => Generator<string, void, unknown>;
 
-				case "script":
-				case "style":
-					break;
-				// case "math":
-				// case "span":
-				// case "div":
-				default:
-					if (isMathElement(childElement, tagName)) {
-						markdownContent += extractMathContent(childElement);
-					} else {
-						// Recursively process other HTML elements to extract their content
-						markdownContent += extractMarkdownContent(childElement);
-					}
-					break;
+/**
+ * Main generator function to traverse the DOM node.
+ */
+function* iterateMarkdown(node: Node): Generator<string, void, unknown> {
+	// 1. Handle Text Nodes
+	if (node.nodeType === Node.TEXT_NODE) {
+		const text = node.nodeValue || "";
+
+		yield text.replace(/\s+/g, " ");
+	}
+	// 2. Handle Element Nodes
+	else if (node.nodeType === Node.ELEMENT_NODE) {
+		const element = node as HTMLElement;
+		const tagName = element.tagName.toLowerCase();
+
+		const handler = tagHandlers[tagName];
+
+		if (handler) {
+			yield* handler(element);
+		} else {
+			yield* iterateChildren(element);
+		}
+	}
+}
+
+/**
+ * Helper to iterate over child nodes.
+ */
+function* iterateChildren(
+	element: HTMLElement,
+): Generator<string, void, unknown> {
+	for (const child of element.childNodes) {
+		yield* iterateMarkdown(child);
+	}
+}
+
+/**
+ * Consumes the generator output for an element and returns a trimmed string.
+ * Used for inline elements where the result must be captured immediately (e.g., inside **bold**).
+ */
+const consumeAndTrim = (element: HTMLElement): string => {
+	const parts: string[] = [];
+	for (const part of iterateChildren(element)) {
+		parts.push(part);
+	}
+	return parts.join("").trim();
+};
+
+/**
+ * Helper to handle generic block elements (div, section, etc.)
+ * Checks for math content first, then falls back to children iteration.
+ */
+function* handleGenericBlock(
+	el: HTMLElement,
+	tagName: string,
+): Generator<string> {
+	// Check if this block is actually a wrapper for Math (Katex/MathJax)
+	const mathContent = tryExtractMath(el, tagName);
+	if (mathContent) {
+		yield mathContent;
+		return;
+	}
+
+	// Standard block handling
+	const content = consumeAndTrim(el);
+	if (content) {
+		yield `${content}\n\n`;
+	}
+}
+
+/**
+ * Helper to handle generic inline elements (span).
+ */
+function* handleGenericInline(
+	el: HTMLElement,
+	tagName: string,
+): Generator<string> {
+	const mathContent = tryExtractMath(el, tagName);
+	if (mathContent) {
+		yield mathContent;
+		return;
+	}
+	yield* iterateChildren(el);
+}
+
+const tagHandlers: Record<string, ElementHandler> = {
+	// --- Inline Styles ---
+	strong: function* (el) {
+		yield `**${consumeAndTrim(el)}**`;
+	},
+	b: function* (el) {
+		yield `**${consumeAndTrim(el)}**`;
+	},
+	em: function* (el) {
+		yield `*${consumeAndTrim(el)}*`;
+	},
+	i: function* (el) {
+		yield `*${consumeAndTrim(el)}*`;
+	},
+	del: function* (el) {
+		yield `~~${consumeAndTrim(el)}~~`;
+	},
+	s: function* (el) {
+		yield `~~${consumeAndTrim(el)}~~`;
+	},
+	strike: function* (el) {
+		yield `~~${consumeAndTrim(el)}~~`;
+	},
+	code: function* (el) {
+		yield `\`${consumeAndTrim(el)}\``;
+	},
+
+	// --- Media & Links ---
+	a: function* (el) {
+		const href = el.getAttribute("href") || "#";
+		const text = consumeAndTrim(el);
+		yield `[${text}](${href})`;
+	},
+	img: function* () {
+		// Explicitly ignore images based on requirement,
+	},
+	br: function* () {
+		yield "  \n";
+	},
+
+	// --- Block Elements ---
+	p: function* (el) {
+		// Paragraphs can also contain display math in some editors
+		yield* handleGenericBlock(el, "p");
+	},
+	span: function* (el) {
+		yield* handleGenericInline(el, "span");
+	},
+	div: function* (el) {
+		yield* handleGenericBlock(el, "div");
+	},
+	section: function* (el) {
+		yield* handleGenericBlock(el, "section");
+	},
+
+	// --- Specific Math Tags ---
+	math: function* (el) {
+		const latex = tryExtractMath(el, "math");
+		if (latex) yield latex;
+	},
+	"mjx-container": function* (el) {
+		const latex = tryExtractMath(el, "mjx-container");
+		if (latex) yield latex;
+	},
+	"math-field": function* (el) {
+		const latex = tryExtractMath(el, "math-field");
+		if (latex) yield latex;
+	},
+
+	// --- Headings ---
+	h1: function* (el) {
+		yield* handleHeading(el, 1);
+	},
+	h2: function* (el) {
+		yield* handleHeading(el, 2);
+	},
+	h3: function* (el) {
+		yield* handleHeading(el, 3);
+	},
+	h4: function* (el) {
+		yield* handleHeading(el, 4);
+	},
+	h5: function* (el) {
+		yield* handleHeading(el, 5);
+	},
+	h6: function* (el) {
+		yield* handleHeading(el, 6);
+	},
+
+	// --- Complex Blocks ---
+	blockquote: function* (el) {
+		const quote = consumeAndTrim(el);
+		if (quote) {
+			// Prepends '> ' to every new line
+			yield `> ${quote.replace(/\n/g, "\n> ")}\n\n`;
+		}
+	},
+	hr: function* () {
+		yield "\n---\n\n";
+	},
+
+	// --- Lists ---
+	ul: function* (el) {
+		yield* handleList(el, false);
+	},
+	ol: function* (el) {
+		yield* handleList(el, true);
+	},
+	li: function* (el) {
+		// Fallback for standalone LI, though usually handled by UL/OL
+		yield `- ${consumeAndTrim(el)}\n`;
+	},
+
+	pre: function* (el) {
+		const codeEl = el.querySelector("code");
+		let lang = "";
+		let codeText = el.textContent || "";
+
+		if (codeEl) {
+			codeText = codeEl.textContent || "";
+			codeEl.classList.forEach((cls) => {
+				if (cls.startsWith("language-")) {
+					lang = cls.replace("language-", "");
+				}
+			});
+		}
+		yield `\n\`\`\`${lang}\n${codeText}\n\`\`\`\n\n`;
+	},
+
+	// --- Tables  ---
+	table: function* (el) {
+		const table = el as HTMLTableElement;
+
+		const rows = table.rows;
+		if (rows.length === 0) return;
+
+		const headerCells = rows[0].cells;
+
+		const safeCell = (cell: Element) =>
+			consumeAndTrim(cell as HTMLElement).replace(/\|/g, "\\|");
+
+		let headerRow = "| ";
+		let dividerRow = "| ";
+		for (let i = 0; i < headerCells.length; i++) {
+			headerRow += safeCell(headerCells[i]);
+			dividerRow += "---";
+
+			if (i < headerCells.length - 1) {
+				headerRow += " | ";
+				dividerRow += " | ";
 			}
 		}
-	}
 
-	return markdownContent;
+		yield `${headerRow}\n${dividerRow}\n`;
+
+		for (let i = 1; i < rows.length; i++) {
+			const cells = rows[i].cells;
+			let rowText = "| ";
+			for (let j = 0; j < cells.length; j++) {
+				rowText += safeCell(cells[j]);
+				if (j < cells.length - 1) {
+					rowText += " | ";
+				}
+			}
+			yield `${rowText}\n`;
+		}
+		yield "\n";
+	},
+
+	script: function* () {},
+	style: function* () {},
+	noscript: function* () {},
+};
+
+function* handleHeading(el: HTMLElement, level: number): Generator<string> {
+	yield `${"#".repeat(level)} ${consumeAndTrim(el)}\n\n`;
+}
+
+function* handleList(el: HTMLElement, isOrdered: boolean): Generator<string> {
+	let index = 1;
+	for (const child of el.children) {
+		// Only process actual LI elements
+		if (child.tagName.toLowerCase() !== "li") continue;
+
+		const liContent = consumeAndTrim(child as HTMLElement);
+		const indentedContent = liContent.replace(/\n/g, "\n    ");
+		const prefix = isOrdered ? `${index}. ` : "- ";
+
+		yield `${prefix}${indentedContent}\n`;
+		index++;
+	}
+	yield "\n";
+}
+
+/**
+ * Helper to wrap content safely in LaTeX delimiters.
+ */
+const wrapLatex = (content: string, isDisplay: boolean): string => {
+	const trimmed = content.trim();
+	// Prevent double wrapping
+	if (
+		(trimmed.startsWith("$") && trimmed.endsWith("$")) ||
+		(trimmed.startsWith("\\(") && trimmed.endsWith("\\)")) ||
+		(trimmed.startsWith("\\[") && trimmed.endsWith("\\]"))
+	) {
+		return trimmed;
+	}
+	// Add zero-width space to prevent trimming issues in parent consumers
+	return isDisplay ? `\u200B\n$$\n${trimmed}\n$$\n\u200B` : `$${trimmed}$`;
 };
 
 /**
- * Checks if an element is a math-related element.
+ * Main entry to attempt extracting math.
+ * Returns the final LaTeX string (wrapped) if recognized, or null.
  */
-const isMathElement = (element: HTMLElement, tagName: string): boolean => {
-	// MathML elements
-	if (
-		tagName === "math" ||
-		element.namespaceURI === "http://www.w3.org/1998/Math/MathML"
-	) {
-		return true;
+const tryExtractMath = (
+	element: HTMLElement,
+	tagName: string,
+): string | null => {
+	const classList = element.classList;
+
+	let latex = "";
+	let isDisplay = false;
+
+	if (tagName === "script") {
+		const type = element.getAttribute("type");
+		if (type === "math/tex; mode=display") {
+			return wrapLatex(element.textContent || "", true);
+		}
+		if (type === "math/tex") {
+			return wrapLatex(element.textContent || "", false);
+		}
+		if (type === "math/mml") {
+			const id = element.id;
+			if (id && document.getElementById(`${id}-Frame`)) {
+				return null;
+			}
+			try {
+				return wrapLatex(MathMLToLaTeX.convert(element.innerHTML), false);
+			} catch (_e) {
+				return null;
+			}
+		}
+		return null;
 	}
 
-	// KaTeX/MathJax elements
-	if (
-		element.classList.contains("katex") ||
-		element.classList.contains("katex-display") ||
-		element.classList.contains("katex-html") ||
-		element.classList.contains("MathJax") ||
-		element.classList.contains("MathJax_Display") ||
-		element.classList.contains("mathjax")
-	) {
-		return true;
+	if (tagName === "math") {
+		// Check 'alttext' attribute (common in LaTeXML)
+		const alttext = element.getAttribute("alttext");
+		if (alttext) {
+			isDisplay = element.getAttribute("display") === "block";
+			return wrapLatex(alttext, isDisplay);
+		}
+
+		// Final fallback: Convert the MathML element itself
+		try {
+			latex = MathMLToLaTeX.convert(element.outerHTML);
+			isDisplay = element.getAttribute("display") === "block";
+			return wrapLatex(latex, isDisplay);
+		} catch (_e) {
+			// Sometime MathMLToLaTeX fails on complex namespaces, return generic fallback if needed
+		}
 	}
 
-	// MathLive elements
-	if (
-		element.tagName === "MATH-FIELD" ||
-		element.classList.contains("ML__mathlive")
-	) {
-		return true;
-	}
-
-	return false;
-};
-
-/**
- * Extracts math content and converts it to LaTeX format.
- */
-const extractMathContent = (element: HTMLElement): string => {
-	const getDollarWrapped = (isDisplay: boolean, content: string): string =>
-		isDisplay ? `$$${content}$$` : `$${content}$`;
-
-	// Try to get LaTeX from annotation or data attributes
-	const latexFromAnnotation = element.querySelector(
-		'annotation[encoding="application/x-tex"]',
-	)?.textContent;
-	if (latexFromAnnotation) {
-		const isDisplay =
-			element.getAttribute("display") === "block" ||
-			element.classList.contains("katex-display") ||
-			element.classList.contains("MathJax_Display");
-		return getDollarWrapped(isDisplay, latexFromAnnotation);
-	}
-
-	// Check for data-latex attribute (common in KaTeX)
-	const dataLatex = element.getAttribute("data-latex");
-	if (dataLatex) {
-		return getDollarWrapped(
-			element.classList.contains("katex-display"),
-			dataLatex,
+	if (classList.contains("mwe-math-element")) {
+		// Wikimedia usually provides an IMG with the tex in the 'alt' attribute.
+		// This is much faster than parsing the hidden MathML.
+		const img = element.querySelector(
+			"img.mwe-math-fallback-image-inline, img.mwe-math-fallback-image-display",
 		);
-	}
-
-	// MathLive math-field element
-	if (element.tagName === "MATH-FIELD") {
-		// biome-ignore lint/suspicious/noExplicitAny: General use case
-		const value = element.getAttribute("value") || (element as any).value;
-		if (value) {
-			return `$${value}$`;
+		if (img) {
+			const alt = img.getAttribute("alt");
+			if (alt) {
+				isDisplay =
+					classList.contains("mwe-math-element-display") ||
+					img.classList.contains("mwe-math-fallback-image-display");
+				return wrapLatex(alt, isDisplay);
+			}
+		}
+		// Fallback: Check hidden MathML inside
+		const hiddenMath = element.querySelector("math");
+		if (hiddenMath) {
+			return tryExtractMath(hiddenMath as HTMLElement, "math");
 		}
 	}
 
-	// Try to extract from script tag (MathJax format)
-	const scriptTag =
-		element.querySelector('script[type="math/tex"]') ||
-		element.querySelector('script[type="math/tex; mode=display"]');
-	if (scriptTag) {
-		const isDisplay =
-			scriptTag.getAttribute("type") === "math/tex; mode=display";
-		return getDollarWrapped(isDisplay, scriptTag.textContent || "");
+	const texAnnotation = element.querySelector(
+		'annotation[encoding="application/x-tex"], annotation[encoding="application/x-latex"]',
+	);
+	if (texAnnotation?.textContent) {
+		// Determine display mode based on parent context or attributes
+		isDisplay =
+			element.getAttribute("display") === "block" ||
+			element.getAttribute("mode") === "display" ||
+			classList.contains("display") ||
+			classList.contains("block");
+
+		return wrapLatex(texAnnotation.textContent, isDisplay);
 	}
 
-	// Convert MathML to LaTeX
-	const mathMlElement = element.querySelector("[data-mathml]");
-	const mathMl = mathMlElement?.getAttribute("data-mathml");
-	if (mathMl) {
+	const dataMathml = element.getAttribute("data-mathml");
+	if (dataMathml) {
 		try {
-			const latex = MathMLToLaTeX.convert(mathMl);
-			const isDisplay =
-				element.getAttribute("display") === "block" ||
-				element.classList.contains("katex-display") ||
-				element.classList.contains("MathJax_Display");
-			return getDollarWrapped(isDisplay, latex);
-		} catch (error) {
-			console.error("Failed to convert MathML to LaTeX:", error);
+			// Convert the stored MathML string to LaTeX
+			latex = MathMLToLaTeX.convert(dataMathml);
+
+			// Detect display mode: MathJax usually puts display="block" in the root math tag
+			// or the container has class "MathJax_Display"
+			isDisplay =
+				classList.contains("MathJax_Display") ||
+				dataMathml.includes('display="block"');
+
+			return wrapLatex(latex, isDisplay);
+		} catch (e) {
+			console.warn("Failed to convert data-mathml", e);
 		}
 	}
 
-	// Try to convert MathML element itself
-	if (
-		element.tagName === "MATH" ||
-		element.namespaceURI === "http://www.w3.org/1998/Math/MathML"
-	) {
-		try {
-			const mathmlString = element.outerHTML;
-			const latex = MathMLToLaTeX.convert(mathmlString);
-			const isDisplay = element.getAttribute("display") === "block";
-			return getDollarWrapped(isDisplay, latex);
-		} catch (error) {
-			console.error("Failed to convert MathML element to LaTeX:", error);
-		}
+	if (classList.contains("MathJax_Preview")) {
+		// Ignore previews, return empty string so it doesn't get processed as text
+		return "";
 	}
 
-	// Fallback: extract plain text for MathML or other math elements
-	const textContent = element.textContent || "";
-	const isDisplay =
-		element.getAttribute("display") === "block" ||
-		element.classList.contains("katex-display") ||
-		element.classList.contains("MathJax_Display");
+	return null;
+};
 
-	// If it's already wrapped in $, use as is
-	if (textContent.trim().startsWith("$") && textContent.trim().endsWith("$")) {
-		return textContent;
-	}
-
-	return getDollarWrapped(isDisplay, textContent);
+/**
+ * Public Entry Point
+ */
+export const extractMarkdownContent = (element: HTMLElement): string => {
+	return Array.from(iterateChildren(element)).join("");
 };

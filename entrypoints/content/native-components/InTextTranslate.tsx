@@ -100,10 +100,10 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 						let last = prev.length; // Force a new batch
 						for (const element of currentElements) {
 							const batchId = batchIds.get(element);
-							const current = [
+							const current: ElementTextPair = [
 								element,
 								extractMarkdownContent(element),
-							] as ElementTextPair;
+							];
 							if (batchId === undefined) {
 								const lastBatch = prev[last];
 								if (lastBatch !== undefined) {
@@ -174,9 +174,11 @@ const BatchRender = (props: BatchRenderProps) => {
 	const texts = createMemo(() => props.elements.map(([, text]) => text));
 	const [getter, retry] = createBatchTranslation(texts);
 
-	const hideOriginal = () =>
-		(websiteRule.translateMode ?? settings.translate.translationMode) ===
-		"replace";
+	const hideOriginal = createMemo(
+		() =>
+			(websiteRule.translateMode ?? settings.translate.translationMode) ===
+			"replace",
+	);
 
 	return (
 		<For each={getter()}>
@@ -187,7 +189,13 @@ const BatchRender = (props: BatchRenderProps) => {
 					error={item.error?.message}
 					element={props.elements[index()][0]}
 					hideOriginal={hideOriginal()}
-					onRetry={() => retry(index())}
+					onRetry={() => {
+						if (getter().every((i) => i.error)) {
+							retry();
+						} else {
+							retry(index());
+						}
+					}}
 					onDelete={() => props.onDelete?.(props.elements[index()][0])}
 				/>
 			)}

@@ -1,7 +1,6 @@
 import katex from "katex";
 import {
 	createEffect,
-	createSignal,
 	type JSX,
 	onCleanup,
 	onMount,
@@ -82,24 +81,31 @@ const createComponent = (
 };
 
 const math = () => (props: { content?: string; center?: boolean }) => {
-	const [ref, setRef] = createSignal<HTMLElement>();
-	createEffect(() => {
-		const ref_ = ref();
-		if (!ref_) return;
+	let ref: HTMLElement | undefined;
 
-		if (props.content) {
-			katex.render(props.content, ref_, {
-				throwOnError: false,
-				strict: false,
-				displayMode: !!props.center,
-			});
-			onCleanup(() => {
-				ref_.textContent = "";
-			});
-		}
+	onMount(() => {
+		if (!ref) return;
+
+		createEffect(() => {
+			if (props.content) {
+				katex.render(props.content, ref, {
+					throwOnError: false,
+					strict: false,
+					displayMode: props.center,
+				});
+				onCleanup(() => {
+					ref.textContent = "";
+				});
+			}
+		});
 	});
 
-	return <span ref={setRef} style={{ display: "contents" }}></span>;
+	return (
+		<span
+			ref={ref}
+			style={{ display: props.center ? "block" : "inline" }}
+		></span>
+	);
 };
 
 export default (anim?: boolean, styled?: boolean) => {

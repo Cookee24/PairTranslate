@@ -1,4 +1,11 @@
-import { batch, createEffect, createSignal, onCleanup } from "solid-js";
+import {
+	batch,
+	createEffect,
+	createMemo,
+	createSignal,
+	onCleanup,
+	untrack,
+} from "solid-js";
 import { createStore } from "solid-js/store";
 import { useSettings } from "~/hooks/settings";
 import { useWebsiteRule } from "~/hooks/website-rule";
@@ -33,7 +40,7 @@ type Result<T> = Pending | Error | Success<T>;
 
 type BatchReturn = readonly [
 	() => Result<string>[],
-	retry: (index: number | undefined) => void,
+	retry: (index?: number) => void,
 ];
 
 type TranslateUnaryPayload<T> =
@@ -266,32 +273,34 @@ export function createBatchTranslation(
 		}
 	};
 
-	const ret = () => {
+	const ret = createMemo(() => {
 		const len = text().length;
-		return Array.from({ length: len }, (_, i) => {
-			function read(): string | undefined {
-				return textResult[i];
-			}
+		return untrack(() =>
+			Array.from({ length: len }, (_, i) => {
+				function read(): string | undefined {
+					return textResult[i];
+				}
 
-			Object.defineProperties(read, {
-				error: {
-					get() {
-						return error[i];
+				Object.defineProperties(read, {
+					error: {
+						get() {
+							return error[i];
+						},
 					},
-				},
-				loading: {
-					get() {
-						// Access each store explicitly to track reactivity
-						const hasResult = textResult[i] !== undefined;
-						const hasError = error[i] !== undefined;
-						return !hasResult && !hasError;
+					loading: {
+						get() {
+							// Access each store explicitly to track reactivity
+							const hasResult = textResult[i] !== undefined;
+							const hasError = error[i] !== undefined;
+							return !hasResult && !hasError;
+						},
 					},
-				},
-			});
+				});
 
-			return read as Result<string>;
-		});
-	};
+				return read as Result<string>;
+			}),
+		);
+	});
 
 	return [ret, retry];
 }

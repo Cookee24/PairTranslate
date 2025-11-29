@@ -21,7 +21,6 @@
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.69.0",
 		"@google/genai": "^1.30.0",
-		"@pie-framework/mathml-to-latex": "^1.4.4",
 		"@solid-primitives/deep": "^0.3.3",
 		"@solid-primitives/refs": "^1.1.2",
 		"@solidjs/router": "^0.15.4",
@@ -29,6 +28,7 @@
 		"clsx": "^2.1.1",
 		"katex": "^0.16.25",
 		"lucide-solid": "^0.554.0",
+		"mathml-to-latex": "^1.5.0",
 		"monaco-editor-core": "^0.55.1",
 		"motion": "^12.23.24",
 		"openai": "^6.9.1",
