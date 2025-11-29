@@ -1,5 +1,6 @@
 export interface State {
 	root: Node;
+	signal?: AbortSignal;
 	excludedSelector: string;
 	textSelector: string;
 	listenNew: boolean;
@@ -10,6 +11,7 @@ export interface State {
 
 export interface Options {
 	root?: Node;
+	signal?: AbortSignal;
 	excludedSelectors?: string[];
 	textSelectors?: string[];
 	listenNew?: boolean;

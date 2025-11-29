@@ -87,6 +87,7 @@ export default (props: Props) => {
 };
 
 const elementsAtPoint = async (point: { x: number; y: number }) => {
+	const controller = new AbortController();
 	const listener = await getDomListener(window.location.hostname, {
 		judgeFns: [
 			(element) => {
@@ -101,6 +102,7 @@ const elementsAtPoint = async (point: { x: number; y: number }) => {
 			},
 		],
 		listenNew: false,
+		signal: controller.signal,
 	});
 
 	const result: HTMLElement[] = [];
@@ -111,7 +113,7 @@ const elementsAtPoint = async (point: { x: number; y: number }) => {
 	})();
 
 	await new Promise((r) => setTimeout(r, 200));
-	listener.return();
+	controller.abort();
 
 	return result;
 };

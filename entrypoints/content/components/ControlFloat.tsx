@@ -147,6 +147,7 @@ export default (props: Props) => {
 };
 
 const elementsInBox = async (box: SelectionBox) => {
+	const controller = new AbortController();
 	const listener = await getDomListener(window.location.hostname, {
 		judgeFns: [
 			(element) => {
@@ -166,6 +167,7 @@ const elementsInBox = async (box: SelectionBox) => {
 			},
 		],
 		listenNew: false,
+		signal: controller.signal,
 	});
 
 	const result: HTMLElement[] = [];
@@ -176,7 +178,7 @@ const elementsInBox = async (box: SelectionBox) => {
 	})();
 
 	await new Promise((r) => setTimeout(r, 200));
-	listener.return();
+	controller.abort();
 
 	return result;
 };

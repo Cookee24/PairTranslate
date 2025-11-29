@@ -128,6 +128,14 @@ export async function* elementWalker(state: State): ElementGenerator {
 	const notifier = createNotifier();
 	const mutationsQueue = new Set<WeakRef<HTMLElement>>();
 
+	if (state.signal) {
+		if (state.signal.aborted) {
+			return;
+		} else {
+			state.signal.addEventListener("abort", notifier.throw);
+		}
+	}
+
 	const excludedRoot = new WeakSet<HTMLElement>();
 	const handler: MutationCallback = (mutations) => {
 		let hasUpdates = false;
@@ -205,6 +213,9 @@ export async function* elementWalker(state: State): ElementGenerator {
 			}
 			mutationsQueue.clear();
 		}
+	} catch {
+		// Only triggered on abort
+		state.signal?.removeEventListener("abort", notifier.throw);
 	} finally {
 		state.mutationObserverCallbacks.delete(handler);
 		observer.disconnect();
@@ -264,6 +275,7 @@ export function pipe(
 export function getState(options: Options = {}): State {
 	return {
 		root: options.root || document.body,
+		signal: options.signal,
 		excludedSelector: [
 			...(options.excludedSelectors || []),
 			...EXCLUDED_SELECTORS,

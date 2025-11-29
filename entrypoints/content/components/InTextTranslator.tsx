@@ -22,8 +22,6 @@ export default () => {
 			websiteRule.translateFullPage ?? settings.translate.translateFullPage;
 		const hostname = window.location.hostname;
 
-		let alive = true;
-
 		const buffer = {
 			add: new Set<HTMLElement>(),
 			del: new Set<HTMLElement>(),
@@ -31,7 +29,6 @@ export default () => {
 		};
 
 		const flush = () => {
-			if (!alive) return;
 			setElements((prev) => {
 				if (buffer.add.size === 0 && buffer.del.size === 0) return prev;
 
@@ -63,14 +60,14 @@ export default () => {
 			scheduleFlush();
 		};
 
+		const controller = new AbortController();
 		(async () => {
 			const listener = await getDomListener(hostname, {
 				filterInteractive,
+				signal: controller.signal,
 			});
 
 			for await (const element of listener) {
-				if (!alive) break;
-
 				if (fullPage) {
 					handleAdd(element);
 					listenRemove(element, () => handleRemove(element));
@@ -83,7 +80,7 @@ export default () => {
 		})();
 
 		onCleanup(() => {
-			alive = false;
+			controller.abort();
 			if (buffer.handle !== null) cancelAnimationFrame(buffer.handle);
 			setElements((prev) => {
 				prev.clear();
