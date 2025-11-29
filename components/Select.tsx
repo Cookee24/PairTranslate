@@ -1,4 +1,11 @@
-import { type Component, For, type JSX, Show, splitProps } from "solid-js";
+import {
+	type Component,
+	createSelector,
+	For,
+	type JSX,
+	Show,
+	splitProps,
+} from "solid-js";
 import { tv, type VariantProps } from "tailwind-variants";
 import { cn } from "~/utils/cn";
 
@@ -64,6 +71,8 @@ export const Select: Component<SelectProps> = (props) => {
 		"ghost",
 	]);
 
+	const isSelected = createSelector(() => props.value);
+
 	const SelectElement = () => (
 		<select
 			{...selectProps}
@@ -85,7 +94,11 @@ export const Select: Component<SelectProps> = (props) => {
 			<Show when={local.options} fallback={local.children}>
 				<For each={local.options}>
 					{(option) => (
-						<option value={option.value} disabled={option.disabled}>
+						<option
+							value={option.value}
+							disabled={option.disabled}
+							selected={isSelected(option.value)}
+						>
 							{option.label}
 						</option>
 					)}
