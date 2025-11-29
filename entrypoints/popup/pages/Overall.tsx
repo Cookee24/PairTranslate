@@ -2,12 +2,12 @@ import { trackStore } from "@solid-primitives/deep";
 import { Box, Link, TextAlignStart, Trash2 } from "lucide-solid";
 import { createMemo, createResource, For } from "solid-js";
 import { unwrap } from "solid-js/store";
-import { browser } from "wxt/browser";
 import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { createDomainEnabledTimer } from "~/hooks/domain-timer";
 import { useSettings } from "~/hooks/settings";
+import { DOMAIN_TIMER_UNTIL_CLOSE } from "~/utils/constants";
 import { t } from "~/utils/i18n";
 import { selectServicesByType } from "~/utils/settings/services";
 import { getCurrentDomain } from "../get-current";
@@ -46,7 +46,10 @@ export default () => {
 		return t("popup.domainTimer.untilClose");
 	});
 	const timerOptions = createMemo(() => [
-		{ value: "close", label: t("popup.domainTimer.closeBrowser") },
+		{
+			value: DOMAIN_TIMER_UNTIL_CLOSE,
+			label: t("popup.domainTimer.closeBrowser"),
+		},
 		{
 			value: `${5 * 60}`,
 			label: t("popup.domainTimer.afterMinutes", ["5"]),
@@ -206,8 +209,7 @@ export default () => {
 					</div>
 				</Card.Body>
 			</Card.Root>
-			{/* TODO: Migrate to other API */}
-			{domain() && "session" in browser.storage && (
+			{domain() && (
 				<Card.Root class="w-full rounded-box border border-base-200">
 					<Card.Body>
 						<span class="flex items-center gap-2">
@@ -224,8 +226,8 @@ export default () => {
 								on:change={(e) => {
 									const value = e.target.value;
 									switch (value) {
-										case "close":
-											setTimer(1e99);
+										case DOMAIN_TIMER_UNTIL_CLOSE:
+											setTimer(DOMAIN_TIMER_UNTIL_CLOSE);
 											break;
 										case "":
 											break;

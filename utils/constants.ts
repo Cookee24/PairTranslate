@@ -160,8 +160,16 @@ export const STORAGE_KEYS = {
 	cache: "pair-translate:cache",
 	translateEnabled: "pair-translate:translate-enabled",
 	domainTimer: "pair-translate:domain-timer",
+	domainTimers: "pair-translate:domain-timers",
 	settingsMigrationError: "pair-translate:settings-migration-error",
 };
+
+export const DOMAIN_TIMER_UNTIL_CLOSE = "UNTIL_CLOSE" as const;
+
+export type DomainTimersMap = Record<
+	string,
+	number | typeof DOMAIN_TIMER_UNTIL_CLOSE
+>;
 
 export const WXT_TRANSPORTATION_NAME = "wxt-transport";
 

@@ -1,5 +1,6 @@
 import { browser, defineBackground } from "#imports";
 import { WXT_TRANSPORTATION_NAME } from "~/utils/constants";
+import { cleanupDomainTimers } from "~/utils/domain-timers";
 import { type AllServices, type Server, setupWxtServer } from "~/utils/rpc";
 import { initializeSettings } from "~/utils/settings/helper";
 import { createDictionaryService } from "./services/dictionary";
@@ -12,7 +13,10 @@ export default defineBackground(() => {
 		id: browser.runtime.id,
 	});
 
-	const promise = (async () => {
+	let ready = false;
+	const promise = async () => {
+		if (ready) return;
+
 		await initializeSettings();
 
 		const translateService = await createTranslateService();
@@ -38,14 +42,15 @@ export default defineBackground(() => {
 		};
 
 		setupWxtServer(clientImpl, WXT_TRANSPORTATION_NAME);
-	})();
+		ready = true;
+	};
 
 	// If there is no active session, background scripts will be killed.
 	// So we should check if the RPC is ready before responding.
 	browser.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 		(async () => {
 			if (msg === "ping") {
-				await promise;
+				await promise();
 				sendResponse("pong");
 			}
 		})();
@@ -53,9 +58,7 @@ export default defineBackground(() => {
 		return true;
 	});
 
-	// TODO: Migrate to other API
-	"setAccessLevel" in browser.storage.session &&
-		browser.storage.session.setAccessLevel({
-			accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS",
-		});
+	browser.runtime.onStartup.addListener(() => {
+		cleanupDomainTimers();
+	});
 });
