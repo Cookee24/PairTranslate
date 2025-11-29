@@ -45,7 +45,7 @@ export default (props: Props) => {
 
 	return (
 		<div class={cn("w-full h-full", local.class)} {...rest}>
-			<div class="align-middle font-mono text-sm h-24 bg-linear-to-b from-primary to-transparent text-primary-content whitespace-break-spaces overflow-y-auto no-scrollbar">
+			<div class="align-middle font-mono text-sm h-24 whitespace-break-spaces overflow-y-auto no-scrollbar">
 				<span>{props.textContext.surr?.before}</span>
 				<span
 					class="font-bold bg-accent text-accent-content"

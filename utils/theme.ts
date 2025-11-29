@@ -1,6 +1,6 @@
 const themeMap = {
-	light: "lemonade",
-	dark: "dim",
+	light: "cmyk",
+	dark: "forest",
 	system: undefined,
 };
 

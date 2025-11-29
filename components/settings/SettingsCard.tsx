@@ -13,10 +13,7 @@ export interface SettingsCardProps {
 export const SettingsCard: Component<SettingsCardProps> = (props) => {
 	return (
 		<Card.Root
-			class={cn(
-				"rounded-2xl border border-base-300 bg-base-100 shadow-sm",
-				props.class,
-			)}
+			class={cn("rounded-2xl border border-base-300 bg-base-100", props.class)}
 			data-nav={props.navId}
 		>
 			<Card.Body class="space-y-6 p-6">

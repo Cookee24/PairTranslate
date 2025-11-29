@@ -2,8 +2,8 @@
 @plugin "daisyui" {
 	root: ":host";
 	themes:
-		lemonade --default,
-		dim --prefersdark;
+		cmyk --default,
+		forest --prefersdark;
 }
 
 @utility no-scrollbar {
@@ -14,11 +14,21 @@
 	all: initial;
 }
 
-.overlay-container {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 0;
-	height: 0;
-	z-index: 2147483647;
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral/30;
+  border-radius: 10px;
+  border: 3px solid transparent; 
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.4);
 }

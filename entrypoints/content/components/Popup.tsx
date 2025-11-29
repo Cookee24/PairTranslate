@@ -341,7 +341,7 @@ const PopupImpl = (props: ImplProps) => {
 					"z-index": props.zIndex,
 				}}
 			>
-				<div class="w-full h-6 bg-primary text-primary-content flex items-center justify-center relative rounded-tl-(--radius-box) rounded-tr-(--radius-box)">
+				<div class="w-full h-6 bg-neutral text-neutral-content flex items-center justify-center relative rounded-tl-(--radius-box) rounded-tr-(--radius-box)">
 					<div
 						ref={dragRef}
 						class="absolute inset-0 flex justify-center items-center touch-none"
@@ -356,7 +356,7 @@ const PopupImpl = (props: ImplProps) => {
 					</div>
 					<Button
 						class="z-10 rounded-none rounded-tl-(--radius-box)"
-						variant={props.pinned ? "success" : "ghost"}
+						variant={props.pinned ? "primary" : "ghost"}
 						size="xs"
 						onClick={() => props.setState("pinned", (p) => !p)}
 					>

@@ -236,28 +236,23 @@ export default (props: DictionaryEntry) => {
 							<Show when={props.sourceUrls?.length}>
 								<div class="flex items-center gap-1">
 									<For each={props.sourceUrls}>
-										{(url, index) => (
-											<div class="indicator">
-												<div class="indicator-item badge badge-ghost badge-xs">
-													{index() + 1}
+										{(url) => (
+											<Button
+												class="btn-circle tooltip tooltip-top"
+												size="xs"
+												on:click={() => {
+													const a = document.createElement("a");
+													a.href = url;
+													a.target = "_blank";
+													a.rel = "noreferrer";
+													a.click();
+												}}
+											>
+												<div class="tooltip-content max-w-32 break-all">
+													{url.replace(/^https?:\/\//i, "")}
 												</div>
-												<Button
-													class="btn-circle tooltip tooltip-top"
-													size="xs"
-													on:click={() => {
-														const a = document.createElement("a");
-														a.href = url;
-														a.target = "_blank";
-														a.rel = "noreferrer";
-														a.click();
-													}}
-												>
-													<div class="tooltip-content max-w-32 break-all">
-														{url.replace(/^https?:\/\//i, "")}
-													</div>
-													<Earth size={12} />
-												</Button>
-											</div>
+												<Earth size={12} />
+											</Button>
 										)}
 									</For>
 								</div>
