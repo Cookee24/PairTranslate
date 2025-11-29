@@ -1,7 +1,7 @@
 import { ContentStyle, KatexStyle } from "~/components/Style";
 import { ProgressIndicatorProvider } from "~/hooks/progress-indicator";
 import { SettingsProvider } from "~/hooks/settings";
-import { createThemeClass } from "~/hooks/theme";
+import { createTheme } from "~/hooks/theme";
 import { WebsiteRuleProvider } from "~/hooks/website-rule";
 import { getThemeClass } from "~/utils/theme";
 import { PopupProvider, PopupRenderer } from "./components/Popup";
@@ -11,7 +11,7 @@ import TranslatorHost from "./components/TranslatorHost";
 
 const Content = () => {
 	// Media query is not supported in shadow DOM, so manually apply theme class
-	const theme = createThemeClass();
+	const theme = createTheme();
 
 	return (
 		<div class="overlay-container" attr:data-theme={getThemeClass(theme())}>

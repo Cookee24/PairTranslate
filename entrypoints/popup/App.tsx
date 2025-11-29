@@ -1,12 +1,14 @@
 import { HashRouter, Route, useLocation, useNavigate } from "@solidjs/router";
 import { Earth, ExternalLink, Power, PowerOff, Settings2 } from "lucide-solid";
 import type { JSX } from "solid-js";
-import { createMemo, Match, Switch } from "solid-js";
+import { createEffect, createMemo, Match, Switch } from "solid-js";
 import { browser } from "#imports";
+import { getThemeClass } from "@/utils/theme";
 import { Button } from "~/components/Button";
 import { Loading } from "~/components/Loading";
 import { SettingsRecoveryBanner } from "~/components/SettingsRecoveryBanner";
 import { SettingsProvider, useSettings } from "~/hooks/settings";
+import { createTheme } from "~/hooks/theme";
 import { t } from "~/utils/i18n";
 import { getCurrentDomain } from "./get-current";
 import Overall from "./pages/Overall";
@@ -22,6 +24,14 @@ const Content = (props: { children?: JSX.Element }) => {
 	getCurrentDomain()
 		.then((hostname) => window.rpc.matchWebsiteRule(hostname))
 		.then((idx) => (idx === null ? navigate("overall") : navigate("website")));
+
+	const theme = createTheme();
+	createEffect(() => {
+		document.documentElement.setAttribute(
+			"data-theme",
+			getThemeClass(theme()) || "",
+		);
+	});
 
 	return (
 		<div class="p-4 flex flex-col gap-4 w-full h-full">

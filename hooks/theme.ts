@@ -1,11 +1,7 @@
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import { useSettings } from "~/hooks/settings";
 
-export const createThemeClass = (): (() =>
-	| "light"
-	| "dark"
-	| "system"
-	| string) => {
+export const createTheme = (): (() => "light" | "dark" | "system" | string) => {
 	const { settings } = useSettings();
 
 	const [systemTheme, setSystemTheme] = createSignal<"light" | "dark">("light");
