@@ -5,7 +5,6 @@ export interface State {
 	textSelector: string;
 	listenNew: boolean;
 	judgeFns: JudgeFn[];
-	mutationObserverCallbacks: Set<MutationCallback>;
 	extraTextFilters: RegExp[];
 }
 

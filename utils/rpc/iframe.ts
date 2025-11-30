@@ -1,3 +1,4 @@
+import { DATA_IFRAME } from "../constants";
 import {
 	Closed,
 	type Message,
@@ -10,7 +11,6 @@ import { createServer } from "./factory";
 import { createLogger, type Logger } from "./logger";
 
 const DEFAULT_CHANNEL = "pair-translate:iframe-rpc";
-const IFRAME_MARKER = "data-pt-iframe-backend";
 
 export interface IframeClientOptions {
 	iframeUrl: string;
@@ -37,7 +37,7 @@ const ensureIframe = (src: string): Promise<HTMLIFrameElement> => {
 	iframe.src = src;
 	iframe.setAttribute("aria-hidden", "true");
 	iframe.setAttribute("tabindex", "-1");
-	iframe.setAttribute(IFRAME_MARKER, src);
+	iframe.setAttribute(DATA_IFRAME, src);
 	iframe.setAttribute("allow", "autoplay");
 	Object.assign(iframe.style, {
 		position: "fixed",

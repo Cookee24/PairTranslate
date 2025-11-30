@@ -80,6 +80,7 @@ export const getNativeName = (input: string): string => {
 };
 
 export const DATA_STYLE = "data-pt-style";
+export const DATA_IFRAME = "data-pt-iframe";
 export const DATA_CONTAINER = "data-pt-container";
 export const DATA_TRANSLATED = "data-pt-translated";
 export const DATA_GRABBING_CONTAINER = "data-pt-grabbing-container";
@@ -121,7 +122,6 @@ export const EXCLUDED_SELECTORS = [
 	".highlight",
 	"style",
 	"noscript",
-	"iframe",
 	"svg",
 	"canvas",
 	"video",

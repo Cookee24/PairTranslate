@@ -1,5 +1,6 @@
 import { hasMeaningfulChars } from "~/utils/blank";
 import {
+	DATA_IFRAME,
 	EXCLUDED_SELECTORS,
 	INTERACTIVE_SELECTORS,
 	TEXT_SELECTORS,
@@ -110,23 +111,123 @@ export async function* elementWalker(state: State): ElementGenerator {
 		});
 	};
 
-	const walker = createElementWalker(state.root);
-	let node = walker.nextNode();
-
-	while (node) {
-		const element = node as HTMLElement;
-		if (judgeText(element)) {
-			node = skipSubtree(walker);
-			yield element;
-		} else {
-			node = walker.nextNode();
-		}
-	}
-
-	if (!state.listenNew) return;
-
 	const notifier = createNotifier();
-	const mutationsQueue = new Set<WeakRef<HTMLElement>>();
+	const elementsQueue: WeakRef<HTMLElement>[] = [];
+
+	const excludedRoot = new WeakSet<HTMLElement>();
+	const mutationHandler: MutationCallback = (mutations) => {
+		for (const mutation of mutations) {
+			for (const node of mutation.addedNodes) {
+				if (node.nodeType === Node.ELEMENT_NODE) {
+					const root = node as HTMLElement;
+
+					const parent = root.parentElement;
+					if (parent && excludedRoot.has(parent)) {
+						excludedRoot.add(root);
+						continue;
+					}
+
+					const excludedAncestor = root.closest(state.excludedSelector);
+					if (excludedAncestor) {
+						excludedRoot.add(root);
+						parent && excludedRoot.add(parent);
+						excludedRoot.add(excludedAncestor as HTMLElement);
+						continue;
+					}
+
+					if (state.judgeFns.some((fn) => !fn(root))) {
+						excludedRoot.add(root);
+						continue;
+					}
+
+					if (judgeText(root)) {
+						elementsQueue.push(new WeakRef(root));
+						continue;
+					}
+
+					elementsQueue.push(...initialWalk(root).map((el) => new WeakRef(el)));
+				}
+			}
+		}
+		if (elementsQueue.length > 0) notifier.notify();
+	};
+
+	const observers: MutationObserver[] = [];
+	const cleaners: (() => void)[] = [];
+
+	const observeElement = (el: Node) => {
+		if (!state.listenNew) return;
+
+		const observer = new MutationObserver(mutationHandler);
+		observer.observe(el, {
+			childList: true,
+			subtree: true,
+			attributes: false,
+			characterData: false,
+		});
+		observers.push(observer);
+	};
+	const cleanup = () => {
+		for (const observer of observers) {
+			observer.disconnect();
+		}
+		for (const fn of cleaners) {
+			fn();
+		}
+	};
+
+	const processedIframes = new WeakSet<HTMLIFrameElement>();
+	const handleIfSpecial = function* (element: HTMLElement) {
+		const root = element.shadowRoot;
+		if (root) {
+			yield* initialWalk(root);
+			observeElement(root);
+		}
+		if (
+			element.tagName === "IFRAME" &&
+			element.getAttribute(DATA_IFRAME) === null
+		) {
+			const iframe = element as HTMLIFrameElement;
+			new Promise<HTMLElement | undefined>((resolve) => {
+				if (iframe.contentDocument) resolve(iframe.contentDocument.body);
+				else {
+					const handler = () => resolve(iframe.contentDocument?.body);
+					iframe.addEventListener("load", handler, { once: true });
+					const weakRef = new WeakRef(iframe);
+					cleaners.push(() =>
+						weakRef.deref()?.removeEventListener("load", handler),
+					);
+				}
+			}).then((doc) => {
+				if (doc && !processedIframes.has(iframe)) {
+					elementsQueue.push(...initialWalk(doc).map((el) => new WeakRef(el)));
+					if (elementsQueue.length > 0) notifier.notify();
+
+					observeElement(doc);
+					processedIframes.add(iframe);
+				}
+			});
+		}
+	};
+
+	const initialWalk = function* (root: Node): Generator<HTMLElement> {
+		const walker = createElementWalker(root);
+		let node = walker.nextNode();
+
+		while (node) {
+			const element = node as HTMLElement;
+			if (judgeText(element)) {
+				node = skipSubtree(walker);
+				yield element;
+			} else {
+				node = walker.nextNode();
+				yield* handleIfSpecial(element);
+			}
+		}
+	};
+
+	yield* initialWalk(state.root);
+	observeElement(state.root);
 
 	if (state.signal) {
 		if (state.signal.aborted) {
@@ -136,89 +237,20 @@ export async function* elementWalker(state: State): ElementGenerator {
 		}
 	}
 
-	const excludedRoot = new WeakSet<HTMLElement>();
-	const handler: MutationCallback = (mutations) => {
-		let hasUpdates = false;
-		for (const mutation of mutations) {
-			for (const node of mutation.addedNodes) {
-				if (node.nodeType === Node.ELEMENT_NODE) {
-					const el = node as HTMLElement;
-
-					// Skip if matches excluded selectors
-					const parent = el.parentElement;
-					if (parent && excludedRoot.has(parent)) {
-						excludedRoot.add(el);
-						continue;
-					}
-
-					const excludedAncestor = el.closest(state.excludedSelector);
-					if (excludedAncestor) {
-						excludedRoot.add(el);
-						parent && excludedRoot.add(parent);
-						excludedRoot.add(excludedAncestor as HTMLElement);
-						continue;
-					}
-
-					if (state.judgeFns.some((fn) => !fn(el))) {
-						excludedRoot.add(el);
-						continue;
-					}
-
-					if (judgeText(el)) {
-						mutationsQueue.add(new WeakRef(el));
-						hasUpdates = true;
-					}
-
-					const walker = createElementWalker(el);
-					let cur = walker.nextNode();
-					while (cur) {
-						const childEl = cur as HTMLElement;
-						if (judgeText(childEl)) {
-							mutationsQueue.add(new WeakRef(childEl));
-							hasUpdates = true;
-							cur = skipSubtree(walker);
-						} else {
-							cur = walker.nextNode();
-						}
-					}
-				}
-			}
-		}
-		if (hasUpdates) notifier.notify();
-	};
-
-	const observerCallback: MutationCallback = (mutations, obs) => {
-		for (const fn of state.mutationObserverCallbacks) {
-			if (fn !== handler) fn(mutations, obs);
-		}
-		handler(mutations, obs);
-	};
-
-	const observer = new MutationObserver(observerCallback);
-	state.mutationObserverCallbacks.add(handler);
-
-	observer.observe(state.root, {
-		childList: true,
-		subtree: true,
-		attributes: false,
-		characterData: false,
-	});
-
 	try {
 		while (true) {
 			await notifier.wait();
-			for (const ref of mutationsQueue) {
+			for (const ref of elementsQueue) {
 				const element = ref.deref();
 				if (element) yield element;
 			}
-			mutationsQueue.clear();
+			elementsQueue.length = 0;
 		}
 	} catch {
 		// Only triggered on abort
 		state.signal?.removeEventListener("abort", notifier.throw);
 	} finally {
-		state.mutationObserverCallbacks.delete(handler);
-		observer.disconnect();
+		cleanup();
 	}
 }
 
@@ -286,7 +318,6 @@ export function getState(options: Options = {}): State {
 		),
 		judgeFns: options.judgeFns || [],
 		listenNew: options.listenNew || true,
-		mutationObserverCallbacks: new Set<MutationCallback>(),
 		extraTextFilters: options.extraTextFilters || [],
 	};
 }
