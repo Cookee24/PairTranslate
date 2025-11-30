@@ -4,7 +4,7 @@ export interface State {
 	excludedSelector: string;
 	textSelector: string;
 	listenNew: boolean;
-	judgeFns: JudgeFn[];
+	judgeFn: JudgeFn;
 	extraTextFilters: RegExp[];
 }
 
@@ -15,7 +15,7 @@ export interface Options {
 	textSelectors?: string[];
 	listenNew?: boolean;
 	extraTextFilters?: RegExp[];
-	judgeFns?: JudgeFn[];
+	judgeFn?: JudgeFn;
 	appendGenerators?: ChainedGeneratorFn[];
 	filterInteractive?: boolean;
 }

@@ -89,18 +89,16 @@ export default (props: Props) => {
 const elementsAtPoint = async (point: { x: number; y: number }) => {
 	const controller = new AbortController();
 	const listener = await getDomListener(window.location.hostname, {
-		judgeFns: [
-			(element) => {
-				const rect = element.getBoundingClientRect();
-				if (rect.width === 0 && rect.height === 0) return true;
-				return (
-					point.x >= rect.x &&
-					point.x <= rect.x + rect.width &&
-					point.y >= rect.y &&
-					point.y <= rect.y + rect.height
-				);
-			},
-		],
+		judgeFn: (element) => {
+			const rect = element.getBoundingClientRect();
+			if (rect.width === 0 && rect.height === 0) return true;
+			return (
+				point.x >= rect.x &&
+				point.x <= rect.x + rect.width &&
+				point.y >= rect.y &&
+				point.y <= rect.y + rect.height
+			);
+		},
 		listenNew: false,
 		signal: controller.signal,
 	});

@@ -100,10 +100,8 @@ export async function* elementWalker(state: State): ElementGenerator {
 					return NodeFilter.FILTER_REJECT; // Prune subtree
 				}
 
-				for (const fn of state.judgeFns) {
-					if (!fn(el)) {
-						return NodeFilter.FILTER_REJECT; // Prune subtree
-					}
+				if (!state.judgeFn(el)) {
+					return NodeFilter.FILTER_REJECT; // Prune subtree
 				}
 
 				return NodeFilter.FILTER_ACCEPT;
@@ -135,7 +133,7 @@ export async function* elementWalker(state: State): ElementGenerator {
 						continue;
 					}
 
-					if (state.judgeFns.some((fn) => !fn(root))) {
+					if (!state.judgeFn(root)) {
 						excludedRoot.add(root);
 						continue;
 					}
@@ -316,7 +314,7 @@ export function getState(options: Options = {}): State {
 		textSelector: [...(options.textSelectors || []), ...TEXT_SELECTORS].join(
 			", ",
 		),
-		judgeFns: options.judgeFns || [],
+		judgeFn: options.judgeFn || (() => true),
 		listenNew: options.listenNew || true,
 		extraTextFilters: options.extraTextFilters || [],
 	};
