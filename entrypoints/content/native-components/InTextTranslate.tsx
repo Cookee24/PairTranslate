@@ -22,6 +22,8 @@ import InTextTooltip from "../components/InTextTooltip";
 import { extractTextContext } from "../context/element";
 import { NativeLoading } from "./Loading";
 
+const NEW_LINE_THRESHOLD = 10;
+
 interface SingleProps {
 	element: HTMLElement;
 }
@@ -246,6 +248,14 @@ const TranslationRender = (props: TranslationRenderProps) => {
 		setTooltipPos(undefined);
 	};
 
+	const swapLine = createMemo(
+		() =>
+			!props.loading &&
+			!props.error &&
+			!props.hideOriginal &&
+			(props.text || "").length > NEW_LINE_THRESHOLD,
+	);
+
 	return (
 		<>
 			<InTextTooltip
@@ -271,7 +281,7 @@ const TranslationRender = (props: TranslationRenderProps) => {
 				mount={props.element}
 				hideOriginal={props.hideOriginal && !props.loading && !props.error}
 			>
-				{!props.loading && !props.error && !props.hideOriginal && <br />}
+				{swapLine() && <br />}
 				<span
 					on:mouseenter={createTooltip}
 					on:touchend={createTooltip}
