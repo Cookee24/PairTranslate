@@ -1,14 +1,14 @@
 import { onCleanup } from "solid-js";
 
-export function createElementObserver() {
+export function createNodeObserver() {
 	let callbacks = new WeakMap<
-		HTMLElement,
-		(intersectOrRemove: boolean) => void
+		Element,
+		[(intersectOrRemove: boolean) => void]
 	>();
 	const intersectionObserver = new IntersectionObserver((entries) => {
 		for (const entry of entries) {
 			if (entry.isIntersecting) {
-				const element = entry.target as HTMLElement;
+				const element = entry.target;
 				triggerListener(element, true);
 			}
 		}
@@ -25,18 +25,16 @@ export function createElementObserver() {
 		}
 	});
 
-	const triggerListener = (
-		element: HTMLElement,
-		intersectOrRemove: boolean,
-	) => {
-		const callback = callbacks.get(element);
-		if (!callback) return;
-		callback(intersectOrRemove);
-		if (intersectOrRemove) {
-			intersectionObserver.unobserve(element);
-		} else {
-			intersectionObserver.unobserve(element);
-			callbacks.delete(element);
+	const triggerListener = (element: Element, intersectOrRemove: boolean) => {
+		const cbs = callbacks.get(element);
+		if (cbs) {
+			for (const cb of cbs) {
+				cb(intersectOrRemove);
+			}
+			if (!intersectOrRemove) {
+				intersectionObserver.unobserve(element);
+				callbacks.delete(element);
+			}
 		}
 	};
 
@@ -46,16 +44,30 @@ export function createElementObserver() {
 	});
 
 	const listenIntersectionOrRemove = (
-		element: HTMLElement,
+		node: Node,
 		callback: (intersectOrRemove: boolean) => void,
 	) => {
-		if (callbacks.has(element)) return;
-		callbacks.set(element, callback);
+		const element = node instanceof Element ? node : node.parentElement;
+		if (!element) {
+			callback(false);
+			return;
+		}
+
+		const cur = callbacks.get(element);
+		if (cur) cur.push(callback);
+		else callbacks.set(element, [callback]);
 		intersectionObserver.observe(element);
 	};
-	const listenRemove = (element: HTMLElement, callback: () => void) => {
-		if (callbacks.has(element)) return;
-		callbacks.set(element, callback);
+	const listenRemove = (node: Node, callback: () => void) => {
+		const element = node instanceof Element ? node : node.parentElement;
+		if (!element) {
+			callback();
+			return;
+		}
+
+		const cur = callbacks.get(element);
+		if (cur) cur.push((r) => !r && callback());
+		else callbacks.set(element, [(r) => !r && callback()]);
 	};
 
 	onCleanup(() => {

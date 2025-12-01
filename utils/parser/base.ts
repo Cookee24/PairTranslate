@@ -8,65 +8,67 @@ import {
 import { createNotifier } from "~/utils/notify";
 import type {
 	ChainedGeneratorFn,
-	ElementGenerator,
+	DOMSection,
 	InitialGeneratorFn,
 	Options,
+	SectionGenerator,
 	State,
 } from "./types";
 
 // Combine for better performance
 const COMMON_SKIP_PATTERNS = new RegExp(
 	[
-		// Email addresses
-		/^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.source,
-		// Social media handles (@username)
-		/^@\w+$/.source,
 		// URLs and domains
-		/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)\/?$/.source,
-		// Version numbers
-		/^v?\d+\.\d+(\.\d+)?(-\w+)?$/.source,
-		// Currency symbols only
-		/^[$€£¥₹₽¢]+$/.source,
-		// Time formats
-		/^\d{1,2}:\d{2}(:\d{2})?(\s?(AM|PM))?$/i.source,
-		// Dates (basic patterns)
-		/^\d{1,4}[/\-.]\d{1,2}[/\-.]\d{1,4}$/.source,
+		/^(?:(?:https?|ftp):\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?::\d{1,5})?(?:\/[^\s]*)?$/
+			.source,
 		// Repeated characters (like "...")
 		/^(.)\1{2,}$/.source,
 	].join("|"),
 	"i",
 );
 
+const NOT_EMPTY_REGEX = /\S/;
+
+const BLOCK_LEVEL_TAGS = new Set([
+	"DIV",
+	"P",
+	"SECTION",
+	"ARTICLE",
+	"HEADER",
+	"FOOTER",
+	"ASIDE",
+	"NAV",
+	"TABLE",
+	"UL",
+	"OL",
+	"LI",
+	"DL",
+	"DT",
+	"DD",
+]);
+
+// Check if a node is a visible text node
+const showTextNode = (node: Node): boolean =>
+	node.nodeType === Node.TEXT_NODE &&
+	NOT_EMPTY_REGEX.test(node.nodeValue || "");
+
 // Check if element has its own text nodes (not inside children)
 const hasDirectText = (el: Element): boolean => {
 	let node = el.firstChild;
 	while (node) {
-		if (node.nodeType === Node.TEXT_NODE && /\S/.test(node.nodeValue || "")) {
+		if (showTextNode(node)) {
 			return true;
 		}
+
 		node = node.nextSibling;
 	}
 	return false;
 };
 
-// Get text content strictly from direct text nodes
-const getDirectText = (el: Element): string => {
-	let text = "";
-	let node = el.firstChild;
-	while (node) {
-		if (node.nodeType === Node.TEXT_NODE) {
-			// Using nodeValue is faster than textContent for text nodes
-			text += node.nodeValue;
-		}
-		node = node.nextSibling;
-	}
-	return text;
-};
-
-const skipSubtree = (walker: TreeWalker): HTMLElement | null => {
+const skipSubtree = (walker: TreeWalker): Element | null => {
 	// 1. Try to go to the immediate sibling
 	const sibling = walker.nextSibling();
-	if (sibling) return sibling as HTMLElement;
+	if (sibling) return sibling as Element;
 
 	// 2. If no sibling, we are at the end of a branch.
 	// We need to climb up until we find an uncle (parent's sibling).
@@ -74,19 +76,70 @@ const skipSubtree = (walker: TreeWalker): HTMLElement | null => {
 	let parent = walker.parentNode();
 	while (parent) {
 		const uncle = walker.nextSibling();
-		if (uncle) return uncle as HTMLElement;
+		if (uncle) return uncle as Element;
 		parent = walker.parentNode();
 	}
 
 	return null; // Reached end of document
 };
 
-export async function* elementWalker(state: State): ElementGenerator {
-	const judgeText = (el: HTMLElement): boolean => {
+const getTextFromSection = (section: DOMSection): string => {
+	if (section instanceof Node) {
+		return section.textContent || "";
+	} else {
+		let start: Node | null = section[0];
+		const end = section[1];
+		const texts: string[] = [];
+
+		while (start) {
+			if (start === end) {
+				texts.push(start.textContent || "");
+				break;
+			} else {
+				texts.push(start.textContent || "");
+				start = start.nextSibling;
+			}
+		}
+
+		return texts.join("");
+	}
+};
+
+export async function* elementWalker(state: State): SectionGenerator {
+	const isExcluded = (el: Element) => {
+		if (el.matches(state.excludedSelector)) return true;
+		if (state.judgeFn && !state.judgeFn(el as Element)) return true;
+		return false;
+	};
+
+	const excludedRoot = new WeakSet<Element>();
+	const isExcludedPath = (el: Element) => {
+		const parent = el.parentElement;
+		if (parent && excludedRoot.has(parent)) {
+			excludedRoot.add(el);
+			return true;
+		}
+
+		if (state.judgeFn && !state.judgeFn(el)) {
+			excludedRoot.add(el);
+			return true;
+		}
+
+		const closest = el.closest(state.excludedSelector);
+		if (closest) {
+			excludedRoot.add(closest);
+			parent && excludedRoot.add(parent);
+			excludedRoot.add(el);
+
+			return true;
+		}
+
+		return false;
+	};
+
+	const judgeText = (el: Element): boolean => {
 		if (!el.matches(state.textSelector)) return false;
 		if (!hasDirectText(el)) return false;
-		const text = getDirectText(el);
-		if (!hasMeaningfulChars(text)) return false;
 
 		return true;
 	};
@@ -94,14 +147,10 @@ export async function* elementWalker(state: State): ElementGenerator {
 	const createElementWalker = (element: Node) => {
 		return document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT, {
 			acceptNode: (node) => {
-				const el = node as HTMLElement;
+				const el = node as Element;
 
-				if (el.matches(state.excludedSelector)) {
-					return NodeFilter.FILTER_REJECT; // Prune subtree
-				}
-
-				if (!state.judgeFn(el)) {
-					return NodeFilter.FILTER_REJECT; // Prune subtree
+				if (isExcluded(el)) {
+					return NodeFilter.FILTER_REJECT;
 				}
 
 				return NodeFilter.FILTER_ACCEPT;
@@ -109,45 +158,30 @@ export async function* elementWalker(state: State): ElementGenerator {
 		});
 	};
 
+	type GeneratorFunc = () => Generator<DOMSection, void> | undefined;
 	const notifier = createNotifier();
-	const elementsQueue: WeakRef<HTMLElement>[] = [];
+	const generatorList: GeneratorFunc[] = [];
+	const makeTextGenerator = (el: Element): GeneratorFunc => {
+		const weakRef = new WeakRef(el);
+		return () => {
+			const element = weakRef.deref();
+			if (element) return findTextElementsAndSplit(element);
+			return undefined;
+		};
+	};
 
-	const excludedRoot = new WeakSet<HTMLElement>();
 	const mutationHandler: MutationCallback = (mutations) => {
 		for (const mutation of mutations) {
 			for (const node of mutation.addedNodes) {
 				if (node.nodeType === Node.ELEMENT_NODE) {
-					const root = node as HTMLElement;
+					const root = node as Element;
+					if (isExcludedPath(root)) continue;
 
-					const parent = root.parentElement;
-					if (parent && excludedRoot.has(parent)) {
-						excludedRoot.add(root);
-						continue;
-					}
-
-					const excludedAncestor = root.closest(state.excludedSelector);
-					if (excludedAncestor) {
-						excludedRoot.add(root);
-						parent && excludedRoot.add(parent);
-						excludedRoot.add(excludedAncestor as HTMLElement);
-						continue;
-					}
-
-					if (!state.judgeFn(root)) {
-						excludedRoot.add(root);
-						continue;
-					}
-
-					if (judgeText(root)) {
-						elementsQueue.push(new WeakRef(root));
-						continue;
-					}
-
-					elementsQueue.push(...initialWalk(root).map((el) => new WeakRef(el)));
+					generatorList.push(makeTextGenerator(root));
 				}
 			}
 		}
-		if (elementsQueue.length > 0) notifier.notify();
+		if (generatorList.length > 0) notifier.notify();
 	};
 
 	const observers: MutationObserver[] = [];
@@ -175,18 +209,23 @@ export async function* elementWalker(state: State): ElementGenerator {
 	};
 
 	const processedIframes = new WeakSet<HTMLIFrameElement>();
-	const handleIfSpecial = function* (element: HTMLElement) {
-		const root = element.shadowRoot;
+	// Handle shadow DOM and iframes
+	const findTextElementsInSpecialContainer = function* (
+		element: Node,
+	): Generator<Element> {
+		if (element.nodeType !== Node.ELEMENT_NODE) return;
+		const el = element as Element;
+		const root = el.shadowRoot;
+
 		if (root) {
-			yield* initialWalk(root);
+			yield* findTextElements(root);
 			observeElement(root);
-		}
-		if (
-			element.tagName === "IFRAME" &&
-			element.getAttribute(DATA_IFRAME) === null
+		} else if (
+			el.tagName === "IFRAME" &&
+			el.getAttribute(DATA_IFRAME) === null
 		) {
-			const iframe = element as HTMLIFrameElement;
-			new Promise<HTMLElement | undefined>((resolve) => {
+			const iframe = el as HTMLIFrameElement;
+			new Promise<Element | undefined>((resolve) => {
 				if (iframe.contentDocument) resolve(iframe.contentDocument.body);
 				else {
 					const handler = () => resolve(iframe.contentDocument?.body);
@@ -198,8 +237,8 @@ export async function* elementWalker(state: State): ElementGenerator {
 				}
 			}).then((doc) => {
 				if (doc && !processedIframes.has(iframe)) {
-					elementsQueue.push(...initialWalk(doc).map((el) => new WeakRef(el)));
-					if (elementsQueue.length > 0) notifier.notify();
+					generatorList.push(makeTextGenerator(doc));
+					notifier.notify();
 
 					observeElement(doc);
 					processedIframes.add(iframe);
@@ -208,23 +247,92 @@ export async function* elementWalker(state: State): ElementGenerator {
 		}
 	};
 
-	const initialWalk = function* (root: Node): Generator<HTMLElement> {
+	// Find element with direct text
+	const findTextElements = function* (root: Node): Generator<Element> {
 		const walker = createElementWalker(root);
 		let node = walker.nextNode();
 
 		while (node) {
-			const element = node as HTMLElement;
+			const element = node as Element;
 			if (judgeText(element)) {
 				node = skipSubtree(walker);
 				yield element;
 			} else {
 				node = walker.nextNode();
-				yield* handleIfSpecial(element);
+				yield* findTextElementsInSpecialContainer(element);
 			}
 		}
 	};
 
-	yield* initialWalk(state.root);
+	// If element has block-level children, split into multiple paragraphs
+	const paragraphSplitter = function* (
+		element: Element,
+	): Generator<DOMSection> {
+		let node = element.firstChild;
+		let start: Node | null = null;
+		let end: Node | null = null;
+		let flag = false;
+
+		while (node) {
+			if (node.nodeType === Node.ELEMENT_NODE) {
+				if (BLOCK_LEVEL_TAGS.has((node as Element).tagName)) {
+					flag = true;
+
+					// Yield previous segment
+					if (start && end) {
+						if (element.querySelector('div[class="f"]'))
+							console.log({ element, start, end }); // Debugging
+						yield [start, end];
+						start = null;
+						end = null;
+					}
+
+					// Yield block element
+					yield* findTextElementsAndSplit(node);
+				} else {
+					// An inline element
+					if (!start) start = node;
+					end = node;
+				}
+			} else if (showTextNode(node)) {
+				if (!start) start = node;
+				end = node;
+			}
+
+			node = node.nextSibling;
+		}
+
+		if (flag) {
+			// Yield remaining segment
+			if (start && end) {
+				yield [start, end];
+			}
+		} else {
+			// No block-level children, yield the whole element
+			yield element;
+		}
+	};
+
+	// Find text elements within root, and split into paragraphs
+	const findTextElementsAndSplit = function* (
+		root: Node,
+	): Generator<DOMSection> {
+		if (
+			root.nodeType === Node.ELEMENT_NODE &&
+			!isExcluded(root as Element) &&
+			judgeText(root as Element)
+		) {
+			yield* paragraphSplitter(root as Element);
+			return;
+		}
+
+		const generator = findTextElements(root);
+		for (const element of generator) {
+			yield* paragraphSplitter(element);
+		}
+	};
+
+	yield* findTextElementsAndSplit(state.root);
 	observeElement(state.root);
 
 	if (state.signal) {
@@ -238,16 +346,16 @@ export async function* elementWalker(state: State): ElementGenerator {
 	try {
 		while (true) {
 			await notifier.wait();
-			for (const ref of elementsQueue) {
-				const element = ref.deref();
-				if (element) yield element;
+			for (const genFunc of generatorList) {
+				const gen = genFunc();
+				if (gen) yield* gen;
 			}
-			elementsQueue.length = 0;
+			generatorList.length = 0;
 		}
 	} catch {
 		// Only triggered on abort
-		state.signal?.removeEventListener("abort", notifier.throw);
 	} finally {
+		state.signal?.removeEventListener("abort", notifier.throw);
 		cleanup();
 	}
 }
@@ -256,37 +364,48 @@ export async function* elementWalker(state: State): ElementGenerator {
 // Useful if MutationObserver triggers multiple times for the same node.
 export async function* emittedFilter(
 	_state: State,
-	prev: ElementGenerator,
-): ElementGenerator {
-	const emittedElements = new WeakSet<HTMLElement>();
-	for await (const element of prev) {
-		if (!emittedElements.has(element)) {
-			emittedElements.add(element);
-			yield element;
+	prev: SectionGenerator,
+): SectionGenerator {
+	const emittedNodes = new WeakSet<Node>();
+	for await (const section of prev) {
+		const node = section instanceof Node ? section : section[0];
+		if (emittedNodes.has(node)) {
+			continue;
 		}
+		emittedNodes.add(node);
+
+		yield section;
 	}
 }
 
 export async function* textContentFilter(
 	state: State,
-	prev: ElementGenerator,
-): ElementGenerator {
-	for await (const element of prev) {
-		const text = getDirectText(element);
-		const trimmed = text.trim();
+	prev: SectionGenerator,
+): SectionGenerator {
+	for await (const section of prev) {
+		const text = getTextFromSection(section).trim();
 
-		if (COMMON_SKIP_PATTERNS.test(trimmed)) continue;
-
-		let isInvalid = false;
-		for (const regex of state.extraTextFilters) {
-			if (regex.test(trimmed)) {
-				isInvalid = true;
-				break;
-			}
+		if (!hasMeaningfulChars(text)) {
+			continue;
 		}
-		if (isInvalid) continue;
+		if (COMMON_SKIP_PATTERNS.test(text)) {
+			continue;
+		}
+		if (state.extraTextFilter?.test(text)) {
+			continue;
+		}
 
-		yield element;
+		yield section;
+	}
+}
+
+export async function* debugLogger(
+	_state: State,
+	prev: SectionGenerator,
+): SectionGenerator {
+	for await (const section of prev) {
+		console.log("Emitting section:", section);
+		yield section;
 	}
 }
 
@@ -294,7 +413,7 @@ export function pipe(
 	state: State,
 	fn: InitialGeneratorFn,
 	...fns: ChainedGeneratorFn[]
-): ElementGenerator {
+): SectionGenerator {
 	let stream = fn(state);
 	for (const f of fns) {
 		stream = f(state, stream);
@@ -314,18 +433,21 @@ export function getState(options: Options = {}): State {
 		textSelector: [...(options.textSelectors || []), ...TEXT_SELECTORS].join(
 			", ",
 		),
-		judgeFn: options.judgeFn || (() => true),
+		judgeFn: options.judgeFn,
 		listenNew: options.listenNew || true,
-		extraTextFilters: options.extraTextFilters || [],
+		extraTextFilter: options.extraTextFilters
+			? new RegExp(options.extraTextFilters.map((r) => r.source).join("|"), "i")
+			: undefined,
 	};
 }
 
-export function domListener(options: Options = {}): ElementGenerator {
+export function domListener(options: Options = {}): SectionGenerator {
 	const state = getState(options);
 
 	const defaultGenerators: ChainedGeneratorFn[] = [
 		emittedFilter, // Keeps distinct object references unique
 		textContentFilter, // Filters noise (dates, emails, etc)
+		// debugLogger, // Debugging
 	];
 	const appendGenerators = options.appendGenerators || [];
 

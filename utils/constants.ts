@@ -80,6 +80,7 @@ export const getNativeName = (input: string): string => {
 };
 
 export const DATA_STYLE = "data-pt-style";
+export const DATA_HIDE = "data-pt-hide";
 export const DATA_IFRAME = "data-pt-iframe";
 export const DATA_CONTAINER = "data-pt-container";
 export const DATA_TRANSLATED = "data-pt-translated";
@@ -91,6 +92,7 @@ export const TEXT_SELECTORS = [
 	"div",
 	"b",
 	"em",
+	"pre",
 	"dd",
 	"dt",
 	"strong",
@@ -118,7 +120,6 @@ export const TEXT_SELECTORS = [
 export const EXCLUDED_SELECTORS = [
 	"script",
 	"code",
-	"pre",
 	".highlight",
 	"style",
 	"noscript",

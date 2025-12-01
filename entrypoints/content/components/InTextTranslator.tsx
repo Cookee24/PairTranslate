@@ -1,20 +1,24 @@
 import { createEffect, createSignal, onCleanup } from "solid-js";
-import { createElementObserver } from "@/hooks/observer";
+import { createNodeObserver } from "@/hooks/observer";
 import { useSettings } from "~/hooks/settings";
 import { useWebsiteRule } from "~/hooks/website-rule";
+import type { DOMSection } from "~/utils/parser/types";
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import { getDomListener } from "../parser";
+
+const getStart = (section: DOMSection) =>
+	Array.isArray(section) ? section[0] : section;
 
 export default () => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
 
-	const [elements, setElements] = createSignal(new Set<HTMLElement>(), {
+	const [sections, setSections] = createSignal(new Set<DOMSection>(), {
 		equals: false,
 	});
 
 	createEffect(() => {
-		const [listenIntersectionOrRemove, listenRemove] = createElementObserver();
+		const [listenIntersectionOrRemove, listenRemove] = createNodeObserver();
 
 		const filterInteractive =
 			websiteRule.filterInteractive ?? settings.translate.filterInteractive;
@@ -23,17 +27,17 @@ export default () => {
 		const hostname = window.location.hostname;
 
 		const buffer = {
-			add: new Set<HTMLElement>(),
-			del: new Set<HTMLElement>(),
+			add: new Set<DOMSection>(),
+			del: new Set<DOMSection>(),
 			handle: null as number | null,
 		};
 
 		const flush = () => {
-			setElements((prev) => {
+			setSections((prev) => {
 				if (buffer.add.size === 0 && buffer.del.size === 0) return prev;
 
-				for (const el of buffer.add) prev.add(el);
-				for (const el of buffer.del) prev.delete(el);
+				for (const section of buffer.add) prev.add(section);
+				for (const section of buffer.del) prev.delete(section);
 
 				buffer.add.clear();
 				buffer.del.clear();
@@ -48,15 +52,15 @@ export default () => {
 			buffer.handle = requestAnimationFrame(flush);
 		};
 
-		const handleAdd = (el: HTMLElement) => {
-			buffer.del.delete(el);
-			buffer.add.add(el);
+		const handleAdd = (section: DOMSection) => {
+			buffer.del.delete(section);
+			buffer.add.add(section);
 			scheduleFlush();
 		};
 
-		const handleRemove = (el: HTMLElement) => {
-			buffer.add.delete(el);
-			buffer.del.add(el);
+		const handleRemove = (section: DOMSection) => {
+			buffer.add.delete(section);
+			buffer.del.add(section);
 			scheduleFlush();
 		};
 
@@ -67,13 +71,13 @@ export default () => {
 				signal: controller.signal,
 			});
 
-			for await (const element of listener) {
+			for await (const section of listener) {
 				if (fullPage) {
-					handleAdd(element);
-					listenRemove(element, () => handleRemove(element));
+					handleAdd(section);
+					listenRemove(getStart(section), () => handleRemove(section));
 				} else {
-					listenIntersectionOrRemove(element, (shouldRender) => {
-						shouldRender ? handleAdd(element) : handleRemove(element);
+					listenIntersectionOrRemove(getStart(section), (shouldRender) => {
+						shouldRender ? handleAdd(section) : handleRemove(section);
 					});
 				}
 			}
@@ -82,19 +86,19 @@ export default () => {
 		onCleanup(() => {
 			controller.abort();
 			if (buffer.handle !== null) cancelAnimationFrame(buffer.handle);
-			setElements((prev) => {
+			setSections((prev) => {
 				prev.clear();
 				return prev;
 			});
 		});
 	});
 
-	const onDelete = (element: HTMLElement) => {
-		setElements((prev) => {
-			prev.delete(element);
+	const onDelete = (section: DOMSection) => {
+		setSections((prev) => {
+			prev.delete(section);
 			return prev;
 		});
 	};
 
-	return <BatchInTextTranslation elements={elements()} onDelete={onDelete} />;
+	return <BatchInTextTranslation sections={sections()} onDelete={onDelete} />;
 };

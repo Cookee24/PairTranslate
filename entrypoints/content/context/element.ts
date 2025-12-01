@@ -1,17 +1,12 @@
 import { extractMarkdownContent } from "~/utils/markdown";
 import type { TextContext } from "~/utils/types";
 
-/**
- * Extracts the markdown content of an element and the surrounding text content.
- * @param element The HTML element to extract the context from.
- * @returns An object containing the text before, after, and the markdown content of the element.
- */
-export const extractTextContext = (element: HTMLElement): TextContext => {
-	let before = element.previousSibling
-		? (element.previousSibling.textContent || "").trim()
+export const extractTextContext = (node: Node): TextContext => {
+	let before = node.previousSibling
+		? (node.previousSibling.textContent || "").trim()
 		: "";
-	let after = element.nextSibling
-		? (element.nextSibling.textContent || "").trim()
+	let after = node.nextSibling
+		? (node.nextSibling.textContent || "").trim()
 		: "";
 
 	if (before.length > 100) {
@@ -22,7 +17,7 @@ export const extractTextContext = (element: HTMLElement): TextContext => {
 	}
 
 	return {
-		text: extractMarkdownContent(element),
+		text: extractMarkdownContent(node),
 		surr: {
 			before: before || undefined,
 			after: after || undefined,

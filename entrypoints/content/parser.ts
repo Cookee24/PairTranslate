@@ -1,13 +1,13 @@
 import { DEFAULT_DOM_LISTENER, PARSER_LIST } from "~/utils/parser";
-import type { ElementGenerator, Options } from "~/utils/parser/types";
+import type { Options, SectionGenerator } from "~/utils/parser/types";
 
 let lstDomain: string | undefined;
-let lstParser: ((options: Options) => ElementGenerator) | undefined;
+let lstParser: ((options: Options) => SectionGenerator) | undefined;
 
 export const getDomListener = async (
 	domain: string,
 	options: Options = {},
-): Promise<ElementGenerator> => {
+): Promise<SectionGenerator> => {
 	if (domain === lstDomain && lstParser !== undefined)
 		return lstParser(options);
 	const idx = await window.rpc.matchParser(domain);

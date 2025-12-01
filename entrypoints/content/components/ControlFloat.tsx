@@ -4,6 +4,7 @@ import { createAnimatedAppearance } from "~/hooks/animation";
 import { useModifierKeyStatus } from "~/hooks/keyboard-shortcut";
 import { useMousePosition } from "~/hooks/mouse";
 import { isApple } from "~/utils/isapple";
+import type { DOMSection } from "~/utils/parser/types";
 import { getDomListener } from "../parser";
 
 interface SelectionBox {
@@ -14,7 +15,7 @@ interface SelectionBox {
 }
 
 interface Props {
-	onSelection?: (elements: HTMLElement[]) => void;
+	onSelection?: (sections: DOMSection[]) => void;
 }
 
 export default (props: Props) => {
@@ -165,13 +166,14 @@ const elementsInBox = async (box: SelectionBox) => {
 			);
 		},
 		listenNew: false,
+		filterInteractive: false,
 		signal: controller.signal,
 	});
 
-	const result: HTMLElement[] = [];
+	const result: DOMSection[] = [];
 	(async () => {
-		for await (const element of listener) {
-			result.push(element);
+		for await (const section of listener) {
+			result.push(section);
 		}
 	})();
 

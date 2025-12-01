@@ -1,9 +1,10 @@
 import { createEffect, onCleanup } from "solid-js";
 import { useSettings } from "~/hooks/settings";
+import type { DOMSection } from "~/utils/parser/types";
 import { getDomListener } from "../parser";
 
 interface Props {
-	onSelection?: (elements: HTMLElement[]) => void;
+	onSelection?: (sections: DOMSection[]) => void;
 }
 
 const TRIPLE_CLICK_WINDOW = 600; // ms
@@ -60,8 +61,8 @@ export default (props: Props) => {
 				lastClickPos = undefined;
 				clearTimeout(resetTimer);
 
-				const elements = await elementsAtPoint(currentPos);
-				props.onSelection?.(elements);
+				const sections = await elementsAtPoint(currentPos);
+				props.onSelection?.(sections);
 			}
 		};
 
@@ -100,13 +101,14 @@ const elementsAtPoint = async (point: { x: number; y: number }) => {
 			);
 		},
 		listenNew: false,
+		filterInteractive: false,
 		signal: controller.signal,
 	});
 
-	const result: HTMLElement[] = [];
+	const result: DOMSection[] = [];
 	(async () => {
-		for await (const element of listener) {
-			result.push(element);
+		for await (const section of listener) {
+			result.push(section);
 		}
 	})();
 

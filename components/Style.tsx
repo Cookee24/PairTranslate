@@ -3,6 +3,7 @@ import { browser } from "#imports";
 import {
 	DATA_CONTAINER,
 	DATA_GRABBING_CONTAINER,
+	DATA_HIDE,
 	DATA_PREVENT_SCROLL,
 	DATA_STYLE,
 	DATA_TRANSLATED,
@@ -25,6 +26,9 @@ export const ContentStyle = () => {
 [${DATA_GRABBING_CONTAINER}] {
 	cursor: grabbing !important;
 	user-select: none !important;
+}
+[${DATA_HIDE}] {
+	display: none !important;
 }
 `;
 

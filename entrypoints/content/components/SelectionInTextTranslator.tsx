@@ -1,21 +1,25 @@
 import { createSignal, onCleanup } from "solid-js";
 import { animateBlink } from "~/hooks/animation";
+import type { DOMSection } from "~/utils/parser/types";
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import ControlFloat from "./ControlFloat";
 import TripleTouch from "./TripleTouch";
 
 export default () => {
-	const [set, setSet] = createSignal(new Set<HTMLElement>(), { equals: false });
+	const [set, setSet] = createSignal(new Set<DOMSection>(), { equals: false });
 
 	onCleanup(() => {
-		setSet(new Set<HTMLElement>());
+		setSet(new Set<DOMSection>());
 	});
 
-	const onSelection = (elements: HTMLElement[]) => {
+	const onSelection = (sections: DOMSection[]) => {
 		setSet((prev) => {
-			elements.forEach(prev.add, prev);
-			elements.forEach((element) => {
-				animateBlink(element);
+			sections.forEach(prev.add, prev);
+			sections.forEach((node) => {
+				const anchor = Array.isArray(node) ? node[0] : node;
+				const el =
+					anchor instanceof HTMLElement ? anchor : anchor.parentElement;
+				el && animateBlink(el);
 			});
 			return prev;
 		});
@@ -24,7 +28,7 @@ export default () => {
 	return (
 		<>
 			<BatchInTextTranslation
-				elements={set()}
+				sections={set()}
 				onDelete={(element) =>
 					setSet((prev) => {
 						prev.delete(element);

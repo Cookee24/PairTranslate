@@ -6,17 +6,16 @@ import {
 	For,
 	Index,
 	on,
-	onCleanup,
 } from "solid-js";
 import { createIdleDebounce } from "@/hooks/throttle";
 import { Md } from "~/components/MD/Md";
-import { InTextPortal } from "~/components/MPortal";
+import { TranslateNodePortal } from "~/components/MPortal";
 import { useSettings } from "~/hooks/settings";
 import { createBatchTranslation, createTranslation } from "~/hooks/translation";
 import { useWebsiteRule } from "~/hooks/website-rule";
-import { DATA_TRANSLATED } from "~/utils/constants";
 import { copyToClipboard } from "~/utils/copy";
 import { extractMarkdownContent } from "~/utils/markdown";
+import type { DOMSection } from "~/utils/parser/types";
 import { estimateTokens } from "~/utils/token-estimate";
 import InTextTooltip from "../components/InTextTooltip";
 import { extractTextContext } from "../context/element";
@@ -25,13 +24,13 @@ import { NativeLoading } from "./Loading";
 const NEW_LINE_THRESHOLD = 10;
 
 interface SingleProps {
-	element: HTMLElement;
+	node: Node;
 }
 export const SingleInTextTranslation = (props: SingleProps) => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
 
-	const context = createMemo(() => extractTextContext(props.element));
+	const context = createMemo(() => extractTextContext(props.node));
 	const [data, retry] = createTranslation(() => context().text);
 
 	const handleRetry = () => {
@@ -47,27 +46,27 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 			text={data()}
 			loading={data.loading}
 			error={data.error?.message}
-			element={props.element}
+			section={props.node}
 			hideOriginal={hideOriginal()}
 			onRetry={handleRetry}
 		/>
 	);
 };
 
-type ElementTextPair = [HTMLElement, string];
+type SectionTextPair = [DOMSection, string];
 
 interface BatchProps {
-	elements: Set<HTMLElement>;
-	onDelete?: (element: HTMLElement) => void;
+	sections: Set<DOMSection>;
+	onDelete?: (section: DOMSection) => void;
 }
 export const BatchInTextTranslation = (props: BatchProps) => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
-	const [renderList, setRenderList] = createSignal([] as ElementTextPair[][], {
+	const [renderList, setRenderList] = createSignal([] as SectionTextPair[][], {
 		equals: false,
 	});
 
-	const batchIds = new Map<HTMLElement, number>();
+	const batchIds = new Map<DOMSection, number>();
 
 	const clear = () => {
 		setRenderList([]);
@@ -76,9 +75,9 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 
 	createEffect(
 		on(
-			[() => props.elements],
-			([currentElements]) => {
-				if (currentElements.size === 0) {
+			[() => props.sections],
+			([currentSections]) => {
+				if (currentSections.size === 0) {
 					clear();
 					return;
 				}
@@ -100,11 +99,11 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 							settings.queue.maxTokensPerBatch;
 
 						let last = prev.length; // Force a new batch
-						for (const element of currentElements) {
-							const batchId = batchIds.get(element);
-							const current: ElementTextPair = [
-								element,
-								extractMarkdownContent(element),
+						for (const section of currentSections) {
+							const batchId = batchIds.get(section);
+							const current: SectionTextPair = [
+								section,
+								extractMarkdownContent(section),
 							];
 							if (batchId === undefined) {
 								const lastBatch = prev[last];
@@ -125,27 +124,27 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 								} else {
 									prev.push([current]);
 								}
-								batchIds.set(element, last);
+								batchIds.set(section, last);
 							} else {
 								// Element already has a batch, do nothing.
 							}
 						}
 
-						for (const [element, batchId] of batchIds.entries()) {
-							if (!currentElements.has(element)) {
+						for (const [section, batchId] of batchIds.entries()) {
+							if (!currentSections.has(section)) {
 								const batch = prev[batchId];
 								if (!batch) {
-									batchIds.delete(element);
+									batchIds.delete(section);
 									continue;
 								}
-								const index = batch.findIndex(([el]) => el === element);
+								const index = batch.findIndex(([el]) => el === section);
 								if (index !== -1) {
 									prev[batchId] = [
 										...batch.slice(0, index),
 										...batch.slice(index + 1),
 									];
 								}
-								batchIds.delete(element);
+								batchIds.delete(section);
 							}
 						}
 
@@ -159,21 +158,21 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 
 	return (
 		<Index each={renderList()}>
-			{(elements) => (
-				<BatchRender elements={elements()} onDelete={props.onDelete} />
+			{(sections) => (
+				<BatchRender sections={sections()} onDelete={props.onDelete} />
 			)}
 		</Index>
 	);
 };
 
 interface BatchRenderProps {
-	elements: ElementTextPair[];
-	onDelete?: (element: HTMLElement) => void;
+	sections: SectionTextPair[];
+	onDelete?: (section: DOMSection) => void;
 }
 const BatchRender = (props: BatchRenderProps) => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
-	const texts = createMemo(() => props.elements.map(([, text]) => text));
+	const texts = createMemo(() => props.sections.map(([, text]) => text));
 	const [getter, retry] = createBatchTranslation(texts);
 
 	const hideOriginal = createMemo(
@@ -189,7 +188,7 @@ const BatchRender = (props: BatchRenderProps) => {
 					text={item()}
 					loading={item.loading}
 					error={item.error?.message}
-					element={props.elements[index()][0]}
+					section={props.sections[index()][0]}
 					hideOriginal={hideOriginal()}
 					onRetry={() => {
 						if (getter().every((i) => i.error)) {
@@ -198,7 +197,7 @@ const BatchRender = (props: BatchRenderProps) => {
 							retry(index());
 						}
 					}}
-					onDelete={() => props.onDelete?.(props.elements[index()][0])}
+					onDelete={() => props.onDelete?.(props.sections[index()][0])}
 				/>
 			)}
 		</For>
@@ -210,20 +209,11 @@ interface TranslationRenderProps {
 	loading?: boolean;
 	error?: string;
 	hideOriginal?: boolean;
-	element: HTMLElement;
+	section: DOMSection;
 	onRetry?: () => void;
 	onDelete?: () => void;
 }
 const TranslationRender = (props: TranslationRenderProps) => {
-	createEffect(() => {
-		const el = props.element;
-
-		el.setAttribute(DATA_TRANSLATED, "");
-		onCleanup(() => {
-			el.removeAttribute(DATA_TRANSLATED);
-		});
-	});
-
 	const [tooltipPos, setTooltipPos] = createSignal<{ x: number; y: number }>();
 	const createTooltip = (e: MouseEvent | TouchEvent) => {
 		e.preventDefault();
@@ -277,8 +267,8 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					closeTooltip();
 				}}
 			/>
-			<InTextPortal
-				mount={props.element}
+			<TranslateNodePortal
+				section={props.section}
 				hideOriginal={props.hideOriginal && !props.loading && !props.error}
 			>
 				{swapLine() && <br />}
@@ -296,7 +286,7 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					)}
 				</span>
 				{!props.loading && !props.error && <Md text={props.text || ""} />}
-			</InTextPortal>
+			</TranslateNodePortal>
 		</>
 	);
 };

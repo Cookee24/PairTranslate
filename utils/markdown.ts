@@ -1,4 +1,5 @@
 import { MathMLToLaTeX } from "mathml-to-latex";
+import type { DOMSection } from "./parser/types";
 /**
  * Replace full-width characters with half-width characters in markdown syntax.
  */
@@ -477,6 +478,21 @@ const tryExtractMath = (
 /**
  * Public Entry Point
  */
-export const extractMarkdownContent = (element: HTMLElement): string => {
-	return Array.from(iterateChildren(element)).join("");
+export const extractMarkdownContent = (section: DOMSection): string => {
+	if (Array.isArray(section)) {
+		const [start, end] = section;
+		const parts: string[] = [];
+		let current: Node | null = start;
+		while (current) {
+			parts.push(...Array.from(iterateMarkdown(current)));
+			if (current === end) break;
+			current = current.nextSibling;
+		}
+
+		return parts.join("");
+	} else if (section.nodeType === Node.TEXT_NODE) {
+		return section.nodeValue?.trim() || "";
+	} else {
+		return Array.from(iterateChildren(section as HTMLElement)).join("");
+	}
 };
