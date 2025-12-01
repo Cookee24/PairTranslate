@@ -243,7 +243,8 @@ const TranslationRender = (props: TranslationRenderProps) => {
 			!props.loading &&
 			!props.error &&
 			!props.hideOriginal &&
-			(props.text || "").length > NEW_LINE_THRESHOLD,
+			((props.text || "").length > NEW_LINE_THRESHOLD ||
+				props.text?.includes("\n")),
 	);
 
 	return (

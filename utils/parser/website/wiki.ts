@@ -13,7 +13,7 @@ export default (): WebsiteParser => ({
 	domListener: (options) => {
 		const newOptions: Options = {
 			...options,
-			textSelectors: [...(options?.textSelectors || []), "b", "dd"],
+			textTags: [...(options?.textTags || []), "B", "DD"],
 		};
 		return domListener(newOptions);
 	},

@@ -2,7 +2,8 @@ export interface State {
 	root: Element;
 	signal?: AbortSignal;
 	excludedSelector: string;
-	textSelector: string;
+	textTags: Set<string>;
+	blockTags: Set<string>;
 	listenNew: boolean;
 	judgeFn?: JudgeFn;
 	extraTextFilter?: RegExp;
@@ -12,7 +13,8 @@ export interface Options {
 	root?: Element;
 	signal?: AbortSignal;
 	excludedSelectors?: string[];
-	textSelectors?: string[];
+	textTags?: string[];
+	blockTags?: string[];
 	listenNew?: boolean;
 	extraTextFilters?: RegExp[];
 	judgeFn?: JudgeFn;

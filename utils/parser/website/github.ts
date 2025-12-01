@@ -6,7 +6,7 @@ export default (): WebsiteParser => ({
 	domListener: (options) => {
 		const newOptions: Options = {
 			...options,
-			textSelectors: [...(options?.textSelectors || []), "bdi"],
+			textTags: [...(options?.textTags || []), "BDI"],
 			excludedSelectors: [
 				...(options?.excludedSelectors || []),
 				// File explorer

@@ -1,9 +1,10 @@
 import { hasMeaningfulChars } from "~/utils/blank";
 import {
+	BLOCK_TAGS,
 	DATA_IFRAME,
 	EXCLUDED_SELECTORS,
 	INTERACTIVE_SELECTORS,
-	TEXT_SELECTORS,
+	TEXT_TAGS,
 } from "~/utils/constants";
 import { createNotifier } from "~/utils/notify";
 import type {
@@ -28,24 +29,6 @@ const COMMON_SKIP_PATTERNS = new RegExp(
 );
 
 const NOT_EMPTY_REGEX = /\S/;
-
-const BLOCK_LEVEL_TAGS = new Set([
-	"DIV",
-	"P",
-	"SECTION",
-	"ARTICLE",
-	"HEADER",
-	"FOOTER",
-	"ASIDE",
-	"NAV",
-	"TABLE",
-	"UL",
-	"OL",
-	"LI",
-	"DL",
-	"DT",
-	"DD",
-]);
 
 // Check if a node is a visible text node
 const showTextNode = (node: Node): boolean =>
@@ -138,7 +121,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 	};
 
 	const judgeText = (el: Element): boolean => {
-		if (!el.matches(state.textSelector)) return false;
+		if (!state.textTags.has(el.tagName)) return false;
 		if (!hasDirectText(el)) return false;
 
 		return true;
@@ -275,7 +258,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 
 		while (node) {
 			if (node.nodeType === Node.ELEMENT_NODE) {
-				if (BLOCK_LEVEL_TAGS.has((node as Element).tagName)) {
+				if (state.blockTags.has((node as Element).tagName)) {
 					flag = true;
 
 					// Yield previous segment
@@ -418,11 +401,14 @@ export function getState(options: Options = {}): State {
 			...EXCLUDED_SELECTORS,
 			...((options.filterInteractive ?? true) ? INTERACTIVE_SELECTORS : []),
 		].join(", "),
-		textSelector: [...(options.textSelectors || []), ...TEXT_SELECTORS].join(
-			", ",
+		textTags: new Set(
+			[...(options.textTags || []), ...TEXT_TAGS].map((s) => s.toUpperCase()),
+		),
+		blockTags: new Set(
+			[...(options.blockTags || []), ...BLOCK_TAGS].map((s) => s.toUpperCase()),
 		),
 		judgeFn: options.judgeFn,
-		listenNew: options.listenNew || true,
+		listenNew: options.listenNew ?? true,
 		extraTextFilter: options.extraTextFilters
 			? new RegExp(options.extraTextFilters.map((r) => r.source).join("|"), "i")
 			: undefined,
