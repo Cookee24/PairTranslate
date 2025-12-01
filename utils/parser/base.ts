@@ -280,8 +280,6 @@ export async function* elementWalker(state: State): SectionGenerator {
 
 					// Yield previous segment
 					if (start && end) {
-						if (element.querySelector('div[class="f"]'))
-							console.log({ element, start, end }); // Debugging
 						yield [start, end];
 						start = null;
 						end = null;
@@ -399,16 +397,6 @@ export async function* textContentFilter(
 	}
 }
 
-export async function* debugLogger(
-	_state: State,
-	prev: SectionGenerator,
-): SectionGenerator {
-	for await (const section of prev) {
-		console.log("Emitting section:", section);
-		yield section;
-	}
-}
-
 export function pipe(
 	state: State,
 	fn: InitialGeneratorFn,
@@ -447,7 +435,6 @@ export function domListener(options: Options = {}): SectionGenerator {
 	const defaultGenerators: ChainedGeneratorFn[] = [
 		emittedFilter, // Keeps distinct object references unique
 		textContentFilter, // Filters noise (dates, emails, etc)
-		// debugLogger, // Debugging
 	];
 	const appendGenerators = options.appendGenerators || [];
 
