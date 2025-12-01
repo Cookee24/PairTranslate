@@ -222,7 +222,7 @@ export function createServer<
 
 	const interval = setInterval(() => {
 		transport.send({ type: "heartbeat" } as NoMetaMessage<M, P, E>);
-	}, 30000);
+	}, 20000);
 
 	transport.onRecv((msg) => {
 		if (msg.type === "start") {

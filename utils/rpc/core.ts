@@ -144,7 +144,9 @@ export async function createStateController<M, T, E>(
 						`Received a late '${msg.type}' message for a completed or cancelled call.`,
 						msg,
 					);
-				} else if (msg.type !== "cancel" && msg.type !== "heartbeat") {
+				} else if (msg.type === "heartbeat") {
+					transportation.send({ type: "heartbeat", id: msg.id });
+				} else if (msg.type !== "cancel") {
 					// A 'start' message with an unknown ID, or other unexpected types,
 					// should still be warned about. We also ignore late 'cancel' messages.
 					logger.warn("Received message with unknown id:", msg);
