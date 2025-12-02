@@ -296,9 +296,8 @@ export async function* internalCall<M, T, E>(
 				error.reason,
 				error.cause,
 			);
-		} else {
-			throw error;
 		}
+		throw error;
 	} finally {
 		if (!isEnded) {
 			logger.debug(

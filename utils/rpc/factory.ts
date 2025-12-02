@@ -238,7 +238,7 @@ export function createServer<
 				controller.abort();
 				activeRequests.delete(msg.id);
 			}
-		} else {
+		} else if (msg.type !== "heartbeat") {
 			logger.warn(
 				"Server received a message that was not of type 'start' or 'cancel':",
 				msg,
