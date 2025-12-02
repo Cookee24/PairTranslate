@@ -1,12 +1,13 @@
 import {
 	createEffect,
+	createMemo,
 	getOwner,
 	type JSX,
 	onCleanup,
 	runWithOwner,
 } from "solid-js";
 import { insert } from "solid-js/web";
-import { DATA_CONTAINER, DATA_HIDE, DATA_TRANSLATED } from "@/utils/constants";
+import { DATA_CONTAINER, DATA_HIDE, DATA_TRANSLATED } from "~/utils/constants";
 import type { DOMSection } from "~/utils/parser/types";
 
 export function TranslateNodePortal(props: {
@@ -15,42 +16,39 @@ export function TranslateNodePortal(props: {
 	hideOriginal?: boolean;
 	children: JSX.Element;
 }) {
+	let content: undefined | (() => JSX.Element);
 	const marker = document.createTextNode("");
 	const owner = getOwner();
 
 	createEffect(() => {
+		content ??= runWithOwner(owner, () => createMemo(() => props.children));
+
 		const [parent, insertAfter, startHide, endHide] = resolveDOMContext(
 			props.section,
 		);
 		if (!parent) return;
 
-		// 1. Create Container
 		const container = document.createElement("div");
 		container.setAttribute(DATA_CONTAINER, "");
+
 		// Hack to enable event bubbling through the portal in Solid
 		Object.defineProperty(container, "_$host", {
 			get: () => marker.parentNode,
 			configurable: true,
 		});
 
-		// 2. Hide Original Content
 		if (props.hideOriginal && startHide) {
 			const restore = hideNodes(startHide, endHide);
 			onCleanup(restore);
 		}
 
-		// 3. Mount Container
+		insert(container, content);
 		parent.setAttribute(DATA_TRANSLATED, "");
-		// Insert after the specific node, or append to parent if null
 		parent.insertBefore(
 			container,
 			insertAfter ? insertAfter.nextSibling : null,
 		);
 		props.ref?.(container);
-
-		// 4. Render Solid Children
-		// Run with owner ensures context (like useContext) works inside the portal
-		runWithOwner(owner, () => insert(container, () => props.children));
 
 		onCleanup(() => {
 			parent.removeAttribute(DATA_TRANSLATED);
