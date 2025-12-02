@@ -9,34 +9,6 @@ Supports major translation platforms and LLMs, including Google Translate, Bing,
 
 [Architecture Overview (DeepWiki)](https://deepwiki.com/Cookee24/PairTranslate)
 
-### Features
-
-- **Private & Secure**: All translations are processed locally in your browser. No data is collected or stored.
-
-- **Dual Translation Modes**: Choose between side-by-side parallel translation (view both original and translated text simultaneously) or traditional replace mode (hide original text)
-
-- **Multiple Selection Modes**: Support for word-level, paragraph-level, and full-page translation modes, providing flexible and intuitive user experience
-
-- **Markdown-First Approach**: Optimized for large language models with concise context. Supports mathematical formula parsing and allows copying translations in markdown format
-
-- **Intelligent Caching & Batch Processing**: Automatic caching of translations combined with batch processing to minimize context usage and achieve lower latency
-
-- **Input Field Translation**: One-click translation of text already entered in input boxes and text areas
-
-### Screenshots
-
-| Side-by-Side Mode                         | Replace Mode                         |
-| ----------------------------------------- | ------------------------------------ |
-| ![Side-by-Side Mode](./screenshots/1.png) | ![Replace Mode](./screenshots/2.png) |
-
-| Markdown Copy                         | Selection Translation                         |
-| ------------------------------------- | --------------------------------------------- |
-| ![Markdown Copy](./screenshots/3.png) | ![Selection Translation](./screenshots/4.png) |
-
-| Input Field Translation                         | Settings Page                         |
-| ----------------------------------------------- | ------------------------------------- |
-| ![Input Field Translation](./screenshots/5.png) | ![Settings Page](./screenshots/6.png) |
-
 ### Installation
 
 | Browser | Store                                                                                                        |
@@ -44,6 +16,12 @@ Supports major translation platforms and LLMs, including Google Translate, Bing,
 | Chrome  | [Chrome Web Store](https://chromewebstore.google.com/detail/pair-translate/jpjodbfcidhificogpbddmappeioodea)                                                                                 |
 | Firefox | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/pair-translate/)                                  |
 | Edge    | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/mhnjhanomaajlmdlnilhgkhaeldhkkgp) |
+
+### Demonstration
+
+https://github.com/user-attachments/assets/4a77db72-e420-4826-81a2-3feeee54f6c8
+
+https://github.com/user-attachments/assets/814596ca-2913-4e09-9f23-15a1333859e9
 
 ### Development
 
