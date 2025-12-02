@@ -115,6 +115,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+      pull-requests: read
 
     steps:
       - name: 🛠️ Setup Node.js
@@ -133,12 +134,19 @@ jobs:
           name: extensions-${{ github.sha }}
           path: .output
 
+      - name: 📝 Generate Changelog
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.version.outputs.version }}
           name: Release v${{ needs.version.outputs.version }}
           files: .output/*.zip
+          body: ${{ steps.build_changelog.outputs.changelog }}
           draft: false
           prerelease: ${{ needs.version.outputs.is_rc == '1' }}
 
