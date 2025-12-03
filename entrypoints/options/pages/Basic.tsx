@@ -1,8 +1,11 @@
+import { reconcile } from "solid-js/store";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
+import { FormField } from "~/components/settings/FormField";
 import { FormGrid } from "~/components/settings/FormGrid";
 import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { SettingsToggle } from "~/components/settings/SettingsToggle";
+import { TranslationStyleControls } from "~/components/settings/TranslationStyleControls";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
 import { generateBasicSettings } from "~/utils/settings";
@@ -55,7 +58,7 @@ export default (props: { navId: string }) => {
 					}
 				/>
 			</FormGrid>
-			<div class="divider m-0" />
+			<div class="divider" />
 			<FormGrid>
 				<div class="form-control">
 					<label class="label">
@@ -107,8 +110,25 @@ export default (props: { navId: string }) => {
 						</span>
 					</label>
 				</div>
+				<FormField
+					label={t("settings.translation.styleTitle")}
+					helperText={t("settings.translation.styleDescription")}
+				>
+					<div class="flex flex-col gap-1">
+						<TranslationStyleControls
+							value={settings.basic.translationStyle}
+							onChange={(style) => {
+								if (!style) return;
+								setSettings("basic", "translationStyle", reconcile(style));
+							}}
+						/>
+						<span class="text-[0.65rem] text-base-content/60">
+							{t("settings.translation.styleBackgroundDesc")}
+						</span>
+					</div>
+				</FormField>
 			</FormGrid>
-			<div class="divider m-0" />
+			<div class="divider" />
 			<FormGrid>
 				<ShortcutInput
 					value={settings.basic.keyboardShortcut}

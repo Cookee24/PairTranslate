@@ -1,13 +1,14 @@
 import { trackStore } from "@solid-primitives/deep";
 import { Plus, Trash2 } from "lucide-solid";
 import { createEffect, createMemo, For, on, Show } from "solid-js";
-import { createStore, unwrap } from "solid-js/store";
+import { createStore, reconcile, unwrap } from "solid-js/store";
 import { Button } from "~/components/Button";
 import { Input } from "~/components/Input";
 import { Select } from "~/components/Select";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormField } from "~/components/settings/FormField";
 import type { SelectOption } from "~/components/settings/OptionSelect";
+import { TranslationStyleControls } from "~/components/settings/TranslationStyleControls";
 import { useSettings } from "~/hooks/settings";
 import { SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { t } from "~/utils/i18n";
@@ -263,6 +264,23 @@ export const WebsiteRuleEditor = (props: Props) => {
 								}
 							}}
 						/>
+					</FormField>
+					<FormField
+						label={t("settings.translation.styleTitle")}
+						helperText={t("settings.translation.styleDescription")}
+					>
+						<div class="flex flex-col gap-1">
+							<TranslationStyleControls
+								allowUnset
+								value={local.translationStyle}
+								onChange={(style) =>
+									setLocal("translationStyle", reconcile(style))
+								}
+							/>
+							<span class="text-[0.65rem] text-base-content/60">
+								{t("settings.translation.styleBackgroundDesc")}
+							</span>
+						</div>
 					</FormField>
 
 					{/* Source Language */}

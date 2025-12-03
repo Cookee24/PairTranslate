@@ -1,4 +1,4 @@
-import { ContentStyle, KatexStyle } from "~/components/Style";
+import { ContentStyle, KatexStyle, TranslationStyle } from "~/components/Style";
 import { ProgressIndicatorProvider } from "~/hooks/progress-indicator";
 import { SettingsProvider } from "~/hooks/settings";
 import { createTheme } from "~/hooks/theme";
@@ -16,6 +16,7 @@ const Content = () => {
 	return (
 		<div class="overlay-container" attr:data-theme={getThemeClass(theme())}>
 			<ContentStyle />
+			<TranslationStyle />
 			<KatexStyle />
 			<TranslatorHost />
 			<PopupRenderer />

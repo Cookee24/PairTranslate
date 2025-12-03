@@ -1,10 +1,11 @@
 import { trackStore } from "@solid-primitives/deep";
-import { Box, Link, TextAlignStart, Trash2 } from "lucide-solid";
+import { Box, Highlighter, Link, TextAlignStart, Trash2 } from "lucide-solid";
 import { createMemo, createResource, For } from "solid-js";
-import { unwrap } from "solid-js/store";
+import { reconcile, unwrap } from "solid-js/store";
 import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
+import { TranslationStyleControls } from "~/components/settings/TranslationStyleControls";
 import { createDomainEnabledTimer } from "~/hooks/domain-timer";
 import { useSettings } from "~/hooks/settings";
 import { DOMAIN_TIMER_UNTIL_CLOSE } from "~/utils/constants";
@@ -260,6 +261,27 @@ export default () => {
 					</Card.Body>
 				</Card.Root>
 			)}
+			<Card.Root class="w-full rounded-box border border-base-200">
+				<Card.Body class="flex flex-col gap-2">
+					<Card.Title class="text-sm">
+						<Highlighter size={16} />
+						{t("settings.translation.styleTitle")}
+					</Card.Title>
+					<p class="text-xs text-base-content/70">
+						{t("settings.translation.styleDescription")}
+					</p>
+					<TranslationStyleControls
+						value={settings.basic.translationStyle}
+						onChange={(style) => {
+							if (!style) return;
+							setSettings("basic", "translationStyle", reconcile(style));
+						}}
+					/>
+					<p class="text-[0.65rem] text-base-content/60">
+						{t("settings.translation.styleBackgroundDesc")}
+					</p>
+				</Card.Body>
+			</Card.Root>
 		</div>
 	);
 };

@@ -31,6 +31,11 @@ export function generateBasicSettings(): s.BasicSettings {
 		selectionTranslateEnabled: true,
 		inputTranslateEnabled: true,
 		progressIndicationEnabled: true,
+		translationStyle: {
+			bold: false,
+			italic: false,
+			underline: false,
+		},
 	};
 }
 

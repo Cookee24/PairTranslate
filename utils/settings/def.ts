@@ -8,6 +8,14 @@ export const FloatingBallPosition = z.object({
 });
 export type FloatingBallPosition = z.infer<typeof FloatingBallPosition>;
 
+export const TranslationStyleSettings = z.object({
+	bold: z.boolean().default(false),
+	italic: z.boolean().default(false),
+	underline: z.boolean().default(false),
+	background: z.string().optional(),
+});
+export type TranslationStyleSettings = z.infer<typeof TranslationStyleSettings>;
+
 export const BasicSettings = z.object({
 	enabled: z.boolean().default(true),
 	theme: z.enum(["light", "dark", "system"]).default("system"),
@@ -22,6 +30,9 @@ export const BasicSettings = z.object({
 	selectionTranslateEnabled: z.boolean().default(true),
 	inputTranslateEnabled: z.boolean().default(true),
 	progressIndicationEnabled: z.boolean().default(true),
+	translationStyle: TranslationStyleSettings.default(
+		TranslationStyleSettings.parse({}),
+	),
 });
 export type BasicSettings = z.infer<typeof BasicSettings>;
 
@@ -109,6 +120,7 @@ export const WebsiteRuleSettings = z.object({
 	filterInteractive: z.optional(z.boolean()),
 	translateMode: z.optional(z.enum(["parallel", "replace"])),
 	inTextTranslateModel: z.uuid().optional(),
+	translationStyle: TranslationStyleSettings.optional(),
 });
 export type WebsiteRuleSettings = z.infer<typeof WebsiteRuleSettings>;
 export const WebsiteRulesSettings = z.array(WebsiteRuleSettings);

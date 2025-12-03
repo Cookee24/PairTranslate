@@ -13,7 +13,7 @@ import { TranslateNodePortal } from "~/components/MPortal";
 import { useSettings } from "~/hooks/settings";
 import { createBatchTranslation, createTranslation } from "~/hooks/translation";
 import { useWebsiteRule } from "~/hooks/website-rule";
-import { PROMPT_ID } from "~/utils/constants";
+import { DATA_TRANSLATION_TEXT, PROMPT_ID } from "~/utils/constants";
 import { copyToClipboard } from "~/utils/copy";
 import { extractMarkdownContent } from "~/utils/markdown";
 import type { DOMSection } from "~/utils/parser/types";
@@ -299,7 +299,11 @@ const TranslationRender = (props: TranslationRenderProps) => {
 						<Languages style={ICON_STYLE} size="12px" />
 					)}
 				</span>
-				{!props.loading && !props.error && <Md text={props.text || ""} />}
+				{!props.loading && !props.error && (
+					<span {...{ [DATA_TRANSLATION_TEXT]: "" }}>
+						<Md text={props.text || ""} />
+					</span>
+				)}
 			</TranslateNodePortal>
 		</>
 	);

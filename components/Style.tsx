@@ -1,5 +1,8 @@
-import { onCleanup, onMount } from "solid-js";
+import { createEffect, onCleanup, onMount } from "solid-js";
 import { browser } from "#imports";
+import { createInTextTranslationStyle } from "@/hooks/translation-style";
+import { useSettings } from "~/hooks/settings";
+import { useWebsiteRule } from "~/hooks/website-rule";
 import {
 	DATA_CONTAINER,
 	DATA_GRABBING_CONTAINER,
@@ -7,6 +10,7 @@ import {
 	DATA_PREVENT_SCROLL,
 	DATA_STYLE,
 	DATA_TRANSLATED,
+	DATA_TRANSLATION_TEXT,
 } from "~/utils/constants";
 
 export const ContentStyle = () => {
@@ -29,8 +33,7 @@ export const ContentStyle = () => {
 }
 [${DATA_HIDE}] {
 	display: none !important;
-}
-`;
+}`;
 
 		document.head.appendChild(style);
 		onCleanup(() => document.head.removeChild(style));
@@ -40,15 +43,36 @@ export const ContentStyle = () => {
 };
 
 export const KatexStyle = () => {
-	onMount(() => {
-		const link = document.createElement("link");
-		const url = browser.runtime.getURL("/katex/katex.min.css");
-		link.setAttribute(DATA_STYLE, "");
-		link.setAttribute("rel", "stylesheet");
-		link.setAttribute("href", url);
+	const link = document.createElement("link");
+	const url = browser.runtime.getURL("/katex/katex.min.css");
+	link.setAttribute(DATA_STYLE, "");
+	link.setAttribute("rel", "stylesheet");
+	link.setAttribute("href", url);
 
+	onMount(() => {
 		document.head.appendChild(link);
-		onCleanup(() => document.head.removeChild(link));
+		onCleanup(() => link.remove());
+	});
+
+	return null;
+};
+
+export const TranslationStyle = () => {
+	const { settings } = useSettings();
+	const websiteRule = useWebsiteRule();
+	const style = document.createElement("style");
+	style.setAttribute(DATA_STYLE, "");
+
+	const css = createInTextTranslationStyle(
+		() => websiteRule.translationStyle || settings.basic.translationStyle,
+	);
+	createEffect(() => {
+		style.textContent = `[${DATA_TRANSLATION_TEXT}] { ${css()} }`;
+	});
+
+	onMount(() => {
+		document.head.appendChild(style);
+		onCleanup(() => style.remove());
 	});
 
 	return null;
