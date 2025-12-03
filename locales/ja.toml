@@ -19,6 +19,39 @@ website = "ウェブサイト"
 
 [popup.navigation]
 openOptions = "その他の設定"
+openTranslatorWindow = "翻訳ポップアップを開く"
+
+[translatorWindow]
+[translatorWindow.title]
+main = "ポップアップ翻訳"
+inputBox = "入力テキスト"
+
+[translatorWindow.actions]
+translate = "翻訳する"
+
+[translatorWindow.placeholders]
+model = "翻訳モデルを選択"
+input = "翻訳するテキストを入力または貼り付け"
+result = "翻訳結果がここに表示されます"
+
+[translatorWindow.history]
+title = "翻訳履歴"
+clear = "履歴をクリア"
+empty = "保存された翻訳はありません"
+
+[translatorWindow.errors]
+emptyInput = "最初に翻訳するテキストを入力してください"
+
+[translatorWindow.thinking]
+title = "思考中"
+placeholder = "翻訳内容を検討中..."
+
+[translatorWindow.controls]
+copy = "翻訳をコピー"
+toggleMarkdown = "Markdown 表示を切り替え"
+
+[translatorWindow.messages]
+copyFailed = "コピーに失敗しました"
 
 # Common UI Elements
 

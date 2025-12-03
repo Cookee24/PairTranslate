@@ -15,6 +15,7 @@ import {
 	Show,
 	Switch,
 } from "solid-js";
+import { useSettings } from "~/hooks/settings";
 import { createTranslation } from "~/hooks/translation";
 import { PROMPT_ID } from "~/utils/constants";
 import type { DictionaryEntry } from "~/utils/dictionary";
@@ -80,6 +81,7 @@ const formatMeaningsAsMarkdown = (
 };
 
 export default (props: DictionaryEntry) => {
+	const { settings } = useSettings();
 	const [section, setSection] = createSignal<"overview" | "definitions">(
 		"overview",
 	);
@@ -95,6 +97,11 @@ export default (props: DictionaryEntry) => {
 				word: props.word,
 			}),
 			promptId: PROMPT_ID.dictionaryTranslate,
+			modelId: () =>
+				settings.translate.floatingTranslateModel ??
+				settings.translate.inTextTranslateModel,
+			srcLang: () => settings.translate.sourceLang,
+			dstLang: () => settings.translate.targetLang,
 			stream: true,
 		},
 	);

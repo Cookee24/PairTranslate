@@ -19,6 +19,39 @@ website = "Website"
 
 [popup.navigation]
 openOptions = "Weitere Einstellungen"
+openTranslatorWindow = "Übersetzer-Popup öffnen"
+
+[translatorWindow]
+[translatorWindow.title]
+main = "Pop-up-Übersetzer"
+inputBox = "Eingabetext"
+
+[translatorWindow.actions]
+translate = "Übersetzen"
+
+[translatorWindow.placeholders]
+model = "Wähle ein Übersetzungsmodell"
+input = "Text zum Übersetzen eingeben oder einfügen"
+result = "Hier erscheinen die Übersetzungen"
+
+[translatorWindow.history]
+title = "Übersetzungshistorie"
+clear = "Verlauf löschen"
+empty = "Noch keine Übersetzungen gespeichert"
+
+[translatorWindow.errors]
+emptyInput = "Bitte zuerst Text zum Übersetzen eingeben"
+
+[translatorWindow.thinking]
+title = "Nachdenken"
+placeholder = "Die Übersetzung wird vorbereitet..."
+
+[translatorWindow.controls]
+copy = "Übersetzung kopieren"
+toggleMarkdown = "Markdown-Formatierung umschalten"
+
+[translatorWindow.messages]
+copyFailed = "Kopieren fehlgeschlagen"
 
 # Common UI Elements
 

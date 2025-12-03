@@ -19,6 +19,39 @@ website = "Sitio Web"
 
 [popup.navigation]
 openOptions = "Más opciones"
+openTranslatorWindow = "Abrir ventana emergente del traductor"
+
+[translatorWindow]
+[translatorWindow.title]
+main = "Traductor emergente"
+inputBox = "Texto de entrada"
+
+[translatorWindow.actions]
+translate = "Traducir"
+
+[translatorWindow.placeholders]
+model = "Selecciona un modelo de traducción"
+input = "Escribe o pega texto para traducir"
+result = "Aquí aparecen las traducciones"
+
+[translatorWindow.history]
+title = "Historial de traducciones"
+clear = "Borrar historial"
+empty = "Aún no hay traducciones guardadas"
+
+[translatorWindow.errors]
+emptyInput = "Introduce texto para traducir primero"
+
+[translatorWindow.thinking]
+title = "Pensando"
+placeholder = "Analizando la traducción..."
+
+[translatorWindow.controls]
+copy = "Copiar traducción"
+toggleMarkdown = "Alternar Markdown"
+
+[translatorWindow.messages]
+copyFailed = "Copia fallida"
 
 # Common UI Elements
 

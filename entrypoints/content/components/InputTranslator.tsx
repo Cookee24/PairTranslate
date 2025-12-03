@@ -41,6 +41,7 @@ const TranslateElement = (props: {
 		promptId: PROMPT_ID.inputTranslate,
 		modelId: () => settings.translate.inputTranslateModel,
 		stream: true,
+		srcLang: () => settings.translate.sourceLang,
 		dstLang: () => settings.translate.inputTranslateLang,
 		ctx: () => ({
 			page: getPageContext(),

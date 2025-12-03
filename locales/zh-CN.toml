@@ -19,6 +19,39 @@ website = "网站"
 
 [popup.navigation]
 openOptions = "更多设置"
+openTranslatorWindow = "打开翻译弹窗"
+
+[translatorWindow]
+[translatorWindow.title]
+main = "翻译弹窗"
+inputBox = "输入文字"
+
+[translatorWindow.actions]
+translate = "翻译"
+
+[translatorWindow.placeholders]
+model = "选择翻译模型"
+input = "输入或粘贴要翻译的文本"
+result = "翻译结果会显示在这里"
+
+[translatorWindow.history]
+title = "翻译历史"
+clear = "清除历史"
+empty = "暂无保存的翻译"
+
+[translatorWindow.errors]
+emptyInput = "请先输入要翻译的文本"
+
+[translatorWindow.thinking]
+title = "思考中"
+placeholder = "正在处理翻译..."
+
+[translatorWindow.controls]
+copy = "复制翻译"
+toggleMarkdown = "切换 Markdown 渲染"
+
+[translatorWindow.messages]
+copyFailed = "复制失败"
 
 # Common UI Elements
 

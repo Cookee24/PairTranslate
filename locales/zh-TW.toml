@@ -19,6 +19,39 @@ website = "網站"
 
 [popup.navigation]
 openOptions = "更多設置"
+openTranslatorWindow = "開啟翻譯彈窗"
+
+[translatorWindow]
+[translatorWindow.title]
+main = "翻譯彈窗"
+inputBox = "輸入文字"
+
+[translatorWindow.actions]
+translate = "翻譯"
+
+[translatorWindow.placeholders]
+model = "選擇翻譯模型"
+input = "輸入或貼上要翻譯的文字"
+result = "翻譯結果會顯示在這裡"
+
+[translatorWindow.history]
+title = "翻譯歷史"
+clear = "清除歷史"
+empty = "尚未儲存任何翻譯"
+
+[translatorWindow.errors]
+emptyInput = "請先輸入要翻譯的文字"
+
+[translatorWindow.thinking]
+title = "思考中"
+placeholder = "正在處理翻譯..."
+
+[translatorWindow.controls]
+copy = "複製翻譯"
+toggleMarkdown = "切換 Markdown 呈現"
+
+[translatorWindow.messages]
+copyFailed = "複製失敗"
 
 # Common UI Elements
 

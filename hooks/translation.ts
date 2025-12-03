@@ -7,9 +7,6 @@ import {
 	untrack,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { useSettings } from "~/hooks/settings";
-import { useWebsiteRule } from "~/hooks/website-rule";
-import { PROMPT_ID } from "~/utils/constants";
 import {
 	convertGenericError,
 	createTranslateError,
@@ -17,9 +14,8 @@ import {
 	TranslateErrorType,
 } from "~/utils/errors";
 import { t } from "~/utils/i18n";
-import { getPageContext } from "~/utils/page-context";
 import type { TranslateContext } from "~/utils/types";
-import { useProgressIndicator } from "./progress-indicator";
+import { mightUseProgressIndicator } from "./progress-indicator";
 
 type Pending = {
 	(): undefined;
@@ -78,53 +74,24 @@ const batchMismatchError = (exp: number, got: number) =>
 		`Expected ${exp} translations, but got ${got}`,
 	);
 
-// Helper to get translation context
-const useTranslationContext = (
-	modelIdOverride?: () => string | undefined,
-	srcLangOverride?: () => string | undefined,
-	dstLangOverride?: () => string | undefined,
-) => {
-	const websiteRule = useWebsiteRule();
-	const { settings } = useSettings();
-
-	const modelId = () =>
-		modelIdOverride
-			? modelIdOverride()
-			: websiteRule.inTextTranslateModel ||
-				settings.translate.inTextTranslateModel;
-
-	const srcLang = () =>
-		srcLangOverride?.() ||
-		websiteRule.sourceLang ||
-		settings.translate.sourceLang;
-	const dstLang = () =>
-		dstLangOverride?.() ||
-		websiteRule.targetLang ||
-		settings.translate.targetLang;
-
-	return [modelId, srcLang, dstLang] as const;
-};
-
 export function createBatchTranslation(
 	text: () => string[],
 	options: {
-		promptId?: string;
-		modelId?: () => string | undefined;
-		srcLang?: () => string | undefined;
-		dstLang?: () => string | undefined;
+		promptId: string;
+		modelId: () => string | undefined;
+		srcLang: () => string | undefined;
+		dstLang: () => string;
 		thinCache?: boolean;
 		ctx?: () => Record<string, unknown>;
-	} = {},
+	},
 ): BatchReturn {
-	const [modelId, srcLang, dstLang] = useTranslationContext(
-		options.modelId,
-		options.srcLang,
-		options.dstLang,
-	);
-	const promptId = options.promptId || PROMPT_ID.batchTranslate;
-	const ctx = options.ctx || (() => ({ page: getPageContext() }));
+	const promptId = options.promptId;
+	const modelId = options.modelId;
+	const srcLang = options.srcLang;
+	const dstLang = options.dstLang;
+	const ctx = options.ctx || (() => ({}));
 	const thinCache = options.thinCache ?? true;
-	const { beginRequest } = useProgressIndicator();
+	const progressCtx = mightUseProgressIndicator();
 
 	const [textResult, setTextResult] = createStore<(string | undefined)[]>([]);
 	const [error, setError] = createStore<(TranslateError | undefined)[]>([]);
@@ -159,7 +126,7 @@ export function createBatchTranslation(
 			return;
 		}
 
-		const endTracking = beginRequest(modelId_);
+		const endTracking = progressCtx?.beginRequest(modelId_);
 		setAllLoading(texts.length);
 
 		const abortController = new AbortController();
@@ -168,7 +135,7 @@ export function createBatchTranslation(
 			{
 				modelId: modelId_,
 				promptId,
-				srcLang: srcLang(),
+				srcLang: srcLang() || "auto",
 				dstLang: dstLang(),
 				cleanCache,
 				thinCache,
@@ -201,7 +168,7 @@ export function createBatchTranslation(
 				if (abortController.signal.aborted) return;
 				setAllError(convertGenericError(e), texts.length);
 			})
-			.finally(() => endTracking());
+			.finally(() => endTracking?.());
 	};
 
 	const translateSingle = (index: number, text_: string) => {
@@ -214,7 +181,7 @@ export function createBatchTranslation(
 			return;
 		}
 
-		const endTracking = beginRequest(modelId_);
+		const endTracking = progressCtx?.beginRequest(modelId_);
 		batch(() => {
 			setError(index, undefined);
 			setTextResult(index, undefined);
@@ -226,7 +193,7 @@ export function createBatchTranslation(
 			{
 				modelId: modelId_,
 				promptId,
-				srcLang: srcLang(),
+				srcLang: srcLang() || "auto",
 				dstLang: dstLang(),
 				cleanCache: true,
 			},
@@ -253,7 +220,7 @@ export function createBatchTranslation(
 					setTextResult(index, undefined);
 				});
 			})
-			.finally(() => endTracking());
+			.finally(() => endTracking?.());
 	};
 
 	createEffect(() => {
@@ -314,23 +281,23 @@ type SingleStreamReturn<T> = readonly [
 
 export function createTranslation<T = string>(
 	text: () => string,
-	options?: {
+	options: {
 		stream: true;
-		promptId?: string;
-		modelId?: () => string | undefined;
-		srcLang?: () => string | undefined;
-		dstLang?: () => string | undefined;
+		promptId: string;
+		modelId: () => string | undefined;
+		srcLang: () => string | undefined;
+		dstLang: () => string;
 		ctx?: () => TranslateContext;
 	},
 ): SingleStreamReturn<T>;
 export function createTranslation<T>(
 	text: () => string,
-	options?: {
+	options: {
 		stream?: false;
-		modelId?: () => string | undefined;
-		srcLang?: () => string | undefined;
-		dstLang?: () => string | undefined;
-		promptId?: string;
+		modelId: () => string | undefined;
+		srcLang: () => string | undefined;
+		dstLang: () => string;
+		promptId: string;
 		ctx?: () => TranslateContext;
 	},
 ): SingleReturn<T>;
@@ -338,30 +305,27 @@ export function createTranslation<T>(
 	text: () => string,
 	options: {
 		stream?: boolean;
-		promptId?: string;
-		modelId?: () => string | undefined;
-		srcLang?: () => string | undefined;
-		dstLang?: () => string | undefined;
+		promptId: string;
+		modelId: () => string | undefined;
+		srcLang: () => string | undefined;
+		dstLang: () => string;
 		ctx?: () => TranslateContext;
-	} = {
-		stream: false,
 	},
 ): SingleReturn<T> | SingleStreamReturn<T> {
-	const [modelId, srcLang, dstLang] = useTranslationContext(
-		options.modelId,
-		options.srcLang,
-		options.dstLang,
-	);
-	const promptId = options.promptId || PROMPT_ID.translate;
-	const ctx = options.ctx || (() => ({ page: getPageContext() }));
-	const { beginRequest } = useProgressIndicator();
+	const modelId = options.modelId;
+	const srcLang = options.srcLang;
+	const dstLang = options.dstLang;
+	const promptId = options.promptId;
+	const ctx = options.ctx || (() => ({}) as TranslateContext);
+	const isStream = options.stream ?? false;
+	const progressCtx = mightUseProgressIndicator();
 
 	const [result, setResult] = createSignal<T>();
 	const [error, setError] = createSignal<TranslateError>();
 	const [reasoning, setReasoning] = createSignal<string>();
 
-	const [len, setLen] = options.stream ? createSignal(0) : [() => 0, () => {}];
-	const [streaming, setStreaming] = options.stream
+	const [len, setLen] = isStream ? createSignal(0) : [() => 0, () => {}];
+	const [streaming, setStreaming] = isStream
 		? createSignal(false)
 		: [() => false, () => {}];
 
@@ -393,7 +357,7 @@ export function createTranslation<T>(
 			return;
 		}
 
-		const endTracking = beginRequest(modelId_);
+		const endTracking = progressCtx?.beginRequest(modelId_);
 		setLoading();
 
 		const abortController = new AbortController();
@@ -402,7 +366,7 @@ export function createTranslation<T>(
 			{
 				modelId: modelId_,
 				promptId,
-				srcLang: srcLang(),
+				srcLang: srcLang() || "auto",
 				dstLang: dstLang(),
 				cleanCache,
 			},
@@ -434,7 +398,7 @@ export function createTranslation<T>(
 			if (abortController.signal.aborted) return;
 			setErrorVal(convertGenericError(e));
 		} finally {
-			endTracking();
+			endTracking?.();
 			setStreaming(false);
 		}
 	};
@@ -446,7 +410,7 @@ export function createTranslation<T>(
 			return;
 		}
 
-		const endTracking = beginRequest(modelId_);
+		const endTracking = progressCtx?.beginRequest(modelId_);
 		setLoading();
 
 		const abortController = new AbortController();
@@ -455,7 +419,7 @@ export function createTranslation<T>(
 			{
 				modelId: modelId_,
 				promptId,
-				srcLang: srcLang(),
+				srcLang: srcLang() || "auto",
 				dstLang: dstLang(),
 				cleanCache,
 			},
@@ -473,16 +437,19 @@ export function createTranslation<T>(
 				if (abortController.signal.aborted) return;
 				setErrorVal(convertGenericError(e));
 			})
-			.finally(() => endTracking());
+			.finally(() => endTracking?.());
 	};
 
 	const doTranslate = (text_: string, cleanCache?: boolean) =>
-		options.stream
+		isStream
 			? translateStream(text_, cleanCache)
 			: translateUnary(text_, cleanCache);
 
 	createEffect(() => {
 		const text_ = text();
+		if (!text_) {
+			return;
+		}
 		onCleanup(() =>
 			batch(() => {
 				setError(undefined);

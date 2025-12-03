@@ -13,6 +13,7 @@ import { TranslateNodePortal } from "~/components/MPortal";
 import { useSettings } from "~/hooks/settings";
 import { createBatchTranslation, createTranslation } from "~/hooks/translation";
 import { useWebsiteRule } from "~/hooks/website-rule";
+import { PROMPT_ID } from "~/utils/constants";
 import { copyToClipboard } from "~/utils/copy";
 import { extractMarkdownContent } from "~/utils/markdown";
 import type { DOMSection } from "~/utils/parser/types";
@@ -31,7 +32,14 @@ export const SingleInTextTranslation = (props: SingleProps) => {
 	const websiteRule = useWebsiteRule();
 
 	const context = createMemo(() => extractTextContext(props.node));
-	const [data, retry] = createTranslation(() => context().text);
+	const [data, retry] = createTranslation<string>(() => context().text, {
+		promptId: PROMPT_ID.translate,
+		modelId: () =>
+			websiteRule.inTextTranslateModel ||
+			settings.translate.inTextTranslateModel,
+		srcLang: () => websiteRule.sourceLang || settings.translate.sourceLang,
+		dstLang: () => websiteRule.targetLang || settings.translate.targetLang,
+	});
 
 	const handleRetry = () => {
 		retry();
@@ -173,7 +181,12 @@ const BatchRender = (props: BatchRenderProps) => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
 	const texts = createMemo(() => props.sections.map(([, text]) => text));
-	const [getter, retry] = createBatchTranslation(texts);
+	const [getter, retry] = createBatchTranslation(texts, {
+		promptId: PROMPT_ID.batchTranslate,
+		modelId: () => settings.translate.inTextTranslateModel,
+		srcLang: () => websiteRule.sourceLang || settings.translate.sourceLang,
+		dstLang: () => websiteRule.targetLang || settings.translate.targetLang,
+	});
 
 	const hideOriginal = createMemo(
 		() =>

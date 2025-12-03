@@ -92,3 +92,7 @@ export function useProgressIndicator() {
 	}
 	return context;
 }
+
+export function mightUseProgressIndicator() {
+	return useContext(ProgressIndicatorContext);
+}

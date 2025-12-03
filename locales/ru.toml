@@ -19,6 +19,39 @@ website = "Веб-сайт"
 
 [popup.navigation]
 openOptions = "Больше параметров"
+openTranslatorWindow = "Открыть всплывающее окно переводчика"
+
+[translatorWindow]
+[translatorWindow.title]
+main = "Всплывающий переводчик"
+inputBox = "Вводимый текст"
+
+[translatorWindow.actions]
+translate = "Перевести"
+
+[translatorWindow.placeholders]
+model = "Выберите модель перевода"
+input = "Введите или вставьте текст для перевода"
+result = "Здесь появятся переводы"
+
+[translatorWindow.history]
+title = "История переводов"
+clear = "Очистить историю"
+empty = "Переводы еще не сохранены"
+
+[translatorWindow.errors]
+emptyInput = "Сначала введите текст для перевода"
+
+[translatorWindow.thinking]
+title = "Обдумывание"
+placeholder = "Обрабатываем перевод..."
+
+[translatorWindow.controls]
+copy = "Копировать перевод"
+toggleMarkdown = "Переключить отображение Markdown"
+
+[translatorWindow.messages]
+copyFailed = "Не удалось скопировать"
 
 # Common UI Elements
 

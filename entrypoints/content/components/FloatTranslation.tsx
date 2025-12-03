@@ -73,6 +73,8 @@ const Explain = (props: { textContext: TextContext }) => {
 	const [data, retry] = createTranslation(() => props.textContext.text, {
 		promptId: PROMPT_ID.explain,
 		modelId: () => settings.translate.floatingExplainModel,
+		srcLang: () => settings.translate.sourceLang,
+		dstLang: () => settings.translate.targetLang,
 		ctx: () => ({
 			surr: props.textContext.surr,
 			page: getPageContext(),
@@ -204,6 +206,8 @@ const Translate = (props: { textContext: TextContext }) => {
 	const [data, retry] = createTranslation(() => props.textContext.text, {
 		promptId: PROMPT_ID.translate,
 		modelId: () => settings.translate.floatingTranslateModel,
+		srcLang: () => settings.translate.sourceLang,
+		dstLang: () => settings.translate.targetLang,
 		ctx: () => ({
 			surr: props.textContext.surr,
 			page: getPageContext(),

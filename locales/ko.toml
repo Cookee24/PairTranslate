@@ -19,6 +19,39 @@ website = "웹사이트"
 
 [popup.navigation]
 openOptions = "추가 설정"
+openTranslatorWindow = "번역 팝업 열기"
+
+[translatorWindow]
+[translatorWindow.title]
+main = "팝업 번역기"
+inputBox = "입력 텍스트"
+
+[translatorWindow.actions]
+translate = "번역"
+
+[translatorWindow.placeholders]
+model = "번역 모델 선택"
+input = "번역할 텍스트를 입력하거나 붙여넣기"
+result = "번역 결과가 여기 표시됩니다"
+
+[translatorWindow.history]
+title = "번역 기록"
+clear = "기록 삭제"
+empty = "저장된 번역이 없습니다"
+
+[translatorWindow.errors]
+emptyInput = "먼저 번역할 텍스트를 입력하세요"
+
+[translatorWindow.thinking]
+title = "생각 중"
+placeholder = "번역을 검토 중입니다..."
+
+[translatorWindow.controls]
+copy = "번역 복사"
+toggleMarkdown = "Markdown 렌더링 전환"
+
+[translatorWindow.messages]
+copyFailed = "복사에 실패했습니다"
 
 # Common UI Elements
 

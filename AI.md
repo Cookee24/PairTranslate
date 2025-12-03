@@ -56,3 +56,4 @@ Unlike the traditional translation implementation, the extension will append the
     return <div>{t('your_placeholder_key')}</div>;
   };
   ```
+4. If user is asking for "add missing i18n keys", you can run `bun run ./scripts/diff-locales.ts` to get the missing keys compared to `locales/en.toml`.

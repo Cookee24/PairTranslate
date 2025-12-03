@@ -179,9 +179,10 @@ export const STORAGE_KEYS = {
 	settings: "pair-translate:settings",
 	cache: "pair-translate:cache",
 	translateEnabled: "pair-translate:translate-enabled",
-	domainTimer: "pair-translate:domain-timer",
 	domainTimers: "pair-translate:domain-timers",
 	settingsMigrationError: "pair-translate:settings-migration-error",
+	sidebarSettings: "pair-translate:sidebar-settings",
+	sidebarHistory: "pair-translate:sidebar-history",
 };
 
 export const DOMAIN_TIMER_UNTIL_CLOSE = "UNTIL_CLOSE" as const;

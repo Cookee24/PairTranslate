@@ -1,5 +1,12 @@
 import { HashRouter, Route, useLocation, useNavigate } from "@solidjs/router";
-import { Earth, ExternalLink, Power, PowerOff, Settings2 } from "lucide-solid";
+import {
+	Earth,
+	ExternalLink,
+	LayoutPanelLeft,
+	Power,
+	PowerOff,
+	Settings2,
+} from "lucide-solid";
 import type { JSX } from "solid-js";
 import { createEffect, createMemo, Match, Switch } from "solid-js";
 import { browser } from "#imports";
@@ -33,6 +40,15 @@ const Content = (props: { children?: JSX.Element }) => {
 		);
 	});
 
+	const openTranslatorPopup = () => {
+		browser.windows.create({
+			type: "popup",
+			url: browser.runtime.getURL("/translator.html"),
+			width: 420,
+			height: 640,
+		});
+	};
+
 	return (
 		<div class="p-4 flex flex-col gap-4 w-full h-full">
 			<div class="flex-1 overflow-y-auto flex flex-col gap-4">
@@ -41,13 +57,22 @@ const Content = (props: { children?: JSX.Element }) => {
 			</div>
 			<div class="flex gap-2">
 				<Button
-					class="btn-circle mr-auto tooltip tooltip-right"
+					class="btn-circle tooltip tooltip-right z-2"
 					size="sm"
 					variant={enabled() ? "primary" : "neutral"}
 					on:click={() => setSettings("basic", "enabled", !enabled())}
 					data-tip={enabled() ? t("common.enabled") : t("common.disabled")}
 				>
 					{enabled() ? <Power size={16} /> : <PowerOff size={16} />}
+				</Button>
+				<Button
+					class="btn-circle mr-auto tooltip tooltip-right z-1"
+					size="sm"
+					variant="ghost"
+					on:click={openTranslatorPopup}
+					data-tip={t("popup.navigation.openTranslatorWindow")}
+				>
+					<LayoutPanelLeft size={16} />
 				</Button>
 				<Switch>
 					<Match when={location.pathname.includes("overall")}>
