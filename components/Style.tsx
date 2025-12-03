@@ -1,6 +1,6 @@
 import { createEffect, onCleanup, onMount } from "solid-js";
 import { browser } from "#imports";
-import { createInTextTranslationStyle } from "@/hooks/translation-style";
+import { createTranslationStyle } from "@/hooks/translation-style";
 import { useSettings } from "~/hooks/settings";
 import { useWebsiteRule } from "~/hooks/website-rule";
 import {
@@ -63,11 +63,11 @@ export const TranslationStyle = () => {
 	const style = document.createElement("style");
 	style.setAttribute(DATA_STYLE, "");
 
-	const css = createInTextTranslationStyle(
+	const css = createTranslationStyle(
 		() => websiteRule.translationStyle || settings.basic.translationStyle,
 	);
 	createEffect(() => {
-		style.textContent = `[${DATA_TRANSLATION_TEXT}] { ${css()} }`;
+		style.textContent = `[${DATA_TRANSLATION_TEXT}], [${DATA_TRANSLATION_TEXT}] > * { ${css()} }`;
 	});
 
 	onMount(() => {

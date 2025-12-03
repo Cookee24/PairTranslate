@@ -2,11 +2,11 @@ import { createMemo } from "solid-js";
 import type { TranslationStyleSettings } from "../utils/settings/def";
 
 const COLOR_PRESETS = [
-	"rgba(255,101,159,0.4)", // Pink
-	"rgba(103,223,255,0.4)", // Light Blue
-	"rgba(131,241,141,0.4)", // Light Green
-	"rgba(181,129,254,0.4)", // Light Purple
-	"rgba(252,241,81,0.4)", // Light Yellow
+	"rgba(255,101,159,0.25)", // Pink
+	"rgba(103,223,255,0.25)", // Light Blue
+	"rgba(131,241,141,0.25)", // Light Green
+	"rgba(181,129,254,0.25)", // Light Purple
+	"rgba(252,241,81,0.25)", // Light Yellow
 ] as const;
 
 const BACKGROUND_CYCLE: readonly (string | undefined)[] = [
@@ -23,7 +23,7 @@ export const nextBackgroundColor = (current?: string): string | undefined => {
 	return BACKGROUND_CYCLE[nextIndex];
 };
 
-export const createInTextTranslationStyle = (
+export const createTranslationStyle = (
 	style: () => TranslationStyleSettings,
 ) => {
 	return createMemo(() => {
@@ -41,10 +41,6 @@ export const createInTextTranslationStyle = (
 		}
 		if (cur.background) {
 			lines.push(`background-color: ${cur.background} !important;`);
-		}
-
-		if (lines.length === 0) {
-			return "";
 		}
 
 		return lines.join("\n");

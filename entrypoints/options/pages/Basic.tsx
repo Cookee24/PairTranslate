@@ -110,9 +110,7 @@ export default (props: { navId: string }) => {
 						</span>
 					</label>
 				</div>
-				<FormField
-					label={t("settings.translation.styleTitle")}
-				>
+				<FormField label={t("settings.translation.styleTitle")}>
 					<div class="flex flex-col gap-1">
 						<TranslationStyleControls
 							value={settings.basic.translationStyle}

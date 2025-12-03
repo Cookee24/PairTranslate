@@ -19,7 +19,9 @@ export default () => {
 				const anchor = Array.isArray(node) ? node[0] : node;
 				const el =
 					anchor instanceof HTMLElement ? anchor : anchor.parentElement;
-				el && animateBlink(el);
+				try {
+					el && animateBlink(el);
+				} catch {}
 			});
 			return prev;
 		});
