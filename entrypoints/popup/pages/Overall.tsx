@@ -267,9 +267,6 @@ export default () => {
 						<Highlighter size={16} />
 						{t("settings.translation.styleTitle")}
 					</Card.Title>
-					<p class="text-xs text-base-content/70">
-						{t("settings.translation.styleDescription")}
-					</p>
 					<TranslationStyleControls
 						value={settings.basic.translationStyle}
 						onChange={(style) => {
