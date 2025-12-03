@@ -258,7 +258,8 @@ export async function* elementWalker(state: State): SectionGenerator {
 
 		while (node) {
 			if (node.nodeType === Node.ELEMENT_NODE) {
-				if (state.blockTags.has((node as Element).tagName)) {
+				const el = node as Element;
+				if (state.blockTags.has(el.tagName)) {
 					flag = true;
 
 					// Yield previous segment
@@ -269,7 +270,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 					}
 
 					// Yield block element
-					yield* findTextElementsAndSplit(node);
+					yield* findTextElementsAndSplit(el);
 				} else {
 					// An inline element
 					if (!start) start = node;
@@ -296,14 +297,11 @@ export async function* elementWalker(state: State): SectionGenerator {
 
 	// Find text elements within root, and split into paragraphs
 	const findTextElementsAndSplit = function* (
-		root: Node,
+		root: Element,
 	): Generator<DOMSection> {
-		if (
-			root.nodeType === Node.ELEMENT_NODE &&
-			!isExcluded(root as Element) &&
-			judgeText(root as Element)
-		) {
-			yield* paragraphSplitter(root as Element);
+		if (isExcluded(root)) return;
+		if (judgeText(root)) {
+			yield* paragraphSplitter(root);
 			return;
 		}
 
