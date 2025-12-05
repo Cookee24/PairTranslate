@@ -141,17 +141,8 @@ export async function* elementWalker(state: State): SectionGenerator {
 		});
 	};
 
-	type GeneratorFunc = () => Generator<DOMSection, void> | undefined;
 	const notifier = createNotifier();
-	const generatorList: GeneratorFunc[] = [];
-	const makeTextGenerator = (el: Element): GeneratorFunc => {
-		const weakRef = new WeakRef(el);
-		return () => {
-			const element = weakRef.deref();
-			if (element) return findTextElementsAndSplit(element);
-			return undefined;
-		};
-	};
+	const elementList: WeakRef<Element>[] = [];
 
 	const mutationHandler: MutationCallback = (mutations) => {
 		for (const mutation of mutations) {
@@ -160,11 +151,11 @@ export async function* elementWalker(state: State): SectionGenerator {
 					const root = node as Element;
 					if (isExcludedPath(root)) continue;
 
-					generatorList.push(makeTextGenerator(root));
+					elementList.push(new WeakRef(root));
 				}
 			}
 		}
-		if (generatorList.length > 0) notifier.notify();
+		if (elementList.length > 0) notifier.notify();
 	};
 
 	const observers: MutationObserver[] = [];
@@ -220,7 +211,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 				}
 			}).then((doc) => {
 				if (doc && !processedIframes.has(iframe)) {
-					generatorList.push(makeTextGenerator(doc));
+					elementList.push(new WeakRef(doc));
 					notifier.notify();
 
 					observeElement(doc);
@@ -325,11 +316,13 @@ export async function* elementWalker(state: State): SectionGenerator {
 	try {
 		while (true) {
 			await notifier.wait();
-			for (const genFunc of generatorList) {
-				const gen = genFunc();
-				if (gen) yield* gen;
+			for (const ref of elementList) {
+				const element = ref.deref();
+				if (element) {
+					yield* findTextElementsAndSplit(element);
+				}
 			}
-			generatorList.length = 0;
+			elementList.length = 0;
 		}
 	} catch {
 		// Only triggered on abort
