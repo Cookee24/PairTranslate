@@ -226,6 +226,17 @@ export async function* internalCall<M, T, E>(
 		out.notifier.notify();
 	};
 
+	const notifier = createNotifier();
+	const queue: Message<M, T, E>[] = [];
+	const abort = () => notifier.throw(signal!.reason);
+	if (signal) {
+		if (signal.aborted) {
+			notifier.throw(signal.reason);
+		} else {
+			signal.addEventListener("abort", abort);
+		}
+	}
+
 	try {
 		const firstMessageResult = await generator.next();
 		if (firstMessageResult.done) {
@@ -234,32 +245,13 @@ export async function* internalCall<M, T, E>(
 
 		id = firstMessageResult.value.id;
 		inc.set(id, {
-			notifier: createNotifier(),
-			queue: [],
+			notifier,
+			queue,
 		});
 		sendMessage(firstMessageResult.value);
 
-		const queue = inc.get(id)!;
-
-		const { reject: abort, promise: aborted } = Promise.withResolvers<void>();
-		aborted.catch(() => {}); // Prevent unhandled rejection
-		if (signal) {
-			if (signal.aborted) {
-				abort(signal.reason);
-			} else {
-				const onAbort = () =>
-					abort(signal.reason || new DOMException("Aborted", "AbortError"));
-
-				signal.addEventListener("abort", onAbort);
-				aborted.finally(() => signal.removeEventListener("abort", onAbort));
-			}
-		}
-
 		while (true) {
-			const sendPromise = generator.next();
-			const recvPromise = queue.notifier.wait();
-
-			const winner = await Promise.race([sendPromise, recvPromise, aborted]);
+			const winner = await Promise.race([generator.next(), notifier.wait()]);
 
 			if (winner && typeof winner === "object" && "done" in winner) {
 				const sendResult = winner as IteratorResult<NoMetaMessage<M, T, E>>;
@@ -268,15 +260,15 @@ export async function* internalCall<M, T, E>(
 				}
 				sendMessage(sendResult.value);
 			} else {
-				while (queue.queue.length > 0) {
-					yield queue.queue.shift()!;
+				while (queue.length > 0) {
+					yield queue.shift()!;
 				}
 			}
 		}
 
 		while (true) {
-			while (queue.queue.length > 0) {
-				const msg = queue.queue.shift()!;
+			while (queue.length > 0) {
+				const msg = queue.shift()!;
 				if (msg.type === "end") {
 					isEnded = true;
 				}
@@ -285,7 +277,7 @@ export async function* internalCall<M, T, E>(
 					return;
 				}
 			}
-			await Promise.race([queue.notifier.wait(), aborted]);
+			await notifier.wait();
 		}
 	} catch (error) {
 		if (signal?.aborted) {
@@ -306,6 +298,7 @@ export async function* internalCall<M, T, E>(
 			sendMessage({ id: id!, type: "cancel" });
 		}
 		inc.delete(id!);
+		signal?.removeEventListener("abort", abort);
 		generator.return();
 	}
 }

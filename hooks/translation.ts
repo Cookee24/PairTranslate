@@ -130,22 +130,20 @@ export function createBatchTranslation(
 		setAllLoading(texts.length);
 
 		const abortController = new AbortController();
-		const request = window.rpc.unary(
-			ctx(),
-			{
-				modelId: modelId_,
-				promptId,
-				srcLang: srcLang() || "auto",
-				dstLang: dstLang(),
-				cleanCache,
-				thinCache,
-			},
-			texts,
-			abortController.signal,
-		);
-		onCleanup(() => abortController.abort());
-
-		request
+		window.rpc
+			.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang() || "auto",
+					dstLang: dstLang(),
+					cleanCache,
+					thinCache,
+				},
+				texts,
+				abortController.signal,
+			)
 			.then((resp) => {
 				const normalized = normalizeUnaryResponse<string[]>(resp);
 				const translated = Array.isArray(normalized.output)
@@ -169,6 +167,8 @@ export function createBatchTranslation(
 				setAllError(convertGenericError(e), texts.length);
 			})
 			.finally(() => endTracking?.());
+
+		onCleanup(() => abortController.abort());
 	};
 
 	const translateSingle = (index: number, text_: string) => {
@@ -188,21 +188,19 @@ export function createBatchTranslation(
 		});
 
 		const abortController = new AbortController();
-		const request = window.rpc.unary(
-			ctx(),
-			{
-				modelId: modelId_,
-				promptId,
-				srcLang: srcLang() || "auto",
-				dstLang: dstLang(),
-				cleanCache: true,
-			},
-			text_,
-			abortController.signal,
-		);
-		onCleanup(() => abortController.abort());
-
-		request
+		window.rpc
+			.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang() || "auto",
+					dstLang: dstLang(),
+					cleanCache: true,
+				},
+				text_,
+				abortController.signal,
+			)
 			.then((resp) => {
 				const normalized = normalizeUnaryResponse<string | string[]>(resp);
 				const value = Array.isArray(normalized.output)
@@ -221,6 +219,7 @@ export function createBatchTranslation(
 				});
 			})
 			.finally(() => endTracking?.());
+		onCleanup(() => abortController.abort());
 	};
 
 	createEffect(() => {
@@ -414,21 +413,19 @@ export function createTranslation<T>(
 		setLoading();
 
 		const abortController = new AbortController();
-		const request = window.rpc.unary(
-			ctx(),
-			{
-				modelId: modelId_,
-				promptId,
-				srcLang: srcLang() || "auto",
-				dstLang: dstLang(),
-				cleanCache,
-			},
-			text_,
-			abortController.signal,
-		);
-		onCleanup(() => abortController.abort());
-
-		request
+		window.rpc
+			.unary(
+				ctx(),
+				{
+					modelId: modelId_,
+					promptId,
+					srcLang: srcLang() || "auto",
+					dstLang: dstLang(),
+					cleanCache,
+				},
+				text_,
+				abortController.signal,
+			)
 			.then((resp) => {
 				const normalized = normalizeUnaryResponse<T>(resp);
 				setResultVal(normalized.output, normalized.reasoning);
@@ -438,6 +435,8 @@ export function createTranslation<T>(
 				setErrorVal(convertGenericError(e));
 			})
 			.finally(() => endTracking?.());
+
+		onCleanup(() => abortController.abort());
 	};
 
 	const doTranslate = (text_: string, cleanCache?: boolean) =>
