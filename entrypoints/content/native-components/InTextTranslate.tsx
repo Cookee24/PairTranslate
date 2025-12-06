@@ -11,55 +11,17 @@ import { createIdleDebounce } from "@/hooks/throttle";
 import { Md } from "~/components/MD/Md";
 import { TranslateNodePortal } from "~/components/MPortal";
 import { useSettings } from "~/hooks/settings";
-import { createBatchTranslation, createTranslation } from "~/hooks/translation";
+import { createBatchTranslation } from "~/hooks/translation";
 import { useWebsiteRule } from "~/hooks/website-rule";
 import { DATA_TRANSLATION_TEXT, PROMPT_ID } from "~/utils/constants";
 import { copyToClipboard } from "~/utils/copy";
-import { extractMarkdownContent } from "~/utils/markdown";
+import { getMarkdownFromSection } from "~/utils/markdown";
 import type { DOMSection } from "~/utils/parser/types";
 import { estimateTokens } from "~/utils/token-estimate";
 import InTextTooltip from "../components/InTextTooltip";
-import { extractTextContext } from "../context/element";
 import { NativeLoading } from "./Loading";
 
 const NEW_LINE_THRESHOLD = 10;
-
-interface SingleProps {
-	node: Node;
-}
-export const SingleInTextTranslation = (props: SingleProps) => {
-	const { settings } = useSettings();
-	const websiteRule = useWebsiteRule();
-
-	const context = createMemo(() => extractTextContext(props.node));
-	const [data, retry] = createTranslation<string>(() => context().text, {
-		promptId: PROMPT_ID.translate,
-		modelId: () =>
-			websiteRule.inTextTranslateModel ||
-			settings.translate.inTextTranslateModel,
-		srcLang: () => websiteRule.sourceLang || settings.translate.sourceLang,
-		dstLang: () => websiteRule.targetLang || settings.translate.targetLang,
-	});
-
-	const handleRetry = () => {
-		retry();
-	};
-
-	const hideOriginal = () =>
-		(websiteRule.translateMode ?? settings.translate.translationMode) ===
-		"replace";
-
-	return (
-		<TranslationRender
-			text={data()}
-			loading={data.loading}
-			error={data.error?.message}
-			section={props.node}
-			hideOriginal={hideOriginal()}
-			onRetry={handleRetry}
-		/>
-	);
-};
 
 type SectionTextPair = [DOMSection, string];
 
@@ -111,7 +73,7 @@ export const BatchInTextTranslation = (props: BatchProps) => {
 							const batchId = batchIds.get(section);
 							const current: SectionTextPair = [
 								section,
-								extractMarkdownContent(section),
+								getMarkdownFromSection(section),
 							];
 							if (batchId === undefined) {
 								const lastBatch = prev[last];

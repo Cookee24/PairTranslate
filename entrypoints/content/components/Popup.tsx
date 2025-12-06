@@ -334,8 +334,7 @@ const PopupImpl = (props: ImplProps) => {
 				onMouseDown={props.onBringToFront}
 				onTouchStart={props.onBringToFront}
 				style={{
-					top: `${props.y}px`,
-					left: `${props.x}px`,
+					translate: `${props.x}px ${props.y}px`,
 					width: `${props.width}px`,
 					height: `${props.height}px`,
 					"z-index": props.zIndex,

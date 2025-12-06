@@ -1,4 +1,4 @@
-import { extractMarkdownContent } from "~/utils/markdown";
+import { getMarkdownFromNode } from "~/utils/markdown";
 import type { TextContext } from "~/utils/types";
 
 export const extractTextContext = (node: Node): TextContext => {
@@ -17,7 +17,7 @@ export const extractTextContext = (node: Node): TextContext => {
 	}
 
 	return {
-		text: extractMarkdownContent(node),
+		text: getMarkdownFromNode(node),
 		surr: {
 			before: before || undefined,
 			after: after || undefined,

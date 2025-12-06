@@ -23,9 +23,9 @@ export function TranslateNodePortal(props: {
 	createEffect(() => {
 		content ??= runWithOwner(owner, () => createMemo(() => props.children));
 
-		const [parent, insertAfter, startHide, endHide] = resolveDOMContext(
-			props.section,
-		);
+		const start = props.section[0];
+		const end = props.section[1];
+		const parent = start.parentElement;
 		if (!parent) return;
 
 		const container = document.createElement("div");
@@ -37,17 +37,14 @@ export function TranslateNodePortal(props: {
 			configurable: true,
 		});
 
-		if (props.hideOriginal && startHide) {
-			const restore = hideNodes(startHide, endHide);
+		if (props.hideOriginal) {
+			const restore = hideNodes(start, end);
 			onCleanup(restore);
 		}
 
 		insert(container, content);
 		parent.setAttribute(DATA_TRANSLATED, "");
-		parent.insertBefore(
-			container,
-			insertAfter ? insertAfter.nextSibling : null,
-		);
+		parent.insertBefore(container, end.nextSibling);
 		props.ref?.(container);
 
 		onCleanup(() => {
@@ -57,44 +54,6 @@ export function TranslateNodePortal(props: {
 	});
 
 	return marker;
-}
-
-function resolveDOMContext(section: DOMSection) {
-	const isRange = Array.isArray(section);
-	// If range, use the end node. If single, use the node itself.
-	const refNode = isRange ? section[1] : section;
-
-	// If the node itself is an element, we mount inside it (append).
-	// Otherwise (text node), we mount to its parent.
-	const isElement = refNode instanceof HTMLElement;
-	const parent = isRange
-		? refNode.parentElement
-		: isElement
-			? refNode
-			: refNode.parentElement;
-
-	// Determine where to start/end hiding and where to insert the new container
-	let startHide: Node | null = null;
-	let endHide: Node | null = null;
-	let insertAfter: Node | null = null;
-
-	if (isRange) {
-		startHide = section[0];
-		endHide = section[1];
-		insertAfter = endHide;
-	} else if (isElement) {
-		// Single Element: Hide all children inside
-		startHide = refNode.firstChild;
-		endHide = refNode.lastChild;
-		insertAfter = null; // Append to end of element
-	} else {
-		// Single Text Node: Hide just this node
-		startHide = refNode;
-		endHide = refNode;
-		insertAfter = refNode; // Insert after this text node
-	}
-
-	return [parent, insertAfter, startHide, endHide] as const;
 }
 
 function hideNodes(start: Node, end: Node | null) {

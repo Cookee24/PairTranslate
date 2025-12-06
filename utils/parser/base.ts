@@ -245,20 +245,21 @@ export async function* elementWalker(state: State): SectionGenerator {
 		let node = element.firstChild;
 		let start: Node | null = null;
 		let end: Node | null = null;
-		let flag = false;
+
+		const flush = function* () {
+			if (start && end) {
+				yield [start, end] as const;
+				start = null;
+				end = null;
+			}
+		};
 
 		while (node) {
 			if (node.nodeType === Node.ELEMENT_NODE) {
 				const el = node as Element;
 				if (state.blockTags.has(el.tagName)) {
-					flag = true;
-
-					// Yield previous segment
-					if (start && end) {
-						yield [start, end];
-						start = null;
-						end = null;
-					}
+					// Flush current inline segment
+					yield* flush();
 
 					// Yield block element
 					yield* findTextElementsAndSplit(el);
@@ -275,15 +276,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 			node = node.nextSibling;
 		}
 
-		if (flag) {
-			// Yield remaining segment
-			if (start && end) {
-				yield [start, end];
-			}
-		} else {
-			// No block-level children, yield the whole element
-			yield element;
-		}
+		yield* flush();
 	};
 
 	// Find text elements within root, and split into paragraphs
@@ -340,7 +333,7 @@ export async function* emittedFilter(
 ): SectionGenerator {
 	const emittedNodes = new WeakSet<Node>();
 	for await (const section of prev) {
-		const node = section instanceof Node ? section : section[0];
+		const node = section[0];
 		if (emittedNodes.has(node)) {
 			continue;
 		}

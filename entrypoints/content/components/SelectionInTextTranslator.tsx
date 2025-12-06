@@ -16,9 +16,7 @@ export default () => {
 		setSet((prev) => {
 			sections.forEach(prev.add, prev);
 			sections.forEach((node) => {
-				const anchor = Array.isArray(node) ? node[0] : node;
-				const el =
-					anchor instanceof HTMLElement ? anchor : anchor.parentElement;
+				const el = node[0].parentElement;
 				try {
 					el && animateBlink(el);
 				} catch {}

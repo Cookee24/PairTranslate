@@ -1,4 +1,5 @@
 import { MathMLToLaTeX } from "mathml-to-latex";
+import { iterateNodes } from "./iter-nodes";
 import type { DOMSection } from "./parser/types";
 /**
  * Replace full-width characters with half-width characters in markdown syntax.
@@ -70,7 +71,7 @@ type ElementHandler = (
 function* iterateMarkdown(node: Node): Generator<string, void, unknown> {
 	// 1. Handle Text Nodes
 	if (node.nodeType === Node.TEXT_NODE) {
-		const text = node.nodeValue || "";
+		const text = node.nodeValue?.trim() || "";
 
 		yield text.replace(/\s+/g, " ");
 	}
@@ -105,11 +106,7 @@ function* iterateChildren(
  * Used for inline elements where the result must be captured immediately (e.g., inside **bold**).
  */
 const consumeAndTrim = (element: HTMLElement): string => {
-	const parts: string[] = [];
-	for (const part of iterateChildren(element)) {
-		parts.push(part);
-	}
-	return parts.join("").trim();
+	return Array.from(iterateChildren(element)).join("").trim();
 };
 
 /**
@@ -478,21 +475,19 @@ const tryExtractMath = (
 /**
  * Public Entry Point
  */
-export const extractMarkdownContent = (section: DOMSection): string => {
-	if (Array.isArray(section)) {
-		const [start, end] = section;
-		const parts: string[] = [];
-		let current: Node | null = start;
-		while (current) {
-			parts.push(...Array.from(iterateMarkdown(current)));
-			if (current === end) break;
-			current = current.nextSibling;
+export const getMarkdownFromSection = (section: DOMSection): string => {
+	const iter = iterateNodes(section[0], section[1]);
+	const parts: string[] = [];
+	for (const node of iter) {
+		const gen = iterateMarkdown(node);
+		for (const part of gen) {
+			parts.push(part);
 		}
-
-		return parts.join("");
-	} else if (section.nodeType === Node.TEXT_NODE) {
-		return section.nodeValue?.trim() || "";
-	} else {
-		return Array.from(iterateChildren(section as HTMLElement)).join("");
 	}
+
+	return parts.join("");
+};
+
+export const getMarkdownFromNode = (node: Node): string => {
+	return Array.from(iterateMarkdown(node)).join("");
 };

@@ -24,7 +24,7 @@ export interface Options {
 
 export type JudgeFn = (element: Element) => boolean;
 
-export type DOMSection = Node | [start: Node, end: Node];
+export type DOMSection = readonly [start: Node, end: Node];
 export type SectionGenerator = AsyncGenerator<DOMSection, void, unknown>;
 export type InitialGeneratorFn = (state: State) => SectionGenerator;
 export type ChainedGeneratorFn = (

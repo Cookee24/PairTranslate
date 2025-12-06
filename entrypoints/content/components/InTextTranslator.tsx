@@ -6,9 +6,6 @@ import type { DOMSection } from "~/utils/parser/types";
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
 import { getDomListener } from "../parser";
 
-const getStart = (section: DOMSection) =>
-	Array.isArray(section) ? section[0] : section;
-
 export default () => {
 	const { settings } = useSettings();
 	const websiteRule = useWebsiteRule();
@@ -74,9 +71,9 @@ export default () => {
 			for await (const section of listener) {
 				if (fullPage) {
 					handleAdd(section);
-					listenRemove(getStart(section), () => handleRemove(section));
+					listenRemove(section[0], () => handleRemove(section));
 				} else {
-					listenIntersectionOrRemove(getStart(section), (shouldRender) => {
+					listenIntersectionOrRemove(section[0], (shouldRender) => {
 						shouldRender ? handleAdd(section) : handleRemove(section);
 					});
 				}
