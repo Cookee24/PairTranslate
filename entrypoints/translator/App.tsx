@@ -67,6 +67,12 @@ const SidebarContent = () => {
 	});
 
 	const [inputText, setInputText] = createSignal("");
+	navigator.clipboard?.readText().then((clipText) => {
+		if (inputText().trim().length === 0 && clipText.trim().length > 0) {
+			setInputText(clipText);
+		}
+	});
+
 	const [submittedText, setSubmittedText] = createSignal("");
 	const [error, setError] = createSignal<string>();
 	const initialTargetLang = settingsCtx.settings.translate?.targetLang ?? "en";
