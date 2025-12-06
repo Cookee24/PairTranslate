@@ -146,9 +146,14 @@ inputTranslateEnabledDesc = "Activer la traduction des champs d'entrée à l'aid
 progressIndicationEnabled = "Activer l'Indication de Progression"
 progressIndicationEnabledDesc = "Afficher la fenêtre contextuelle de progression pendant la traduction"
 keyboardShortcutHint = "Utilisez les combinaisons Ctrl+Alt+Maj+Lettre sous Windows/Linux ou Cmd+Option+Maj+Lettre sur macOS"
+keyboardShortcutConfigure = "Configurer le raccourci du navigateur"
+keyboardShortcutConfigureDesc = "Ouvrir les paramètres de raccourci du navigateur pour mettre à jour cette commande"
 keyboardShortcutInvalid = "Format de raccourci invalide"
 keyboardShortcutTest = "Testez votre raccourci :"
 keyboardShortcutTestHint = "Cliquez ici et appuyez sur votre combinaison de raccourci"
+
+[commands]
+openTranslatorPopup = "Ouvrir la fenêtre de traduction"
 
 [settings.advanced]
 title = "Paramètres Avancés"

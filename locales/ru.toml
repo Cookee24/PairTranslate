@@ -146,9 +146,14 @@ inputTranslateEnabledDesc = "Включить перевод входных по
 progressIndicationEnabled = "Включить Индикацию Прогресса"
 progressIndicationEnabledDesc = "Показывать всплывающее окно прогресса во время перевода"
 keyboardShortcutHint = "Используйте комбинации Ctrl+Alt+Shift+Буква на Windows/Linux или Cmd+Option+Shift+Буква на macOS"
+keyboardShortcutConfigure = "Настроить горячую клавишу браузера"
+keyboardShortcutConfigureDesc = "Откройте параметры горячих клавиш браузера для обновления этой команды"
 keyboardShortcutInvalid = "Неверный формат горячей клавиши"
 keyboardShortcutTest = "Протестируйте вашу горячую клавишу:"
 keyboardShortcutTestHint = "Нажмите здесь и нажмите вашу комбинацию горячих клавиш"
+
+[commands]
+openTranslatorPopup = "Открыть всплывающее окно переводчика"
 
 [settings.advanced]
 title = "Дополнительные Параметры"

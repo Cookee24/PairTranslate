@@ -146,9 +146,14 @@ inputTranslateEnabledDesc = "使用键盘快捷键翻译输入框内容"
 progressIndicationEnabled = "启用进度指示"
 progressIndicationEnabledDesc = "在翻译进行时显示进度指示弹窗"
 keyboardShortcutHint = "Windows/Linux 上使用 Ctrl+Alt+Shift+字母，macOS 上使用 Cmd+Option+Shift+字母"
+keyboardShortcutConfigure = "配置浏览器快捷键"
+keyboardShortcutConfigureDesc = "打开浏览器的快捷键设置来更新此命令"
 keyboardShortcutInvalid = "无效的快捷键格式"
 keyboardShortcutTest = "测试您的快捷键："
 keyboardShortcutTestHint = "点击此处并按下您的快捷键组合"
+
+[commands]
+openTranslatorPopup = "打开翻译弹窗"
 
 [settings.advanced]
 title = "高级设置"

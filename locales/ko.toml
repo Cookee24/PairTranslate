@@ -146,9 +146,14 @@ inputTranslateEnabledDesc = "키보드 단축키를 사용하여 입력 필드 �
 progressIndicationEnabled = "진행률 표시 활성화"
 progressIndicationEnabledDesc = "번역 진행 중에 진행률 팝업을 표시합니다"
 keyboardShortcutHint = "Windows/Linux에서는 Ctrl+Alt+Shift+문자, macOS에서는 Cmd+Option+Shift+문자 조합 사용"
+keyboardShortcutConfigure = "브라우저 단축키 설정"
+keyboardShortcutConfigureDesc = "브라우저의 단축키 설정을 열어 이 명령을 업데이트하세요"
 keyboardShortcutInvalid = "잘못된 단축키 형식입니다"
 keyboardShortcutTest = "단축키 테스트:"
 keyboardShortcutTestHint = "여기를 클릭하고 단축키를 누르세요"
+
+[commands]
+openTranslatorPopup = "번역 팝업 열기"
 
 [settings.advanced]
 title = "고급 설정"

@@ -146,9 +146,14 @@ inputTranslateEnabledDesc = "Übersetzung von Eingabefeldern mit Tastaturkürzel
 progressIndicationEnabled = "Fortschrittsanzeige aktivieren"
 progressIndicationEnabledDesc = "Fortschritts-Popup während der Übersetzung anzeigen"
 keyboardShortcutHint = "Verwenden Sie Strg+Alt+Umschalt+Buchstabe-Kombinationen unter Windows/Linux oder Cmd+Option+Umschalt+Buchstabe auf macOS"
+keyboardShortcutConfigure = "Browser-Verknüpfung konfigurieren"
+keyboardShortcutConfigureDesc = "Öffnen Sie die Tastatureinstellungen des Browsers, um diesen Befehl zu aktualisieren"
 keyboardShortcutInvalid = "Ungültiges Tastaturkürzel-Format"
 keyboardShortcutTest = "Testen Sie Ihr Tastaturkürzel:"
 keyboardShortcutTestHint = "Klicken Sie hier und drücken Sie Ihre Tastenkombination"
+
+[commands]
+openTranslatorPopup = "Übersetzer-Popup öffnen"
 
 [settings.advanced]
 title = "Erweiterte Einstellungen"

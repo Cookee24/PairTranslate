@@ -146,9 +146,14 @@ inputTranslateEnabledDesc = "キーボードショートカットを使用して
 progressIndicationEnabled = "進捗表示を有効化"
 progressIndicationEnabledDesc = "翻訳進行中に進捗表示ポップアップを表示します"
 keyboardShortcutHint = "Windows/Linux では Ctrl+Alt+Shift+文字キー、macOS では Cmd+Option+Shift+文字キーの組み合わせを使用してください"
+keyboardShortcutConfigure = "ブラウザショートカットを設定"
+keyboardShortcutConfigureDesc = "ブラウザのショートカット設定を開いてこのコマンドを更新します"
 keyboardShortcutInvalid = "無効なショートカット形式です"
 keyboardShortcutTest = "ショートカットをテスト："
 keyboardShortcutTestHint = "ここをクリックしてショートカットを押してください"
+
+[commands]
+openTranslatorPopup = "翻訳ポップアップを開く"
 
 [settings.advanced]
 title = "詳細設定"

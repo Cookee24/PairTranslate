@@ -146,9 +146,14 @@ inputTranslateEnabledDesc = "Habilitar traducción de campos de entrada usando a
 progressIndicationEnabled = "Habilitar Indicación de Progreso"
 progressIndicationEnabledDesc = "Mostrar ventana emergente de progreso mientras se traduce"
 keyboardShortcutHint = "Use combinaciones Ctrl+Alt+Shift+Letra en Windows/Linux o Cmd+Option+Shift+Letra en macOS"
+keyboardShortcutConfigure = "Configurar atajo del navegador"
+keyboardShortcutConfigureDesc = "Abre la configuración de atajos del navegador para actualizar este comando"
 keyboardShortcutInvalid = "Formato de atajo inválido"
 keyboardShortcutTest = "Pruebe su atajo:"
 keyboardShortcutTestHint = "Haga clic aquí y presione su combinación de atajo"
+
+[commands]
+openTranslatorPopup = "Abrir popup del traductor"
 
 [settings.advanced]
 title = "Configuración Avanzada"
