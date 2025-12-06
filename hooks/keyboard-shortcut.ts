@@ -1,5 +1,5 @@
 import type { Accessor } from "solid-js";
-import { createEffect, createSignal, onCleanup } from "solid-js";
+import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 import { isInput } from "~/utils/is-input";
 import { isApple } from "~/utils/isapple";
 
@@ -18,9 +18,18 @@ interface ParsedShortcut {
 	key: string;
 }
 
+const KEY_ALIAS_MAP: Record<string, string> = {
+	" ": "space",
+	arrowup: "up",
+	arrowdown: "down",
+	arrowleft: "left",
+	arrowright: "right",
+	escape: "esc",
+	return: "enter",
+};
+
 /**
  * Parse a keyboard shortcut string into its components
- * Supports formats like "Ctrl+Shift+T", "Cmd+Option+T", etc.
  */
 function parseShortcut(shortcut: string): ParsedShortcut {
 	const parts = shortcut.toLowerCase().split("+");
@@ -32,7 +41,7 @@ function parseShortcut(shortcut: string): ParsedShortcut {
 		key: "",
 	};
 
-	parts.forEach((part) => {
+	for (const part of parts) {
 		switch (part) {
 			case "ctrl":
 			case "control":
@@ -52,57 +61,55 @@ function parseShortcut(shortcut: string): ParsedShortcut {
 				parsed.metaKey = true;
 				break;
 			default: {
-				// Remove any remaining modifiers and get the key
-				const cleanKey = part.replace(
-					/^(ctrl|alt|shift|cmd|command|meta|win)\+/,
-					"",
-				);
-				parsed.key = cleanKey.length === 1 ? cleanKey : part;
+				parsed.key = part;
 			}
 		}
-	});
+	}
 
 	return parsed;
 }
 
-/**
- * Check if a keyboard event matches the parsed shortcut
- */
 function matchesShortcut(
 	event: KeyboardEvent,
 	shortcut: ParsedShortcut,
 ): boolean {
-	// Normalize the key - handle special cases and letter case
+	if (
+		event.ctrlKey !== shortcut.ctrlKey ||
+		event.altKey !== shortcut.altKey ||
+		event.shiftKey !== shortcut.shiftKey ||
+		event.metaKey !== shortcut.metaKey
+	) {
+		return false;
+	}
+
 	const eventKey = event.key.toLowerCase();
 	const shortcutKey = shortcut.key.toLowerCase();
+	const normalizedEventKey = KEY_ALIAS_MAP[eventKey] || eventKey;
+	const normalizedShortcutKey = KEY_ALIAS_MAP[shortcutKey] || shortcutKey;
 
-	// Special handling for common keys
-	const keyMap: Record<string, string> = {
-		" ": "space",
-		arrowup: "up",
-		arrowdown: "down",
-		arrowleft: "left",
-		arrowright: "right",
-		escape: "esc",
-	};
+	if (normalizedEventKey === normalizedShortcutKey) {
+		return true;
+	}
 
-	const normalizedEventKey = keyMap[eventKey] || eventKey;
-	const normalizedShortcutKey = keyMap[shortcutKey] || shortcutKey;
+	if (shortcut.altKey) {
+		const code = event.code.toLowerCase(); // e.g., "keys", "digit1"
 
-	return (
-		event.ctrlKey === shortcut.ctrlKey &&
-		event.altKey === shortcut.altKey &&
-		event.shiftKey === shortcut.shiftKey &&
-		event.metaKey === shortcut.metaKey &&
-		normalizedEventKey === normalizedShortcutKey
-	);
+		if (code === `key${normalizedShortcutKey}`) {
+			return true;
+		}
+		if (code === `digit${normalizedShortcutKey}`) {
+			return true;
+		}
+		if (code === `numpad${normalizedShortcutKey}`) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /**
  * Hook for handling keyboard shortcuts
- * @param shortcutString - The keyboard shortcut string (e.g., "Ctrl+Shift+T")
- * @param callback - Function to call when shortcut is triggered
- * @param options - Additional options for the shortcut behavior
  */
 export function useKeyboardShortcut(
 	shortcutString: Accessor<string>,
@@ -116,24 +123,27 @@ export function useKeyboardShortcut(
 		allowInInput = false,
 	} = options;
 
+	const parsedShortcut = createMemo(() => parseShortcut(shortcutString()));
+
 	const handleKeyDown = (event: KeyboardEvent) => {
-		// Don't trigger if disabled
 		if (!enabled()) return;
 
-		// Don't trigger in input fields unless explicitly allowed
-		const target = event.target as HTMLElement;
-		const inInput = isInput(target);
-		if (inInput && !allowInInput) return;
+		const shortcut = parsedShortcut();
+		if (!shortcut.key) return;
 
-		// Parse and check the shortcut
-		const shortcut = parseShortcut(shortcutString());
 		if (matchesShortcut(event, shortcut)) {
+			const target = event.target as HTMLElement;
+			const inInput = isInput(target);
+
+			if (inInput && !allowInInput) return;
+
 			if (preventDefault) {
 				event.preventDefault();
 			}
 			if (stopPropagation) {
 				event.stopPropagation();
 			}
+
 			callback(event, inInput);
 		}
 	};
@@ -151,40 +161,34 @@ export function useKeyboardShortcut(
 }
 
 export function useModifierKeyStatus(enabled = () => true): Accessor<boolean> {
-	const [controlPressed, setControlPressed] = createSignal(false);
-	const modifierKey = isApple() ? "Alt" : "Control";
+	const [isPressed, setIsPressed] = createSignal(false);
+	const targetKey = isApple() ? "Alt" : "Control";
 
-	const handleKeyDown = (event: KeyboardEvent) => {
-		if (event.key === modifierKey) {
-			setControlPressed(true);
+	const handleKey = (event: KeyboardEvent, pressed: boolean) => {
+		if (event.key === targetKey) {
+			setIsPressed(pressed);
 		}
 	};
 
-	const handleKeyUp = (event: KeyboardEvent) => {
-		if (event.key === modifierKey) {
-			setControlPressed(false);
-		}
-	};
-
-	const handleBlur = () => {
-		setControlPressed(false);
-	};
+	const onDown = (e: KeyboardEvent) => handleKey(e, true);
+	const onUp = (e: KeyboardEvent) => handleKey(e, false);
+	const onBlur = () => setIsPressed(false);
 
 	createEffect(() => {
 		if (!enabled()) return;
 
-		document.addEventListener("keydown", handleKeyDown);
-		document.addEventListener("keyup", handleKeyUp);
-		window.addEventListener("blur", handleBlur);
+		document.addEventListener("keydown", onDown);
+		document.addEventListener("keyup", onUp);
+		window.addEventListener("blur", onBlur);
 
 		onCleanup(() => {
-			document.removeEventListener("keydown", handleKeyDown);
-			document.removeEventListener("keyup", handleKeyUp);
-			window.removeEventListener("blur", handleBlur);
+			document.removeEventListener("keydown", onDown);
+			document.removeEventListener("keyup", onUp);
+			window.removeEventListener("blur", onBlur);
 		});
 	});
 
-	return controlPressed;
+	return isPressed;
 }
 
 /**
@@ -194,9 +198,9 @@ export function isValidShortcut(shortcut: string): boolean {
 	if (!shortcut || typeof shortcut !== "string") return false;
 
 	const parts = shortcut.split("+");
-	if (parts.length < 2) return false; // Need at least modifier + key
+	if (parts.length < 2) return false;
 
-	const validModifiers = [
+	const validModifiers = new Set([
 		"ctrl",
 		"control",
 		"alt",
@@ -206,20 +210,19 @@ export function isValidShortcut(shortcut: string): boolean {
 		"command",
 		"meta",
 		"win",
-	];
+	]);
+
 	const hasModifier = parts.some((part) =>
-		validModifiers.includes(part.toLowerCase()),
+		validModifiers.has(part.toLowerCase()),
 	);
 
 	if (!hasModifier) return false;
 
-	// Last part should be the key
 	const key = parts[parts.length - 1].toLowerCase();
 	return (
 		key.length === 1 ||
-		["space", "up", "down", "left", "right", "esc", "enter", "tab"].includes(
-			key,
-		)
+		KEY_ALIAS_MAP[key] !== undefined ||
+		["enter", "tab", "backspace", "delete"].includes(key)
 	);
 }
 
@@ -227,6 +230,8 @@ export function isValidShortcut(shortcut: string): boolean {
  * Utility function to format shortcut for display
  */
 export function formatShortcut(shortcut: string): string {
+	if (!shortcut) return "";
+
 	return shortcut
 		.split("+")
 		.map((part) => {
@@ -249,17 +254,22 @@ export function formatShortcut(shortcut: string): string {
 				case "space":
 					return "Space";
 				case "arrowup":
+				case "up":
 					return "↑";
 				case "arrowdown":
+				case "down":
 					return "↓";
 				case "arrowleft":
+				case "left":
 					return "←";
 				case "arrowright":
+				case "right":
 					return "→";
 				case "escape":
+				case "esc":
 					return "Esc";
 				default:
-					return part.toUpperCase();
+					return part.charAt(0).toUpperCase() + part.slice(1);
 			}
 		})
 		.join(" + ");
