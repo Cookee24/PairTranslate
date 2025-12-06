@@ -127,7 +127,10 @@ const RenderNode = (props: import("mdast").RootContent) => {
 
 			<Match when={props.type === "list" && props}>
 				{(node) => (
-					<Dynamic component={node().ordered ? Native.ol : Native.ul}>
+					<Dynamic
+						component={node().ordered ? Native.ol : Native.ul}
+						style={{ display: "contents" }}
+					>
 						<For each={node().children}>
 							{(child) => <RenderNode {...child} />}
 						</For>
@@ -137,7 +140,7 @@ const RenderNode = (props: import("mdast").RootContent) => {
 
 			<Match when={props.type === "listItem" && props}>
 				{(node) => (
-					<Native.li>
+					<Native.li style={{ display: "contents" }}>
 						<For each={node().children}>
 							{(child) => <RenderNode {...child} />}
 						</For>
