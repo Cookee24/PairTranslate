@@ -1,5 +1,5 @@
 import * as Monaco from "monaco-editor-core";
-// import editorWorker from "monaco-editor-core"
+import editorWorker from "monaco-editor-core/esm/vs/editor/editor.worker.start?worker";
 import { createEffect, onCleanup, onMount } from "solid-js";
 import { useSettings } from "~/hooks/settings";
 
@@ -38,6 +38,16 @@ const registerLanguage = () => {
 	});
 };
 
+const defineEnvironment = () => {
+	if ("MonacoEnvironment" in globalThis) return;
+
+	globalThis.MonacoEnvironment = {
+		getWorker: (_moduleId: string, _label: string) => {
+			return new editorWorker();
+		},
+	};
+};
+
 interface MonacoEditorProps {
 	value: string;
 	language?: string;
@@ -56,6 +66,7 @@ export const MonacoEditor = (props: MonacoEditorProps) => {
 		if (!ref) return;
 
 		registerLanguage();
+		defineEnvironment();
 
 		const isDark =
 			settings.basic.theme === "dark" ||

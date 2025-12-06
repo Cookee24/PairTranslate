@@ -21,7 +21,6 @@ import {
 	createMemo,
 	createSignal,
 	For,
-	type JSX,
 	onCleanup,
 	Show,
 	untrack,
@@ -330,22 +329,28 @@ const clonePrompt = (prompt: PromptSettings): PromptSettings => ({
 	steps: prompt.steps.map((step) => ({ ...step })),
 });
 
-const PROMPT_ICON_MAP: Record<string, JSX.Element> = {
-	[PROMPT_ID.translate]: <Languages size={16} />,
-	[PROMPT_ID.batchTranslate]: <ScrollText size={16} />,
-	[PROMPT_ID.inputTranslate]: <BookMarked size={16} />,
-	[PROMPT_ID.dictionaryTranslate]: <BookText size={16} />,
-	[PROMPT_ID.explain]: <Sparkles size={16} />,
-};
-
 const ensurePromptSnippet = (prompt: PromptSettings) => {
 	const source =
 		prompt.systemPrompt?.trim() || prompt.steps?.[0]?.message || "";
 	return source.replace(/\s+/g, " ").trim().slice(0, 90);
 };
 
-const getPromptIcon = (id: string) =>
-	PROMPT_ICON_MAP[id] ?? <Sparkles size={16} />;
+const getPromptIcon = (id: string) => {
+	switch (id) {
+		case PROMPT_ID.translate:
+			return <Languages size={16} />;
+		case PROMPT_ID.batchTranslate:
+			return <ScrollText size={16} />;
+		case PROMPT_ID.inputTranslate:
+			return <BookMarked size={16} />;
+		case PROMPT_ID.dictionaryTranslate:
+			return <BookText size={16} />;
+		case PROMPT_ID.explain:
+			return <Sparkles size={16} />;
+		default:
+			return <Sparkles size={16} />;
+	}
+};
 
 const PromptPage = () => {
 	const navigate = useNavigate();
