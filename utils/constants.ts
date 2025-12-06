@@ -122,6 +122,7 @@ export const TEXT_TAGS = [
 export const BLOCK_TAGS = [
 	"DIV",
 	"P",
+	"BR",
 	"SECTION",
 	"ARTICLE",
 	"HEADER",
