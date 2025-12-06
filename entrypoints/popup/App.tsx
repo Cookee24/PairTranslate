@@ -17,6 +17,7 @@ import { SettingsRecoveryBanner } from "~/components/SettingsRecoveryBanner";
 import { SettingsProvider, useSettings } from "~/hooks/settings";
 import { createTheme } from "~/hooks/theme";
 import { t } from "~/utils/i18n";
+import { openTranslatorPopup } from "~/utils/translator-window";
 import { getCurrentDomain } from "./get-current";
 import Overall from "./pages/Overall";
 import Website from "./pages/Website";
@@ -39,15 +40,6 @@ const Content = (props: { children?: JSX.Element }) => {
 			getThemeClass(theme()) || "",
 		);
 	});
-
-	const openTranslatorPopup = () => {
-		browser.windows.create({
-			type: "popup",
-			url: browser.runtime.getURL("/translator.html"),
-			width: 420,
-			height: 640,
-		});
-	};
 
 	return (
 		<div class="p-4 flex flex-col gap-4 w-full h-full">

@@ -146,9 +146,14 @@ inputTranslateEnabledDesc = "Enable translation of input fields using keyboard s
 progressIndicationEnabled = "Enable Progress Indication"
 progressIndicationEnabledDesc = "Show progress popup while translation is running"
 keyboardShortcutHint = "Use Ctrl+Alt+Shift+Letter combinations on Windows/Linux or Cmd+Option+Shift+Letter on macOS"
+keyboardShortcutConfigure = "Configure browser shortcut"
+keyboardShortcutConfigureDesc = "Open the browser's shortcut settings to update this command"
 keyboardShortcutInvalid = "Invalid shortcut format"
 keyboardShortcutTest = "Test your shortcut:"
 keyboardShortcutTestHint = "Click here and press your shortcut combination"
+
+[commands]
+openTranslatorPopup = "Open translator popup"
 
 [settings.advanced]
 title = "Advanced Settings"

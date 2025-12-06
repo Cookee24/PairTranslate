@@ -1,4 +1,6 @@
 import { reconcile } from "solid-js/store";
+import { browser } from "#imports";
+import { Button } from "~/components/Button";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
 import { FormField } from "~/components/settings/FormField";
 import { FormGrid } from "~/components/settings/FormGrid";
@@ -25,6 +27,22 @@ export default (props: { navId: string }) => {
 		{ value: "left", label: t("common.positionLeft") },
 		{ value: "right", label: t("common.positionRight") },
 	];
+
+	const openShortcutSettings = () => {
+		const userAgent = navigator.userAgent.toLowerCase();
+		const targetUrl = userAgent.includes("firefox")
+			? "about:addons#/shortcuts"
+			: "chrome://extensions/shortcuts";
+
+		if (browser.tabs?.create) {
+			browser.tabs
+				.create({ url: targetUrl })
+				.catch(() => window.open(targetUrl, "_blank", "noopener,noreferrer"));
+			return;
+		}
+
+		window.open(targetUrl, "_blank", "noopener,noreferrer");
+	};
 
 	return (
 		<SettingsCard
@@ -137,6 +155,15 @@ export default (props: { navId: string }) => {
 						setSettings("basic", "keyboardShortcutEnabled", enabled)
 					}
 				/>
+
+				<FormField
+					label={t("settings.basic.keyboardShortcutConfigure")}
+					helperText={t("settings.basic.keyboardShortcutConfigureDesc")}
+				>
+					<Button size="sm" variant="ghost" on:click={openShortcutSettings}>
+						{t("common.configure")}
+					</Button>
+				</FormField>
 
 				<SettingsToggle
 					label={t("settings.basic.autoPin")}

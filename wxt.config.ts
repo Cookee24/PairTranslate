@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "wxt";
+import { OPEN_TRANSLATOR_POPUP_COMMAND } from "./utils/constants";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -19,6 +20,15 @@ export default defineConfig({
 		permissions: ["storage"],
 		host_permissions: ["<all_urls>"],
 		default_locale: "en",
+		commands: {
+			[OPEN_TRANSLATOR_POPUP_COMMAND]: {
+				suggested_key: {
+					default: "Alt+Shift+T",
+				},
+				description: "__MSG_commands_openTranslatorPopup__",
+				global: true,
+			},
+		},
 		web_accessible_resources: [
 			{
 				resources: ["katex/*", "icons/*", "iframe.html"],

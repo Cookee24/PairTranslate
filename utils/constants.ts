@@ -203,3 +203,4 @@ export const PROMPT_ID = {
 	inputTranslate: "4a87e959-cab4-4b8d-bc8f-1079dc2c4c86",
 	dictionaryTranslate: "d736a0f9-6f61-4f34-9d54-2c7ec49c70d7",
 };
+export const OPEN_TRANSLATOR_POPUP_COMMAND = "open-translator-popup";
