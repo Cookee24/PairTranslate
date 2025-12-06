@@ -36,7 +36,7 @@ export const ContentStyle = () => {
 }`;
 
 		document.head.appendChild(style);
-		onCleanup(() => document.head.removeChild(style));
+		onCleanup(() => style.remove());
 	});
 
 	return null;
@@ -67,7 +67,7 @@ export const TranslationStyle = () => {
 		() => websiteRule.translationStyle || settings.basic.translationStyle,
 	);
 	createEffect(() => {
-		style.textContent = `[${DATA_TRANSLATION_TEXT}], [${DATA_TRANSLATION_TEXT}] > * { ${css()} }`;
+		style.textContent = `[${DATA_TRANSLATION_TEXT}] { ${css()} }`;
 	});
 
 	onMount(() => {
