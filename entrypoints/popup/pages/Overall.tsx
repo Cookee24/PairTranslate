@@ -2,6 +2,7 @@ import { trackStore } from "@solid-primitives/deep";
 import { Box, Highlighter, Link, TextAlignStart, Trash2 } from "lucide-solid";
 import { createMemo, createResource, For } from "solid-js";
 import { reconcile, unwrap } from "solid-js/store";
+import { isApple } from "@/utils/isapple";
 import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
@@ -207,6 +208,28 @@ export default () => {
 								)
 							}
 						/>
+						<div class="col-span-2 flex flex-col gap-1 mt-1">
+							<div class="flex items-center gap-2">
+								<span class="text-xs">
+									{t("settings.translation.selectionTranslateEnabled", [
+										isApple() ? "⌥" : "Ctrl",
+									])}
+								</span>
+								<div class="flex-1" />
+								<input
+									type="checkbox"
+									checked={settings.basic.selectionTranslateEnabled}
+									class="toggle"
+									onChange={(e) =>
+										setSettings(
+											"basic",
+											"selectionTranslateEnabled",
+											e.target.checked,
+										)
+									}
+								/>
+							</div>
+						</div>
 					</div>
 				</Card.Body>
 			</Card.Root>

@@ -220,6 +220,7 @@ filterInteractive = "Filtrar Elementos Interativos"
 filterInteractiveDesc = "Pular elementos interativos como botões, cabeçalhos, navegação e rodapé para evitar traduções indesejadas"
 translateFullPage = "Escopo de Tradução"
 translateFullPageDesc = "Quando marcado, traduz todo o conteúdo da página; quando desmarcado, traduz apenas o conteúdo visível"
+selectionTranslateEnabled = "$1 + Clique/Arrasto do mouse para traduzir"
 
 [settings.prompt]
 title = "Configurações de Prompt"

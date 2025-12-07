@@ -120,8 +120,7 @@ export default (props: Props) => {
 		const boxPos_ = boxPos();
 		if (!boxPos_) return;
 
-		boxRef_.style.left = `${boxPos_.x - window.scrollX}px`;
-		boxRef_.style.top = `${boxPos_.y - window.scrollY}px`;
+		boxRef_.style.translate = `${boxPos_.x - window.scrollX}px ${boxPos_.y - window.scrollY}px`;
 		boxRef_.style.width = `${boxPos_.width}px`;
 		boxRef_.style.height = `${boxPos_.height}px`;
 	});
@@ -132,14 +131,18 @@ export default (props: Props) => {
 				class="w-8 h-8 bg-primary/80 rounded-full -translate-1/2"
 				style={{
 					position: "fixed",
-					left: `${pos().x}px`,
-					top: `${pos().y}px`,
+					translate: `calc(${pos().x}px - 50%) calc(${pos().y}px - 50%)`,
 				}}
 				ref={setRef}
 			/>
 			<Show when={shouldRenderBox()}>
 				<div
 					class="pointer-events-none fixed border-2 border-base-300 bg-secondary/50 rounded-field"
+					style={{
+						translate: `${boxPos()?.x ?? 0 - window.scrollX}px ${boxPos()?.y ?? 0 - window.scrollY}px`,
+						width: `${boxPos()?.width ?? 0}px`,
+						height: `${boxPos()?.height ?? 0}px`,
+					}}
 					ref={setBoxRef}
 				/>
 			</Show>

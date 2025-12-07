@@ -220,6 +220,7 @@ filterInteractive = "Filtrer les Éléments Interactifs"
 filterInteractiveDesc = "Ignorer les éléments interactifs comme les boutons, les en-têtes, la navigation et les pieds de page pour éviter les traductions indésirables"
 translateFullPage = "Portée de Traduction"
 translateFullPageDesc = "Lorsque coché, traduit le contenu de la page complète; lorsque non coché, traduit uniquement le contenu visible"
+selectionTranslateEnabled = "$1 + Clic/Glissement de souris pour traduire"
 
 [settings.prompt]
 title = "Paramètres des Invites"

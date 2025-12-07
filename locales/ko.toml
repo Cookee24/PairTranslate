@@ -220,6 +220,7 @@ filterInteractive = "인터랙티브 요소 필터링"
 filterInteractiveDesc = "버튼, 헤더, 내비게이션, 푸터 등 인터랙티브 요소를 건너뛰어 원치 않는 번역을 방지합니다"
 translateFullPage = "번역 범위"
 translateFullPageDesc = "체크하면 전체 페이지 콘텐츠를 번역하고, 체크하지 않으면 보이는 콘텐츠만 번역합니다"
+selectionTranslateEnabled = "$1 + 마우스 클릭/드래그로 번역"
 
 [settings.prompt]
 title = "프롬프트 설정"

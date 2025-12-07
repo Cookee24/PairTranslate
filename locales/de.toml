@@ -220,6 +220,7 @@ filterInteractive = "Interaktive Elemente filtern"
 filterInteractiveDesc = "Interaktive Elemente wie Schaltflächen, Kopfzeilen, Navigation und Fußzeile überspringen, um unerwünschte Übersetzungen zu vermeiden"
 translateFullPage = "Übersetzungsbereich"
 translateFullPageDesc = "Wenn aktiviert, wird der gesamte Seiteninhalt übersetzt; wenn deaktiviert, wird nur der sichtbare Inhalt übersetzt"
+selectionTranslateEnabled = "$1 + Mausklick/Ziehen zum Übersetzen"
 
 [settings.prompt]
 title = "Eingabeaufforderungseinstellungen"

@@ -220,6 +220,7 @@ filterInteractive = "過濾交互元素"
 filterInteractiveDesc = "跳過按鈕、標題、導航、頁腳等交互元素，以避免不必要的翻譯"
 translateFullPage = "翻譯範圍"
 translateFullPageDesc = "勾選後翻譯全部頁面內容；不勾選則僅翻譯可見內容"
+selectionTranslateEnabled = "$1 + 滑鼠點擊/拖動進行翻譯"
 
 [settings.prompt]
 title = "提示詞設置"
