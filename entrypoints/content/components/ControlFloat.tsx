@@ -42,7 +42,7 @@ export default (props: Props) => {
 
 	createEffect(() => {
 		if (controlPressed()) {
-			let otherKeysPressed = false;
+			let noTriggerOnRelease = false;
 			const handleMouseDown = (e: MouseEvent) => {
 				setIsDragging(true);
 				startPos = {
@@ -61,6 +61,7 @@ export default (props: Props) => {
 				setIsDragging(false);
 				startPos = undefined;
 				setBoxPos(undefined);
+				noTriggerOnRelease = true;
 				boxPos_ && elementsInBox(boxPos_).then(props.onSelection);
 			};
 			const handleMouseMove = (e: MouseEvent) => {
@@ -84,7 +85,7 @@ export default (props: Props) => {
 			};
 			const handleOtherKeys = (e: KeyboardEvent) => {
 				if (e.key !== modifierKey) {
-					otherKeysPressed = true;
+					noTriggerOnRelease = true;
 				}
 			};
 
@@ -95,7 +96,7 @@ export default (props: Props) => {
 			window.addEventListener("keydown", handleOtherKeys, { passive: true });
 			onCleanup(() => {
 				// If mouse is never clicked (just modifier key pressed), do a point selection
-				if (!isDragging() && !otherKeysPressed) {
+				if (!isDragging() && !noTriggerOnRelease) {
 					elementsInBox({
 						x: pos().x + window.scrollX,
 						y: pos().y + window.scrollY,
@@ -172,16 +173,12 @@ const elementsInBox = async (box: SelectionBox) => {
 		filterInteractive: false,
 		signal: controller.signal,
 	});
+	setTimeout(() => controller.abort(), 200);
 
 	const result: DOMSection[] = [];
-	(async () => {
-		for await (const section of listener) {
-			result.push(section);
-		}
-	})();
-
-	await new Promise((r) => setTimeout(r, 200));
-	controller.abort();
+	for await (const section of listener) {
+		result.push(section);
+	}
 
 	return result;
 };
