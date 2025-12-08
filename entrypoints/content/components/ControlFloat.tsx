@@ -138,7 +138,7 @@ export default (props: Props) => {
 			/>
 			<Show when={shouldRenderBox()}>
 				<div
-					class="pointer-events-none fixed border-2 border-base-300 bg-secondary/50 rounded-field"
+					class="pointer-events-none fixed border-2 border-base-300 bg-secondary/50 rounded-box"
 					style={{
 						translate: `${boxPos()?.x ?? 0 - window.scrollX}px ${boxPos()?.y ?? 0 - window.scrollY}px`,
 						width: `${boxPos()?.width ?? 0}px`,
