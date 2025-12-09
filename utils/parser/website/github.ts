@@ -9,54 +9,45 @@ export default (): WebsiteParser => ({
 			textTags: [...(options?.textTags || []), "BDI"],
 			excludedSelectors: [
 				...(options?.excludedSelectors || []),
-				// File explorer
-				'[aria-labelledby="folders-and-files"]',
-				// Branch info bar
-				'[data-testid="branch-info-bar"]',
-				// Branch selector dropdown
-				'[aria-label="Select a branch"]',
-				// Everything in navigation bars
-				"nav",
-				// Code viewer
-				"#read-only-cursor-text-area",
-				".react-code-line-container",
-				"#symbols-pane",
-				// Commit info
-				'[class^="LatestCommit-module__Box"]',
-				// Repository header
-				"#repository-container-header:nth-child(1)",
-				// File path
-				'[class^="CodeViewHeader-module"]',
-				'[class^="FileNameStickyHeader-module"]',
-				// All sticky headers
-				'[class*="StickyHeader"]',
-				'[class^="StickyLinesHeader-module"]',
-				'[class^="BlobViewHeader-module"]',
-				".sticky-header-container",
-				// File tree in repo view
-				"#repos-file-tree",
-				// All buttons
-				"button",
-				'[role="button"]',
-				// Code blocks
-				".highlight",
-				'div[id^="highlight"]',
-				// Text under issue titles
-				'[class^="Description-module__container"]',
-				// Text on issue search input
-				".styled-input-container",
-				// Sidebar
-				".Layout-sidebar > div > div:nth-child(1) > div > div > div:nth-child(n+4)",
-				".Layout-sidebar > div > div:nth-child(n+2)",
-				// Issue header
-				'[id^="issuecomment-"]',
-				'[class^="IssueBodyHeader-module"]',
-				// PR comment header
+				// File name
+				'[class^="react-directory-row-name-cell"]',
+				// Contents above files/folders list
+				'[class^="DirectoryContent-module__OverviewHeaderRow"]',
+				'[class^="OverviewContent-module__Box_1-"]',
+				'[class^="DirectoryContent-module__Box_2-"]',
+				'[class^="DirectoryContent-module__Box_3-"]',
+				// Sidebar content (except description)
+				".about-margin > :not(:first-child)",
+				".hide-sm.hide-md > :not(:nth-child(2))",
+				// Small text of author information
+				'[class^="MainContent-module__container-"]',
+				// Search bar
+				'[class^="SearchBar"]',
+				// Issue/PR title header
+				'[class^="IssueBodyHeader-module__IssueBodyHeaderContainer-"]',
 				".timeline-comment-header",
-				// Issue/pr filters
-				".table-list-filters",
-				// PR head meta
-				".gh-header-meta",
+				// Issue/PR toolbar
+				`#${CSS.escape(":ra:-list-view-metadata")}`,
+				".Box-header",
+				// All sticky elements
+				'#StickyHeader',
+				".position-sticky",
+				'[class^="Sticky"]',
+				'[class^="BlobViewHeader-module"]',
+				// Username
+				'[data-hovercard-url^="/users/"]',
+				// Code sidepanels
+				".panel-content-narrow-styles",
+				// Code content
+				"#read-only-cursor-text-area",
+				".react-code-line",
+				".react-code-lines",
+
+				'[class^="DiffFileHeader-module"]',
+
+				'[class^="prc-PageLayout-PaneWrapper-"]',
+
+				"#repository-container-header",
 			],
 			extraTextFilters: [
 				...(options?.extraTextFilters || []),
