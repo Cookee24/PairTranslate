@@ -52,15 +52,6 @@ export default (props: { navId: string }) => {
 	const modifierOptions = getModifierOptions();
 	const selectionModifier = () =>
 		settings.basic.selectionTranslateModifier ?? getDefaultModifierKey();
-	const handleSelectionTranslateToggle = (enabled: boolean) => {
-		setSettings("basic", (basic) => ({
-			...basic,
-			selectionTranslateEnabled: enabled,
-			selectionTranslateModifier: enabled
-				? (basic.selectionTranslateModifier ?? getDefaultModifierKey())
-				: undefined,
-		}));
-	};
 
 	return (
 		<SettingsCard
@@ -239,7 +230,13 @@ export default (props: { navId: string }) => {
 							type="checkbox"
 							checked={settings.basic.selectionTranslateEnabled}
 							class="toggle"
-							onChange={(e) => handleSelectionTranslateToggle(e.target.checked)}
+							onChange={(e) =>
+								setSettings(
+									"basic",
+									"selectionTranslateEnabled",
+									e.target.checked,
+								)
+							}
 						/>
 					</div>
 				</FormField>

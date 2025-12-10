@@ -107,15 +107,6 @@ export default () => {
 	const modifierOptions = getModifierOptions();
 	const selectionModifier = () =>
 		settings.basic.selectionTranslateModifier ?? getDefaultModifierKey();
-	const handleSelectionTranslateToggle = (enabled: boolean) => {
-		setSettings("basic", (basic) => ({
-			...basic,
-			selectionTranslateEnabled: enabled,
-			selectionTranslateModifier: enabled
-				? (basic.selectionTranslateModifier ?? getDefaultModifierKey())
-				: undefined,
-		}));
-	};
 
 	return (
 		<div class="flex-1 flex flex-col gap-2">
@@ -255,7 +246,11 @@ export default () => {
 									checked={settings.basic.selectionTranslateEnabled}
 									class="toggle"
 									onChange={(e) =>
-										handleSelectionTranslateToggle(e.target.checked)
+										setSettings(
+											"basic",
+											"selectionTranslateEnabled",
+											e.target.checked,
+										)
 									}
 								/>
 							</div>
