@@ -1,4 +1,5 @@
 import z from "zod";
+import { getDefaultModifierKey, MODIFIER_KEYS } from "../modifier";
 
 export const SETTINGS_VERSION = 3;
 
@@ -28,6 +29,9 @@ export const BasicSettings = z.object({
 	keyboardShortcutEnabled: z.boolean().default(true),
 	keyboardShortcut: z.string().default("Alt+T"),
 	selectionTranslateEnabled: z.boolean().default(true),
+	selectionTranslateModifier: z
+		.enum(MODIFIER_KEYS)
+		.default(getDefaultModifierKey()),
 	inputTranslateEnabled: z.boolean().default(true),
 	progressIndicationEnabled: z.boolean().default(true),
 	translationStyle: TranslationStyleSettings.default(

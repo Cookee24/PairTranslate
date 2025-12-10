@@ -2,7 +2,7 @@ import { createSignal, onCleanup } from "solid-js";
 import { animateBlink } from "~/hooks/animation";
 import type { DOMSection } from "~/utils/parser/types";
 import { BatchInTextTranslation } from "../native-components/InTextTranslate";
-import ControlFloat from "./ControlFloat";
+import ModifierFloat from "./ModifierFloat";
 import TripleTouch from "./TripleTouch";
 
 export default () => {
@@ -36,7 +36,7 @@ export default () => {
 					})
 				}
 			/>
-			<ControlFloat onSelection={onSelection} />
+			<ModifierFloat onSelection={onSelection} />
 			<TripleTouch onSelection={onSelection} />
 		</>
 	);

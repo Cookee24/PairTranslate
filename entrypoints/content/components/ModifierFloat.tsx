@@ -3,7 +3,8 @@ import { createEffect, createSignal, onCleanup, Show } from "solid-js";
 import { createAnimatedAppearance } from "~/hooks/animation";
 import { useModifierKeyStatus } from "~/hooks/keyboard-shortcut";
 import { useMousePosition } from "~/hooks/mouse";
-import { isApple } from "~/utils/isapple";
+import { useSettings } from "~/hooks/settings";
+import { getDefaultModifierKey } from "~/utils/modifier";
 import type { DOMSection } from "~/utils/parser/types";
 import { getDomListener } from "../parser";
 
@@ -19,8 +20,13 @@ interface Props {
 }
 
 export default (props: Props) => {
-	const controlPressed = useModifierKeyStatus();
-	const modifierKey = isApple() ? "Alt" : "Control";
+	const { settings } = useSettings();
+	const modifierKey = () =>
+		settings.basic.selectionTranslateModifier ?? getDefaultModifierKey();
+	const controlPressed = useModifierKeyStatus(
+		() => Boolean(modifierKey()),
+		modifierKey,
+	);
 
 	// Indicator
 	const [ref, setRef] = createSignal<HTMLDivElement>();
@@ -84,7 +90,8 @@ export default (props: Props) => {
 				startPos = undefined;
 			};
 			const handleOtherKeys = (e: KeyboardEvent) => {
-				if (e.key !== modifierKey) {
+				const currentModifier = modifierKey();
+				if (currentModifier && e.key !== currentModifier) {
 					noTriggerOnRelease = true;
 				}
 			};

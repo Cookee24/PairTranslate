@@ -1,7 +1,7 @@
 import type { Accessor } from "solid-js";
 import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 import { isInput } from "~/utils/is-input";
-import { isApple } from "~/utils/isapple";
+import { getDefaultModifierKey, type ModifierKey } from "~/utils/modifier";
 
 interface KeyboardShortcutOptions {
 	enabled?: Accessor<boolean>;
@@ -160,28 +160,38 @@ export function useKeyboardShortcut(
 	});
 }
 
-export function useModifierKeyStatus(enabled = () => true): Accessor<boolean> {
+export function useModifierKeyStatus(
+	enabled: Accessor<boolean> = () => true,
+	modifierKey: Accessor<ModifierKey | undefined> = () =>
+		getDefaultModifierKey(),
+): Accessor<boolean> {
 	const [isPressed, setIsPressed] = createSignal(false);
-	const targetKey = isApple() ? "Alt" : "Control";
-
-	const handleKey = (event: KeyboardEvent, pressed: boolean) => {
-		if (event.key === targetKey) {
-			setIsPressed(pressed);
-		}
-	};
-
-	const onDown = (e: KeyboardEvent) => handleKey(e, true);
-	const onUp = (e: KeyboardEvent) => handleKey(e, false);
-	const onBlur = () => setIsPressed(false);
 
 	createEffect(() => {
-		if (!enabled()) return;
+		const isEnabled = enabled();
+		const targetKey = modifierKey();
+
+		if (!isEnabled || !targetKey) {
+			setIsPressed(false);
+			return;
+		}
+
+		const handleKey = (event: KeyboardEvent, pressed: boolean) => {
+			if (event.key === targetKey) {
+				setIsPressed(pressed);
+			}
+		};
+
+		const onDown = (e: KeyboardEvent) => handleKey(e, true);
+		const onUp = (e: KeyboardEvent) => handleKey(e, false);
+		const onBlur = () => setIsPressed(false);
 
 		document.addEventListener("keydown", onDown);
 		document.addEventListener("keyup", onUp);
 		window.addEventListener("blur", onBlur);
 
 		onCleanup(() => {
+			setIsPressed(false);
 			document.removeEventListener("keydown", onDown);
 			document.removeEventListener("keyup", onUp);
 			window.removeEventListener("blur", onBlur);

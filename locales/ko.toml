@@ -141,6 +141,8 @@ keyboardShortcut = "키보드 단축키"
 keyboardShortcutDesc = "번역을 트리거하는 키 조합"
 selectionTranslateEnabled = "단락 번역 활성화"
 selectionTranslateEnabledDesc = "Ctrl/Option 키를 누르고 드래그하여 단락을 선택하여 번역합니다(모바일에서는 트리플탭 가능)"
+selectionTranslateModifier = "문단 선택용 수정 키"
+selectionTranslateModifierDesc = "클릭하거나 드래그할 때 선택한 텍스트를 번역하려면 어떤 키를 누르고 있어야 할지 선택하세요"
 inputTranslateEnabled = "입력 필드 번역 활성화"
 inputTranslateEnabledDesc = "키보드 단축키를 사용하여 입력 필드 내용을 번역합니다"
 progressIndicationEnabled = "진행률 표시 활성화"
@@ -221,6 +223,7 @@ filterInteractiveDesc = "버튼, 헤더, 내비게이션, 푸터 등 인터랙�
 translateFullPage = "번역 범위"
 translateFullPageDesc = "체크하면 전체 페이지 콘텐츠를 번역하고, 체크하지 않으면 보이는 콘텐츠만 번역합니다"
 selectionTranslateEnabled = "$1 + 마우스 클릭/드래그로 번역"
+selectionTranslateHintSuffix = "+ 마우스 클릭/드래그로 번역"
 
 [settings.prompt]
 title = "프롬프트 설정"

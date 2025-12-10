@@ -141,6 +141,8 @@ keyboardShortcut = "键盘快捷键"
 keyboardShortcutDesc = "触发翻译的按键组合"
 selectionTranslateEnabled = "启用段落翻译"
 selectionTranslateEnabledDesc = "按住 Ctrl/Option 拖拽鼠标选择段落翻译（触屏可三击选择）"
+selectionTranslateModifier = "段落选择的修饰键"
+selectionTranslateModifierDesc = "选择点击或拖动时要按住的键以翻译所选文本"
 inputTranslateEnabled = "启用输入框翻译"
 inputTranslateEnabledDesc = "使用键盘快捷键翻译输入框内容"
 progressIndicationEnabled = "启用进度指示"
@@ -221,6 +223,7 @@ filterInteractiveDesc = "跳过按钮、标题、导航、页脚等交互元素�
 translateFullPage = "翻译范围"
 translateFullPageDesc = "勾选后翻译全部页面内容；不勾选则仅翻译可见内容"
 selectionTranslateEnabled = "$1 + 鼠标点击/拖动进行翻译"
+selectionTranslateHintSuffix = "+ 鼠标点击/拖动进行翻译"
 
 [settings.prompt]
 title = "提示词设置"

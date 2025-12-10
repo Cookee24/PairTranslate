@@ -1,6 +1,7 @@
 import { MS_TRANSLATOR_ID, PROMPT_ID } from "~/utils/constants";
 import { t } from "~/utils/i18n";
 import { getTargetLanguage } from "~/utils/language";
+import { getDefaultModifierKey } from "~/utils/modifier";
 import {
 	BATCH,
 	DICTIONARY,
@@ -29,6 +30,7 @@ export function generateBasicSettings(): s.BasicSettings {
 		keyboardShortcutEnabled: true,
 		keyboardShortcut: "Alt+T",
 		selectionTranslateEnabled: true,
+		selectionTranslateModifier: getDefaultModifierKey(),
 		inputTranslateEnabled: true,
 		progressIndicationEnabled: true,
 		translationStyle: {

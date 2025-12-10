@@ -141,6 +141,8 @@ keyboardShortcut = "Raccourci Clavier"
 keyboardShortcutDesc = "Combinaison de touches pour déclencher la traduction"
 selectionTranslateEnabled = "Activer la Traduction de Paragraphes"
 selectionTranslateEnabledDesc = "Sélectionner des paragraphes en maintenant Ctrl/Option+glissement pour traduire sur place"
+selectionTranslateModifier = "Touche modificateur pour la sélection de paragraphes"
+selectionTranslateModifierDesc = "Choisissez la touche à maintenir enfoncée lorsque vous cliquez ou faites glisser pour traduire le texte sélectionné"
 inputTranslateEnabled = "Activer la Traduction d'Entrée"
 inputTranslateEnabledDesc = "Activer la traduction des champs d'entrée à l'aide du raccourci clavier"
 progressIndicationEnabled = "Activer l'Indication de Progression"
@@ -221,6 +223,7 @@ filterInteractiveDesc = "Ignorer les éléments interactifs comme les boutons, l
 translateFullPage = "Portée de Traduction"
 translateFullPageDesc = "Lorsque coché, traduit le contenu de la page complète; lorsque non coché, traduit uniquement le contenu visible"
 selectionTranslateEnabled = "$1 + Clic/Glissement de souris pour traduire"
+selectionTranslateHintSuffix = "+ Clic/Glissement de souris pour traduire"
 
 [settings.prompt]
 title = "Paramètres des Invites"

@@ -141,6 +141,8 @@ keyboardShortcut = "Tastaturkürzel"
 keyboardShortcutDesc = "Tastenkombination zum Triggern der Übersetzung"
 selectionTranslateEnabled = "Absatzübersetzung aktivieren"
 selectionTranslateEnabledDesc = "Absätze durch Halten von Strg/Option+Ziehen auswählen zum lokalen Übersetzen"
+selectionTranslateModifier = "Modifikatortaste für die Absatzwahl"
+selectionTranslateModifierDesc = "Wähle die Taste, die du beim Klicken oder Ziehen gedrückt halten möchtest, um den ausgewählten Text zu übersetzen"
 inputTranslateEnabled = "Eingabeübersetzung aktivieren"
 inputTranslateEnabledDesc = "Übersetzung von Eingabefeldern mit Tastaturkürzel aktivieren"
 progressIndicationEnabled = "Fortschrittsanzeige aktivieren"
@@ -221,6 +223,7 @@ filterInteractiveDesc = "Interaktive Elemente wie Schaltflächen, Kopfzeilen, Na
 translateFullPage = "Übersetzungsbereich"
 translateFullPageDesc = "Wenn aktiviert, wird der gesamte Seiteninhalt übersetzt; wenn deaktiviert, wird nur der sichtbare Inhalt übersetzt"
 selectionTranslateEnabled = "$1 + Mausklick/Ziehen zum Übersetzen"
+selectionTranslateHintSuffix = "+ Mausklick/Ziehen zum Übersetzen"
 
 [settings.prompt]
 title = "Eingabeaufforderungseinstellungen"

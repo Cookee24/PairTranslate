@@ -141,6 +141,8 @@ keyboardShortcut = "Atajo de Teclado"
 keyboardShortcutDesc = "Combinación de teclas para activar traducción"
 selectionTranslateEnabled = "Habilitar Traducción de Párrafos"
 selectionTranslateEnabledDesc = "Seleccionar párrafos manteniendo Ctrl/Option+arrastrando para traducir en el lugar"
+selectionTranslateModifier = "Tecla modificadora para selección de párrafos"
+selectionTranslateModifierDesc = "Elige qué tecla mantener presionada al hacer clic o arrastrar para traducir el texto seleccionado"
 inputTranslateEnabled = "Habilitar Traducción de Entrada"
 inputTranslateEnabledDesc = "Habilitar traducción de campos de entrada usando atajo de teclado"
 progressIndicationEnabled = "Habilitar Indicación de Progreso"
@@ -221,6 +223,7 @@ filterInteractiveDesc = "Omitir elementos interactivos como botones, encabezados
 translateFullPage = "Alcance de Traducción"
 translateFullPageDesc = "Cuando esté marcado, traduce el contenido de la página completa; cuando no esté marcado, solo traduce el contenido visible"
 selectionTranslateEnabled = "$1 + Clic/Arrastrar del ratón para traducir"
+selectionTranslateHintSuffix = "+ Clic/Arrastrar del ratón para traducir"
 
 [settings.prompt]
 title = "Configuración de Prompts"

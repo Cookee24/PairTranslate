@@ -1,3 +1,4 @@
+import { For } from "solid-js";
 import { reconcile } from "solid-js/store";
 import { browser } from "#imports";
 import { Button } from "~/components/Button";
@@ -10,6 +11,11 @@ import { SettingsToggle } from "~/components/settings/SettingsToggle";
 import { TranslationStyleControls } from "~/components/settings/TranslationStyleControls";
 import { useSettings } from "~/hooks/settings";
 import { t } from "~/utils/i18n";
+import {
+	getDefaultModifierKey,
+	getModifierOptions,
+	type ModifierKey,
+} from "~/utils/modifier";
 import { generateBasicSettings } from "~/utils/settings";
 import ShortcutInput from "../components/ShortcutInput";
 
@@ -42,6 +48,18 @@ export default (props: { navId: string }) => {
 		}
 
 		window.open(targetUrl, "_blank", "noopener,noreferrer");
+	};
+	const modifierOptions = getModifierOptions();
+	const selectionModifier = () =>
+		settings.basic.selectionTranslateModifier ?? getDefaultModifierKey();
+	const handleSelectionTranslateToggle = (enabled: boolean) => {
+		setSettings("basic", (basic) => ({
+			...basic,
+			selectionTranslateEnabled: enabled,
+			selectionTranslateModifier: enabled
+				? (basic.selectionTranslateModifier ?? getDefaultModifierKey())
+				: undefined,
+		}));
 	};
 
 	return (
@@ -173,15 +191,6 @@ export default (props: { navId: string }) => {
 				/>
 
 				<SettingsToggle
-					label={t("settings.basic.selectionTranslateEnabled")}
-					helperText={t("settings.basic.selectionTranslateEnabledDesc")}
-					checked={settings.basic.selectionTranslateEnabled}
-					onChange={(e) =>
-						setSettings("basic", "selectionTranslateEnabled", e.target.checked)
-					}
-				/>
-
-				<SettingsToggle
 					label={t("settings.basic.inputTranslateEnabled")}
 					helperText={t("settings.basic.inputTranslateEnabledDesc")}
 					checked={settings.basic.inputTranslateEnabled}
@@ -198,6 +207,42 @@ export default (props: { navId: string }) => {
 						setSettings("basic", "progressIndicationEnabled", e.target.checked)
 					}
 				/>
+
+				<FormField
+					label={t("settings.basic.selectionTranslateEnabled")}
+					helperText={t("settings.basic.selectionTranslateEnabledDesc")}
+				>
+					<div class="flex items-center gap-2 text-sm">
+						<select
+							class="select select-xs"
+							disabled={!settings.basic.selectionTranslateEnabled}
+							value={selectionModifier()}
+							on:change={(e) =>
+								setSettings(
+									"basic",
+									"selectionTranslateModifier",
+									e.target.value as ModifierKey,
+								)
+							}
+						>
+							<For each={modifierOptions}>
+								{(option) => (
+									<option value={option.value}>{option.label}</option>
+								)}
+							</For>
+						</select>
+						<span class="text-xs">
+							{t("settings.translation.selectionTranslateHintSuffix")}
+						</span>
+						<div class="flex-1" />
+						<input
+							type="checkbox"
+							checked={settings.basic.selectionTranslateEnabled}
+							class="toggle"
+							onChange={(e) => handleSelectionTranslateToggle(e.target.checked)}
+						/>
+					</div>
+				</FormField>
 			</FormGrid>
 		</SettingsCard>
 	);

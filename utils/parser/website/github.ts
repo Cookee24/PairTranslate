@@ -30,7 +30,7 @@ export default (): WebsiteParser => ({
 				`#${CSS.escape(":ra:-list-view-metadata")}`,
 				".Box-header",
 				// All sticky elements
-				'#StickyHeader',
+				"#StickyHeader",
 				".position-sticky",
 				'[class^="Sticky"]',
 				'[class^="BlobViewHeader-module"]',

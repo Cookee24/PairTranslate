@@ -141,6 +141,8 @@ keyboardShortcut = "Keyboard Shortcut"
 keyboardShortcutDesc = "Key combination to trigger translation"
 selectionTranslateEnabled = "Enable Paragraph Translation"
 selectionTranslateEnabledDesc = "Select paragraphs by holding Ctrl/Option+dragging (or triple-tap on mobile) to translate in-place"
+selectionTranslateModifier = "Modifier key for paragraph selection"
+selectionTranslateModifierDesc = "Pick which key to hold while clicking or dragging to translate selected text"
 inputTranslateEnabled = "Enable Input Translation"
 inputTranslateEnabledDesc = "Enable translation of input fields using keyboard shortcut"
 progressIndicationEnabled = "Enable Progress Indication"
@@ -221,6 +223,7 @@ filterInteractiveDesc = "Skip interactive elements like buttons, headers, naviga
 translateFullPage = "Translation Scope"
 translateFullPageDesc = "When checked, translate entire page content; when unchecked, only translate visible content"
 selectionTranslateEnabled = "$1 + mouse click/drag to translate"
+selectionTranslateHintSuffix = "+ mouse click/drag to translate"
 
 [settings.prompt]
 title = "Prompt Settings"

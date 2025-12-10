@@ -141,6 +141,8 @@ keyboardShortcut = "キーボードショートカット"
 keyboardShortcutDesc = "翻訳をトリガーするキーの組み合わせ"
 selectionTranslateEnabled = "段落翻訳を有効化"
 selectionTranslateEnabledDesc = "Ctrl/Option キーを押しながらドラッグしてマウスで段落を選択して翻訳します（モバイルではトリプルタップで選択可能）"
+selectionTranslateModifier = "段落選択用修飾キー"
+selectionTranslateModifierDesc = "クリックやドラッグで選択したテキストを翻訳する際に押し続けるキーを選択してください"
 inputTranslateEnabled = "入力フィールド翻訳を有効化"
 inputTranslateEnabledDesc = "キーボードショートカットを使用して入力フィールドの内容を翻訳します"
 progressIndicationEnabled = "進捗表示を有効化"
@@ -221,6 +223,7 @@ filterInteractiveDesc = "ボタン、ヘッダー、ナビゲーション、フ�
 translateFullPage = "翻訳範囲"
 translateFullPageDesc = "チェックするとページ全体のコンテンツを翻訳します。チェックしないと、表示されているコンテンツのみを翻訳します"
 selectionTranslateEnabled = "$1 + マウスクリック/ドラッグで翻訳"
+selectionTranslateHintSuffix = "+ マウスクリック/ドラッグで翻訳"
 
 [settings.prompt]
 title = "プロンプト設定"

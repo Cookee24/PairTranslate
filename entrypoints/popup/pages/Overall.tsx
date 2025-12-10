@@ -2,7 +2,6 @@ import { trackStore } from "@solid-primitives/deep";
 import { Box, Highlighter, Link, TextAlignStart, Trash2 } from "lucide-solid";
 import { createMemo, createResource, For } from "solid-js";
 import { reconcile, unwrap } from "solid-js/store";
-import { isApple } from "@/utils/isapple";
 import { Button } from "~/components/Button";
 import { Card } from "~/components/Card";
 import { ButtonGroup } from "~/components/settings/ButtonGroup";
@@ -11,6 +10,11 @@ import { createDomainEnabledTimer } from "~/hooks/domain-timer";
 import { useSettings } from "~/hooks/settings";
 import { DOMAIN_TIMER_UNTIL_CLOSE } from "~/utils/constants";
 import { t } from "~/utils/i18n";
+import {
+	getDefaultModifierKey,
+	getModifierOptions,
+	type ModifierKey,
+} from "~/utils/modifier";
 import { selectServicesByType } from "~/utils/settings/services";
 import { getCurrentDomain } from "../get-current";
 
@@ -100,6 +104,18 @@ export default () => {
 
 		return options;
 	});
+	const modifierOptions = getModifierOptions();
+	const selectionModifier = () =>
+		settings.basic.selectionTranslateModifier ?? getDefaultModifierKey();
+	const handleSelectionTranslateToggle = (enabled: boolean) => {
+		setSettings("basic", (basic) => ({
+			...basic,
+			selectionTranslateEnabled: enabled,
+			selectionTranslateModifier: enabled
+				? (basic.selectionTranslateModifier ?? getDefaultModifierKey())
+				: undefined,
+		}));
+	};
 
 	return (
 		<div class="flex-1 flex flex-col gap-2">
@@ -210,22 +226,36 @@ export default () => {
 						/>
 						<div class="col-span-2 flex flex-col gap-1 mt-1">
 							<div class="flex items-center gap-2">
-								<span class="text-xs">
-									{t("settings.translation.selectionTranslateEnabled", [
-										isApple() ? "⌥" : "Ctrl",
-									])}
-								</span>
+								<div class="flex items-center gap-2 text-xs">
+									<select
+										class="select select-xs max-w-24"
+										disabled={!settings.basic.selectionTranslateEnabled}
+										value={selectionModifier()}
+										on:change={(e) =>
+											setSettings(
+												"basic",
+												"selectionTranslateModifier",
+												e.target.value as ModifierKey,
+											)
+										}
+									>
+										<For each={modifierOptions}>
+											{(option) => (
+												<option value={option.value}>{option.label}</option>
+											)}
+										</For>
+									</select>
+									<span>
+										{t("settings.translation.selectionTranslateHintSuffix")}
+									</span>
+								</div>
 								<div class="flex-1" />
 								<input
 									type="checkbox"
 									checked={settings.basic.selectionTranslateEnabled}
 									class="toggle"
 									onChange={(e) =>
-										setSettings(
-											"basic",
-											"selectionTranslateEnabled",
-											e.target.checked,
-										)
+										handleSelectionTranslateToggle(e.target.checked)
 									}
 								/>
 							</div>
