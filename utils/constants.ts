@@ -96,6 +96,8 @@ export const TEXT_TAGS = [
 	"PRE",
 	"DD",
 	"DT",
+	"I",
+	"U",
 	"STRONG",
 	"BLOCKQUOTE",
 	"FIGCAPTION",
