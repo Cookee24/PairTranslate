@@ -7,14 +7,36 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for taking the time to report a bug! Please fill out this form as completely as possible.
+        Thanks for the report! A short, clear repro is the fastest way to get this fixed.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which area is affected?
+      options:
+        - Website compatibility
+        - Translation service / API / LLM
+        - Translation triggering / selection
+        - UI / settings
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: page-url
+    attributes:
+      label: Page URL (if applicable)
+      description: The exact URL where it happens.
+      placeholder: https://example.com/path
 
   - type: textarea
     id: bug-description
     attributes:
-      label: Bug Description
-      description: A clear and concise description of what the bug is.
-      placeholder: Describe what happened and what you expected to happen
+      label: What happened?
+      description: Describe the problem.
+      placeholder: What did you do, and what did you see?
     validations:
       required: true
 
@@ -35,55 +57,23 @@ body:
     id: expected-behavior
     attributes:
       label: Expected Behavior
-      description: A clear description of what you expected to happen
-    validations:
-      required: true
-
-  - type: textarea
-    id: actual-behavior
-    attributes:
-      label: Actual Behavior
-      description: What actually happened
-    validations:
-      required: true
-
-  - type: dropdown
-    id: translation-service
-    attributes:
-      label: Translation Service
-      description: Which translation service were you using when the bug occurred?
-      options:
-        - Google Translate
-        - DeepL
-        - Bing Translate
-        - ChatGPT
-        - Claude
-        - Gemini
-        - Multiple services
-      default: 0
-    validations:
-      required: false
-
-  - type: dropdown
-    id: browser
-    attributes:
-      label: Browser
-      description: Which browser are you using?
-      options:
-        - Chrome
-        - Firefox
-        - Edge
-        - Safari
-        - Other
+      description: What did you expect to happen?
     validations:
       required: true
 
   - type: input
-    id: browser-version
+    id: translation-service
     attributes:
-      label: Browser Version
-      description: Please provide your browser version
-      placeholder: e.g., Chrome 120.0.6099.109
+      label: Translation service (if applicable)
+      description: The service/provider you selected in PairTranslate.
+      placeholder: Google / DeepL / Bing / ChatGPT / Claude / Gemini / ...
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: Include version.
+      placeholder: Chrome 120.0.6099.109 / Firefox 121 / Edge 120 / ...
     validations:
       required: true
 
@@ -102,13 +92,6 @@ body:
       label: Operating System
       description: Please provide your operating system
       placeholder: e.g., Windows 11, macOS 14.0, Ubuntu 22.04
-
-  - type: textarea
-    id: website-url
-    attributes:
-      label: Website URL (if applicable)
-      description: If the bug occurred on a specific website, please provide the URL
-      placeholder: https://example.com
 
   - type: textarea
     id: console-errors
@@ -138,9 +121,5 @@ body:
       label: Confirmation
       description: Please confirm the following
       options:
-        - label: I have searched existing issues for similar problems
-          required: true
-        - label: I have provided all the requested information
-          required: true
-        - label: This is not a security vulnerability (use security template for security issues)
+        - label: I searched existing issues
           required: true
