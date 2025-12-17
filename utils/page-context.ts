@@ -57,6 +57,7 @@ export function getPageContext(): PageContext {
 	}
 
 	if (!cache) {
+		const keywords = getMetaKeywords();
 		const rawTitle = document.title.trim();
 		const mainHeading = getMainHeading();
 
@@ -66,10 +67,15 @@ export function getPageContext(): PageContext {
 		cache = {
 			domain: window.location.hostname,
 			title: cleanTitle,
-			h1: mainHeading,
-			keywords: getMetaKeywords().join(", "),
 			...getExtraMeta(),
 		};
+
+		if (mainHeading && mainHeading !== cleanTitle) {
+			cache["h1"] = mainHeading;
+		}
+		if (keywords.length > 0) {
+			cache["keywords"] = keywords.join(", ");
+		}
 	}
 
 	return cache;
