@@ -111,7 +111,7 @@ function matchesShortcut(
 /**
  * Hook for handling keyboard shortcuts
  */
-export function useKeyboardShortcut(
+export function createKeyboardShortcut(
 	shortcutString: Accessor<string>,
 	callback: (event: KeyboardEvent, inInput: boolean) => void,
 	options: KeyboardShortcutOptions = {},
@@ -160,21 +160,15 @@ export function useKeyboardShortcut(
 	});
 }
 
-export function useModifierKeyStatus(
-	enabled: Accessor<boolean> = () => true,
+export function createModifierKey(
 	modifierKey: Accessor<ModifierKey | undefined> = () =>
 		getDefaultModifierKey(),
 ): Accessor<boolean> {
 	const [isPressed, setIsPressed] = createSignal(false);
 
 	createEffect(() => {
-		const isEnabled = enabled();
 		const targetKey = modifierKey();
-
-		if (!isEnabled || !targetKey) {
-			setIsPressed(false);
-			return;
-		}
+		if (!targetKey) return;
 
 		const handleKey = (event: KeyboardEvent, pressed: boolean) => {
 			if (event.key === targetKey) {

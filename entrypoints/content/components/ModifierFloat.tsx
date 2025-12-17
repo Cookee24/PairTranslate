@@ -1,10 +1,15 @@
 import { animate } from "motion/mini";
-import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	onCleanup,
+	Show,
+} from "solid-js";
 import { createAnimatedAppearance } from "~/hooks/animation";
-import { useModifierKeyStatus } from "~/hooks/keyboard-shortcut";
+import { createModifierKey } from "~/hooks/keyboard-shortcut";
 import { useMousePosition } from "~/hooks/mouse";
 import { useSettings } from "~/hooks/settings";
-import { getDefaultModifierKey } from "~/utils/modifier";
 import type { DOMSection } from "~/utils/parser/types";
 import { getDomListener } from "../parser";
 
@@ -21,12 +26,10 @@ interface Props {
 
 export default (props: Props) => {
 	const { settings } = useSettings();
-	const modifierKey = () =>
-		settings.basic.selectionTranslateModifier ?? getDefaultModifierKey();
-	const controlPressed = useModifierKeyStatus(
-		() => Boolean(modifierKey()),
-		modifierKey,
+	const modifierKey = createMemo(
+		() => settings.basic.selectionTranslateModifier,
 	);
+	const controlPressed = createModifierKey(modifierKey);
 
 	// Indicator
 	const [ref, setRef] = createSignal<HTMLDivElement>();

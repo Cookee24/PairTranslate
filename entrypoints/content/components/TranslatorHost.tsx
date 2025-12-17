@@ -1,6 +1,6 @@
 import { createEffect, createSignal, Show } from "solid-js";
 import { createDomainEnabledTimer } from "~/hooks/domain-timer";
-import { useKeyboardShortcut } from "~/hooks/keyboard-shortcut";
+import { createKeyboardShortcut } from "~/hooks/keyboard-shortcut";
 import { useSettings } from "~/hooks/settings";
 import { useWebsiteRule } from "~/hooks/website-rule";
 import FloatingBall from "./FloatingBall";
@@ -28,7 +28,7 @@ export default () => {
 	});
 
 	// Handle keyboard shortcut
-	useKeyboardShortcut(
+	createKeyboardShortcut(
 		() => settings.basic.keyboardShortcut,
 		(event, inInput) => {
 			if (inInput && settings.basic.inputTranslateEnabled) {
