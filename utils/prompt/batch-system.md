@@ -26,6 +26,7 @@ Let $a$ and $b$ be two numbers. The sum $a + b$ is defined as the **total** quan
 </example>
 
 {{#if page}}<page>
-{{#for key, item: page}}{{key}}: {{item}}{{/for}}
+{{#for key, item: page}}{{key}}: {{item}}
+{{/for}}
 </page>{{/if}}
 
