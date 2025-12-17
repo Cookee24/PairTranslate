@@ -16,6 +16,7 @@ import { useWebsiteRule } from "~/hooks/website-rule";
 import { DATA_TRANSLATION_TEXT, PROMPT_ID } from "~/utils/constants";
 import { copyToClipboard } from "~/utils/copy";
 import { getMarkdownFromSection } from "~/utils/markdown";
+import { getPageContext } from "~/utils/page-context";
 import type { DOMSection } from "~/utils/parser/types";
 import { estimateTokens } from "~/utils/token-estimate";
 import InTextTooltip from "../components/InTextTooltip";
@@ -148,6 +149,9 @@ const BatchRender = (props: BatchRenderProps) => {
 		modelId: () => settings.translate.inTextTranslateModel,
 		srcLang: () => websiteRule.sourceLang || settings.translate.sourceLang,
 		dstLang: () => websiteRule.targetLang || settings.translate.targetLang,
+		ctx: () => ({
+			page: getPageContext(),
+		}),
 	});
 
 	const hideOriginal = createMemo(
