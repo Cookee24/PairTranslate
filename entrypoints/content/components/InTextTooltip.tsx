@@ -107,8 +107,14 @@ export default (props: Props) => {
 						<RotateCcw size={16} />
 					</Button>
 				</Menu.Item>
-				<Menu.Item class="tooltip tooltip-right" data-tip={t("common.delete")}>
-					<Button variant="warning" size="xs" onClick={props.onDelete}>
+				<Menu.Item>
+					<Button
+						class="tooltip tooltip-right"
+						data-tip={t("common.delete")}
+						variant="warning"
+						size="xs"
+						onClick={props.onDelete}
+					>
 						<Trash2 size={16} />
 					</Button>
 				</Menu.Item>
