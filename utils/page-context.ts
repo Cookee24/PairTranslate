@@ -51,8 +51,6 @@ let lastUrl: string;
 
 export function getPageContext(): PageContext {
 	const currentUrl = window.location.href;
-
-	// 简单的缓存验证
 	if (lastUrl !== currentUrl) {
 		lastUrl = currentUrl;
 		cache = undefined;
@@ -66,7 +64,6 @@ export function getPageContext(): PageContext {
 			mainHeading && rawTitle.includes(mainHeading) ? mainHeading : rawTitle;
 
 		cache = {
-			url: currentUrl,
 			domain: window.location.hostname,
 			title: cleanTitle,
 			h1: mainHeading,
