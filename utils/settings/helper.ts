@@ -11,7 +11,7 @@ export type SettingsMigrationErrorState = {
 
 export function listenEnabled(callback: (enabled: boolean) => void) {
 	browser.storage.local.get([STORAGE_KEYS.settings], (res) => {
-		const settings = res[STORAGE_KEYS.settings];
+		const settings = res[STORAGE_KEYS.settings] as s.SettingsSchema | undefined;
 		const enabled = settings?.basic?.enabled ?? false;
 		callback(enabled);
 	});
@@ -25,7 +25,8 @@ export function listenEnabled(callback: (enabled: boolean) => void) {
 		if (area !== "local") return;
 		const settings = changes[STORAGE_KEYS.settings];
 		if (settings) {
-			callback(settings.newValue?.basic?.enabled ?? false);
+			const newValue = settings.newValue as s.SettingsSchema | undefined;
+			callback(newValue?.basic?.enabled ?? false);
 		}
 	};
 
@@ -35,7 +36,7 @@ export function listenEnabled(callback: (enabled: boolean) => void) {
 
 export function listenSettings(callback: (settings: s.SettingsSchema) => void) {
 	browser.storage.local.get([STORAGE_KEYS.settings], (res) => {
-		const settings = res[STORAGE_KEYS.settings];
+		const settings = res[STORAGE_KEYS.settings] as s.SettingsSchema;
 		callback(settings);
 	});
 
@@ -48,7 +49,7 @@ export function listenSettings(callback: (settings: s.SettingsSchema) => void) {
 		if (area !== "local") return;
 		const settings = changes[STORAGE_KEYS.settings];
 		if (settings) {
-			callback(settings.newValue);
+			callback(settings.newValue as s.SettingsSchema);
 		}
 	};
 
@@ -64,7 +65,7 @@ export function saveSettings(settings: s.SettingsSchema): Promise<void> {
 
 export async function getSettings(): Promise<s.SettingsSchema> {
 	const res = await browser.storage.local.get([STORAGE_KEYS.settings]);
-	return res[STORAGE_KEYS.settings];
+	return res[STORAGE_KEYS.settings] as s.SettingsSchema;
 }
 
 export async function initializeSettings(): Promise<void> {
@@ -94,7 +95,9 @@ export async function getSettingsMigrationError(): Promise<
 	const res = await browser.storage.local.get(
 		STORAGE_KEYS.settingsMigrationError,
 	);
-	return res[STORAGE_KEYS.settingsMigrationError];
+	return res[STORAGE_KEYS.settingsMigrationError] as
+		| SettingsMigrationErrorState
+		| undefined;
 }
 
 export async function clearSettingsMigrationError(): Promise<void> {
