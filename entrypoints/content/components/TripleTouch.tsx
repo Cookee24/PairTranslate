@@ -1,6 +1,11 @@
 import { createEffect, onCleanup } from "solid-js";
 import { useSettings } from "~/hooks/settings";
 import type { DOMSection } from "~/utils/parser/types";
+import {
+	getElementsFromPoint,
+	type SelectionPoint,
+	shouldIncludeElementAtPoint,
+} from "~/utils/selection";
 import { getDomListener } from "../parser";
 
 interface Props {
@@ -18,12 +23,12 @@ export default (props: Props) => {
 
 		let clickCount = 0;
 		let lastClickTime = 0;
-		let lastClickPos: { x: number; y: number } | undefined;
+		let lastClickPos: SelectionPoint | undefined;
 		let resetTimer: NodeJS.Timeout | undefined;
 
 		const handleClick = async (e: MouseEvent | TouchEvent) => {
 			const now = Date.now();
-			const currentPos =
+			const currentPos: SelectionPoint =
 				e instanceof MouseEvent
 					? { x: e.clientX, y: e.clientY }
 					: { x: e.touches[0]?.clientX || 0, y: e.touches[0]?.clientY || 0 };
@@ -87,19 +92,16 @@ export default (props: Props) => {
 	return null;
 };
 
-const elementsAtPoint = async (point: { x: number; y: number }) => {
+const elementsAtPoint = async (point: SelectionPoint) => {
 	const controller = new AbortController();
+	const selectionPoint = {
+		x: point.x + window.scrollX,
+		y: point.y + window.scrollY,
+	};
+	const roots = getElementsFromPoint(selectionPoint);
 	const listener = await getDomListener(window.location.hostname, {
-		judgeFn: (element) => {
-			const rect = element.getBoundingClientRect();
-			if (rect.width === 0 && rect.height === 0) return true;
-			return (
-				point.x >= rect.x &&
-				point.x <= rect.x + rect.width &&
-				point.y >= rect.y &&
-				point.y <= rect.y + rect.height
-			);
-		},
+		roots,
+		judgeFn: (element) => shouldIncludeElementAtPoint(element, selectionPoint),
 		listenNew: false,
 		filterInteractive: false,
 		signal: controller.signal,

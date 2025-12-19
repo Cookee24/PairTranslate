@@ -1,4 +1,5 @@
 import { onCleanup } from "solid-js";
+import type { SelectionPoint } from "~/utils/selection";
 
 interface Props {
 	onToggle?: () => void;
@@ -9,7 +10,7 @@ const TAP_DISTANCE_THRESHOLD = 30; // px - max movement allowed during tap
 
 export default (props: Props) => {
 	let touchStartTime = 0;
-	let touchStartPositions: { x: number; y: number }[] = [];
+	let touchStartPositions: SelectionPoint[] = [];
 
 	const handleTouchStart = (e: TouchEvent) => {
 		// Check if exactly 4 fingers touched the screen
@@ -34,10 +35,12 @@ export default (props: Props) => {
 			// Check if it was a quick tap (within time threshold)
 			if (elapsed < TAP_TIME_THRESHOLD && e.changedTouches.length === 4) {
 				// Verify fingers didn't move too much during the tap
-				const endPositions = Array.from(e.changedTouches).map((touch) => ({
-					x: touch.clientX,
-					y: touch.clientY,
-				}));
+				const endPositions: SelectionPoint[] = Array.from(e.changedTouches).map(
+					(touch) => ({
+						x: touch.clientX,
+						y: touch.clientY,
+					}),
+				);
 
 				const isValidTap = endPositions.every((endPos, index) => {
 					const startPos = touchStartPositions[index];

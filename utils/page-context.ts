@@ -71,10 +71,10 @@ export function getPageContext(): PageContext {
 		};
 
 		if (mainHeading && mainHeading !== cleanTitle) {
-			cache["h1"] = mainHeading;
+			cache.h1 = mainHeading;
 		}
 		if (keywords.length > 0) {
-			cache["keywords"] = keywords.join(", ");
+			cache.keywords = keywords.join(", ");
 		}
 	}
 

@@ -1,5 +1,5 @@
 export interface State {
-	root: Element;
+	roots: RootsIterable;
 	signal?: AbortSignal;
 	excludedSelector: string;
 	textTags: Set<string>;
@@ -9,8 +9,11 @@ export interface State {
 	extraTextFilter?: RegExp;
 }
 
+export type RootsIterable = Iterable<Element> | AsyncIterable<Element>;
+export type RootsInput = Element | RootsIterable;
+
 export interface Options {
-	root?: Element;
+	roots?: RootsInput;
 	signal?: AbortSignal;
 	excludedSelectors?: string[];
 	textTags?: string[];

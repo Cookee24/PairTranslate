@@ -12,6 +12,8 @@ import type {
 	DOMSection,
 	InitialGeneratorFn,
 	Options,
+	RootsInput,
+	RootsIterable,
 	SectionGenerator,
 	State,
 } from "./types";
@@ -295,8 +297,10 @@ export async function* elementWalker(state: State): SectionGenerator {
 		}
 	};
 
-	yield* findTextElementsAndSplit(state.root);
-	observeElement(state.root);
+	for await (const root of state.roots) {
+		yield* findTextElementsAndSplit(root);
+		observeElement(root);
+	}
 
 	if (state.signal) {
 		if (state.signal.aborted) {
@@ -376,9 +380,17 @@ export function pipe(
 	return stream;
 }
 
+const normalizeRoots = (roots?: RootsInput): RootsIterable => {
+	const defaultRoot = document.body || document.documentElement;
+	if (!roots) return defaultRoot ? [defaultRoot] : [];
+	if (roots instanceof Element) return [roots];
+	if (Symbol.asyncIterator in roots) return roots;
+	return roots;
+};
+
 export function getState(options: Options = {}): State {
 	return {
-		root: options.root || document.body,
+		roots: normalizeRoots(options.roots),
 		signal: options.signal,
 		excludedSelector: [
 			...(options.excludedSelectors || []),

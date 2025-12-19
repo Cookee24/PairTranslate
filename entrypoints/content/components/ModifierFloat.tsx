@@ -11,14 +11,12 @@ import { createModifierKey } from "~/hooks/keyboard-shortcut";
 import { useMousePosition } from "~/hooks/mouse";
 import { useSettings } from "~/hooks/settings";
 import type { DOMSection } from "~/utils/parser/types";
+import {
+	getElementsFromSelectionBox,
+	type SelectionBox,
+	shouldIncludeElementInSelectionBox,
+} from "~/utils/selection";
 import { getDomListener } from "../parser";
-
-interface SelectionBox {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-}
 
 interface Props {
 	onSelection?: (sections: DOMSection[]) => void;
@@ -163,22 +161,10 @@ export default (props: Props) => {
 
 const elementsInBox = async (box: SelectionBox) => {
 	const controller = new AbortController();
+	const roots = getElementsFromSelectionBox(box);
 	const listener = await getDomListener(window.location.hostname, {
-		judgeFn: (element) => {
-			const rect = element.getBoundingClientRect();
-			// Some elements with "display: content" may have 0 width/height, and we want the elements inside them
-			if (rect.width === 0 && rect.height === 0) return true;
-			const elementX = rect.x + window.scrollX;
-			const elementY = rect.y + window.scrollY;
-
-			// Check if rectangles intersect
-			return (
-				elementX < box.x + box.width &&
-				elementX + rect.width > box.x &&
-				elementY < box.y + box.height &&
-				elementY + rect.height > box.y
-			);
-		},
+		roots,
+		judgeFn: (element) => shouldIncludeElementInSelectionBox(element, box),
 		listenNew: false,
 		filterInteractive: false,
 		signal: controller.signal,
