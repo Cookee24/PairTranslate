@@ -36,8 +36,10 @@ export function listenEnabled(callback: (enabled: boolean) => void) {
 
 export function listenSettings(callback: (settings: s.SettingsSchema) => void) {
 	browser.storage.local.get([STORAGE_KEYS.settings], (res) => {
-		const settings = res[STORAGE_KEYS.settings] as s.SettingsSchema;
-		callback(settings);
+		const settings = res[STORAGE_KEYS.settings] as s.SettingsSchema | undefined;
+		if (settings) {
+			callback(settings);
+		}
 	});
 
 	const listener = (
@@ -48,7 +50,7 @@ export function listenSettings(callback: (settings: s.SettingsSchema) => void) {
 	) => {
 		if (area !== "local") return;
 		const settings = changes[STORAGE_KEYS.settings];
-		if (settings) {
+		if (settings?.newValue) {
 			callback(settings.newValue as s.SettingsSchema);
 		}
 	};
