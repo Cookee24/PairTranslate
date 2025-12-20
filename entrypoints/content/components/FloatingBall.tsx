@@ -79,7 +79,7 @@ export default (props: Props) => {
 		startY = touch ? e.touches[0].clientY : e.clientY;
 		initialTop = top();
 
-		document.documentElement.setAttribute(DATA_PREVENT_SCROLL, "");
+		touch && document.documentElement.setAttribute(DATA_PREVENT_SCROLL, "");
 		document.body.setAttribute(DATA_GRABBING_CONTAINER, "");
 	};
 
@@ -177,7 +177,7 @@ export default (props: Props) => {
 				}}
 				class="btn-circle shadow-lg relative self-end"
 				classList={{ "cursor-grabbing": isDragging() }}
-				size="sm"
+				size="md"
 			>
 				<Show when={props.translateEnabled}>
 					{progressing() ? (
