@@ -10,6 +10,8 @@ import { createAnimatedAppearance } from "~/hooks/animation";
 import { createModifierKey } from "~/hooks/keyboard-shortcut";
 import { useMousePosition } from "~/hooks/mouse";
 import { useSettings } from "~/hooks/settings";
+import { isInput } from "~/utils/is-input";
+import { getBaseModifierKey, isTripleModifierKey } from "~/utils/modifier";
 import type { DOMSection } from "~/utils/parser/types";
 import {
 	getElementsFromSelectionBox,
@@ -24,15 +26,83 @@ interface Props {
 
 export default (props: Props) => {
 	const { settings } = useSettings();
-	const modifierKey = createMemo(
+	const selectionModifier = createMemo(
 		() => settings.basic.selectionTranslateModifier,
 	);
-	const controlPressed = createModifierKey(modifierKey);
+	const baseModifierKey = createMemo(() =>
+		getBaseModifierKey(selectionModifier()),
+	);
+	const isTripleMode = createMemo(() =>
+		isTripleModifierKey(selectionModifier()),
+	);
+	const controlPressed = createModifierKey(() =>
+		isTripleMode() ? undefined : baseModifierKey(),
+	);
+
+	const [selectionMode, setSelectionMode] = createSignal(false);
+	createEffect(() => {
+		if (!isTripleMode()) {
+			setSelectionMode(false);
+		}
+	});
+
+	createEffect(() => {
+		if (!isTripleMode()) return;
+		const targetKey = baseModifierKey();
+		if (!targetKey) return;
+
+		let pressCount = 0;
+		let lastPressAt = 0;
+		const maxIntervalMs = 600;
+
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.repeat) return;
+			if (event.key !== targetKey) return;
+			const target = event.target as HTMLElement | null;
+			if (target && isInput(target)) return;
+
+			if (selectionMode()) {
+				pressCount = 0;
+				lastPressAt = 0;
+				setSelectionMode(false);
+				return;
+			}
+
+			const now = Date.now();
+			if (now - lastPressAt > maxIntervalMs) {
+				pressCount = 0;
+			}
+			pressCount += 1;
+			lastPressAt = now;
+
+			if (pressCount >= 3) {
+				pressCount = 0;
+				setSelectionMode((prev) => !prev);
+			}
+		};
+
+		const handleBlur = () => {
+			pressCount = 0;
+			setSelectionMode(false);
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		window.addEventListener("blur", handleBlur);
+		onCleanup(() => {
+			pressCount = 0;
+			setSelectionMode(false);
+			document.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("blur", handleBlur);
+		});
+	});
+	const selectionActive = createMemo(() =>
+		isTripleMode() ? selectionMode() : controlPressed(),
+	);
 
 	// Indicator
 	const [ref, setRef] = createSignal<HTMLDivElement>();
 	const pos = useMousePosition();
-	const shouldRender = createAnimatedAppearance(ref, controlPressed);
+	const shouldRender = createAnimatedAppearance(ref, selectionActive);
 
 	// Selection box
 	const [boxRef, setBoxRef] = createSignal<HTMLDivElement>();
@@ -48,7 +118,8 @@ export default (props: Props) => {
 	);
 
 	createEffect(() => {
-		if (controlPressed()) {
+		if (selectionActive()) {
+			const allowPointSelection = !isTripleMode();
 			let noTriggerOnRelease = false;
 			const handleMouseDown = (e: MouseEvent) => {
 				setIsDragging(true);
@@ -91,9 +162,11 @@ export default (props: Props) => {
 				startPos = undefined;
 			};
 			const handleOtherKeys = (e: KeyboardEvent) => {
-				const currentModifier = modifierKey();
-				if (currentModifier && e.key !== currentModifier) {
-					noTriggerOnRelease = true;
+				if (allowPointSelection) {
+					const currentModifier = baseModifierKey();
+					if (currentModifier && e.key !== currentModifier) {
+						noTriggerOnRelease = true;
+					}
 				}
 			};
 
@@ -104,7 +177,7 @@ export default (props: Props) => {
 			window.addEventListener("keydown", handleOtherKeys, { passive: true });
 			onCleanup(() => {
 				// If mouse is never clicked (just modifier key pressed), do a point selection
-				if (!isDragging() && !noTriggerOnRelease) {
+				if (!isDragging() && !noTriggerOnRelease && allowPointSelection) {
 					elementsInBox({
 						x: pos().x + window.scrollX,
 						y: pos().y + window.scrollY,

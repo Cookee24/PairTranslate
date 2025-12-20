@@ -13,7 +13,7 @@ import { t } from "~/utils/i18n";
 import {
 	getDefaultModifierKey,
 	getModifierOptions,
-	type ModifierKey,
+	type SelectionTranslateModifier,
 } from "~/utils/modifier";
 import { selectServicesByType } from "~/utils/settings/services";
 import { getCurrentDomain } from "../get-current";
@@ -226,7 +226,7 @@ export default () => {
 											setSettings(
 												"basic",
 												"selectionTranslateModifier",
-												e.target.value as ModifierKey,
+												e.target.value as SelectionTranslateModifier,
 											)
 										}
 									>

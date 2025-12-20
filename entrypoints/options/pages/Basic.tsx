@@ -14,7 +14,7 @@ import { t } from "~/utils/i18n";
 import {
 	getDefaultModifierKey,
 	getModifierOptions,
-	type ModifierKey,
+	type SelectionTranslateModifier,
 } from "~/utils/modifier";
 import { generateBasicSettings } from "~/utils/settings";
 import ShortcutInput from "../components/ShortcutInput";
@@ -212,7 +212,7 @@ export default (props: { navId: string }) => {
 								setSettings(
 									"basic",
 									"selectionTranslateModifier",
-									e.target.value as ModifierKey,
+									e.target.value as SelectionTranslateModifier,
 								)
 							}
 						>
