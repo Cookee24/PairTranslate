@@ -52,38 +52,3 @@ export const shouldIncludeElementAtPoint = (
 	if (rect.width === 0 && rect.height === 0) return true;
 	return rectContainsPoint(rect, point);
 };
-
-const iterateElements = function* (
-	predicate: (element: Element) => boolean,
-): Generator<Element> {
-	const root = document.body;
-	if (!root) return;
-	let matched = false;
-	for (const element of root.querySelectorAll<HTMLElement>("*")) {
-		if (predicate(element)) {
-			matched = true;
-			yield element;
-		}
-	}
-	if (!matched && predicate(root)) {
-		yield root;
-	}
-};
-
-export function* getElementsFromSelectionBox(
-	box: SelectionBox,
-): Generator<Element> {
-	yield* iterateElements((element) => {
-		const rect = getElementRect(element);
-		return rectIntersectsBox(rect, box);
-	});
-}
-
-export function* getElementsFromPoint(
-	point: SelectionPoint,
-): Generator<Element> {
-	yield* iterateElements((element) => {
-		const rect = getElementRect(element);
-		return rectContainsPoint(rect, point);
-	});
-}

@@ -14,7 +14,6 @@ import { isInput } from "~/utils/is-input";
 import { getBaseModifierKey, isTripleModifierKey } from "~/utils/modifier";
 import type { DOMSection } from "~/utils/parser/types";
 import {
-	getElementsFromSelectionBox,
 	type SelectionBox,
 	shouldIncludeElementInSelectionBox,
 } from "~/utils/selection";
@@ -234,9 +233,8 @@ export default (props: Props) => {
 
 const elementsInBox = async (box: SelectionBox) => {
 	const controller = new AbortController();
-	const roots = getElementsFromSelectionBox(box);
 	const listener = await getDomListener(window.location.hostname, {
-		roots,
+		roots: document.body,
 		judgeFn: (element) => shouldIncludeElementInSelectionBox(element, box),
 		listenNew: false,
 		filterInteractive: false,

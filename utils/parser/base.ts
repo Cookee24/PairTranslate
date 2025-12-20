@@ -285,7 +285,6 @@ export async function* elementWalker(state: State): SectionGenerator {
 	const findTextElementsAndSplit = function* (
 		root: Element,
 	): Generator<DOMSection> {
-		if (isExcluded(root)) return;
 		if (judgeText(root)) {
 			yield* paragraphSplitter(root);
 			return;

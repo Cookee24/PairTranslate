@@ -2,7 +2,6 @@ import { createEffect, onCleanup } from "solid-js";
 import { useSettings } from "~/hooks/settings";
 import type { DOMSection } from "~/utils/parser/types";
 import {
-	getElementsFromPoint,
 	type SelectionPoint,
 	shouldIncludeElementAtPoint,
 } from "~/utils/selection";
@@ -98,9 +97,8 @@ const elementsAtPoint = async (point: SelectionPoint) => {
 		x: point.x + window.scrollX,
 		y: point.y + window.scrollY,
 	};
-	const roots = getElementsFromPoint(selectionPoint);
 	const listener = await getDomListener(window.location.hostname, {
-		roots,
+		roots: document.elementsFromPoint(point.x, point.y),
 		judgeFn: (element) => shouldIncludeElementAtPoint(element, selectionPoint),
 		listenNew: false,
 		filterInteractive: false,
