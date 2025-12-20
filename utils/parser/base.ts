@@ -298,6 +298,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 	};
 
 	for await (const root of state.roots) {
+		if (isExcludedPath(root)) continue;
 		yield* findTextElementsAndSplit(root);
 		observeElement(root);
 	}
