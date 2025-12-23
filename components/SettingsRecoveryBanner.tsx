@@ -69,7 +69,11 @@ export const SettingsRecoveryBanner: Component<SettingsRecoveryBannerProps> = (
 		) => {
 			if (area !== "local") return;
 			if (changes[STORAGE_KEYS.settingsMigrationError]) {
-				setErrorInfo(changes[STORAGE_KEYS.settingsMigrationError].newValue);
+				setErrorInfo(
+					changes[STORAGE_KEYS.settingsMigrationError].newValue as
+						| SettingsMigrationErrorState
+						| undefined,
+				);
 			}
 		};
 		browser.storage.onChanged.addListener(listener);
