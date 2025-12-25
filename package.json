@@ -51,7 +51,7 @@
 		"@wxt-dev/auto-icons": "^1.1.0",
 		"@wxt-dev/module-solid": "^1.1.4",
 		"daisyui": "^5.5.5",
-		"tailwindcss": "^4.1.17",
+		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
 		"wxt": "^0.20.11"
 	}
