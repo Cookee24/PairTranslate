@@ -144,7 +144,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 	};
 
 	const notifier = createNotifier();
-	const elementList: WeakRef<Element>[] = [];
+	const rootsList: WeakRef<Element>[] = [];
 
 	const mutationHandler: MutationCallback = (mutations) => {
 		for (const mutation of mutations) {
@@ -153,32 +153,28 @@ export async function* elementWalker(state: State): SectionGenerator {
 					const root = node as Element;
 					if (isExcludedPath(root)) continue;
 
-					elementList.push(new WeakRef(root));
+					rootsList.push(new WeakRef(root));
 				}
 			}
 		}
-		if (elementList.length > 0) notifier.notify();
+		if (rootsList.length > 0) notifier.notify();
 	};
 
-	const observers: MutationObserver[] = [];
+	const observer = state.listenNew
+		? new MutationObserver(mutationHandler)
+		: null;
 	const cleaners: (() => void)[] = [];
 
-	const observeElement = (el: Node) => {
-		if (!state.listenNew) return;
-
-		const observer = new MutationObserver(mutationHandler);
-		observer.observe(el, {
+	const observeElement = (el: Node) =>
+		observer?.observe(el, {
 			childList: true,
 			subtree: true,
 			attributes: false,
 			characterData: false,
 		});
-		observers.push(observer);
-	};
+
 	const cleanup = () => {
-		for (const observer of observers) {
-			observer.disconnect();
-		}
+		observer?.disconnect();
 		for (const fn of cleaners) {
 			fn();
 		}
@@ -205,7 +201,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 				if (iframe.contentDocument) resolve(iframe.contentDocument.body);
 				else {
 					const handler = () => resolve(iframe.contentDocument?.body);
-					iframe.addEventListener("load", handler, { once: true });
+					iframe.addEventListener("load", handler);
 					const weakRef = new WeakRef(iframe);
 					cleaners.push(() =>
 						weakRef.deref()?.removeEventListener("load", handler),
@@ -213,7 +209,7 @@ export async function* elementWalker(state: State): SectionGenerator {
 				}
 			}).then((doc) => {
 				if (doc && !processedIframes.has(iframe)) {
-					elementList.push(new WeakRef(doc));
+					rootsList.push(new WeakRef(doc));
 					notifier.notify();
 
 					observeElement(doc);
@@ -313,13 +309,13 @@ export async function* elementWalker(state: State): SectionGenerator {
 	try {
 		while (true) {
 			await notifier.wait();
-			for (const ref of elementList) {
+			for (const ref of rootsList) {
 				const element = ref.deref();
 				if (element) {
 					yield* findTextElementsAndSplit(element);
 				}
 			}
-			elementList.length = 0;
+			rootsList.length = 0;
 		}
 	} catch {
 		// Only triggered on abort
