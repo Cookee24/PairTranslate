@@ -11,7 +11,7 @@ export type SettingsMigrationErrorState = {
 
 export function listenEnabled(callback: (enabled: boolean) => void) {
 	browser.storage.local.get([STORAGE_KEYS.settings], (res) => {
-		const settings = res[STORAGE_KEYS.settings];
+		const settings = res[STORAGE_KEYS.settings] as s.SettingsSchema | undefined;
 		const enabled = settings?.basic?.enabled ?? false;
 		callback(enabled);
 	});
@@ -23,9 +23,11 @@ export function listenEnabled(callback: (enabled: boolean) => void) {
 		area: Browser.storage.AreaName,
 	) => {
 		if (area !== "local") return;
-		const settings = changes[STORAGE_KEYS.settings];
+		const settings = changes[STORAGE_KEYS.settings]?.newValue as
+			| s.SettingsSchema
+			| undefined;
 		if (settings) {
-			callback(settings.newValue?.basic?.enabled ?? false);
+			callback(settings.basic?.enabled ?? false);
 		}
 	};
 
@@ -35,7 +37,7 @@ export function listenEnabled(callback: (enabled: boolean) => void) {
 
 export function listenSettings(callback: (settings: s.SettingsSchema) => void) {
 	browser.storage.local.get([STORAGE_KEYS.settings], (res) => {
-		const settings = res[STORAGE_KEYS.settings];
+		const settings = res[STORAGE_KEYS.settings] as s.SettingsSchema;
 		callback(settings);
 	});
 
@@ -46,9 +48,11 @@ export function listenSettings(callback: (settings: s.SettingsSchema) => void) {
 		area: Browser.storage.AreaName,
 	) => {
 		if (area !== "local") return;
-		const settings = changes[STORAGE_KEYS.settings];
+		const settings = changes[STORAGE_KEYS.settings]?.newValue as
+			| s.SettingsSchema
+			| undefined;
 		if (settings) {
-			callback(settings.newValue);
+			callback(settings);
 		}
 	};
 
@@ -64,7 +68,7 @@ export function saveSettings(settings: s.SettingsSchema): Promise<void> {
 
 export async function getSettings(): Promise<s.SettingsSchema> {
 	const res = await browser.storage.local.get([STORAGE_KEYS.settings]);
-	return res[STORAGE_KEYS.settings];
+	return res[STORAGE_KEYS.settings] as s.SettingsSchema;
 }
 
 export async function initializeSettings(): Promise<void> {
@@ -94,7 +98,9 @@ export async function getSettingsMigrationError(): Promise<
 	const res = await browser.storage.local.get(
 		STORAGE_KEYS.settingsMigrationError,
 	);
-	return res[STORAGE_KEYS.settingsMigrationError];
+	return res[STORAGE_KEYS.settingsMigrationError] as
+		| SettingsMigrationErrorState
+		| undefined;
 }
 
 export async function clearSettingsMigrationError(): Promise<void> {

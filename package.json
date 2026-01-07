@@ -20,7 +20,7 @@
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.69.0",
-		"@google/genai": "^1.30.0",
+		"@google/genai": "^1.34.0",
 		"@solid-primitives/deep": "^0.3.3",
 		"@solid-primitives/refs": "^1.1.2",
 		"@solidjs/router": "^0.15.4",
@@ -30,29 +30,29 @@
 		"lucide-solid": "^0.562.0",
 		"mathml-to-latex": "^1.5.0",
 		"monaco-editor-core": "^0.55.1",
-		"motion": "^12.23.26",
-		"openai": "^6.9.1",
+		"motion": "^12.24.7",
+		"openai": "^6.15.0",
 		"reflect-metadata": "^0.2.2",
 		"remark-math": "^6.0.0",
 		"remark-parse": "^11.0.0",
 		"solid-js": "^1.9.10",
 		"solid-router": "^0.3.3",
 		"tailwind-merge": "^3.4.0",
-		"tailwind-variants": "^3.1.1",
+		"tailwind-variants": "^3.2.2",
 		"unified": "^11.0.5",
 		"uuid": "^13.0.0",
-		"zod": "^4.2.1"
+		"zod": "^4.3.5"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.3.6",
-		"@tailwindcss/vite": "^4.1.17",
-		"@types/bun": "^1.3.2",
+		"@biomejs/biome": "^2.3.11",
+		"@tailwindcss/vite": "^4.1.18",
+		"@types/bun": "^1.3.5",
 		"@types/mdast": "^4.0.4",
 		"@wxt-dev/auto-icons": "^1.1.0",
 		"@wxt-dev/module-solid": "^1.1.4",
-		"daisyui": "^5.5.5",
-		"tailwindcss": "^4.1.17",
+		"daisyui": "^5.5.14",
+		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
-		"wxt": "^0.20.11"
+		"wxt": "^0.20.13"
 	}
 }

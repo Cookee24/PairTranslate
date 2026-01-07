@@ -1,8 +1,7 @@
 import z from "zod";
 
-type WithDefault<T extends z.ZodTypeAny> = T extends z.ZodDefault<infer U>
-	? U
-	: never;
+type WithDefault<T extends z.ZodTypeAny> =
+	T extends z.ZodDefault<infer U> ? U : never;
 
 type PickDefaults<T extends z.ZodObject> = {
 	[K in keyof T["shape"] as T["shape"][K] extends z.ZodDefault
