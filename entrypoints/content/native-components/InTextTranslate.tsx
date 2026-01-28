@@ -236,7 +236,7 @@ const TranslationRender = (props: TranslationRenderProps) => {
 		if (props.showLanguageIcon) {
 			return <Languages style={ICON_STYLE} size="12px" />;
 		}
-		return <>&nbsp;</>
+		return <>&nbsp;</>;
 	});
 
 	return (
