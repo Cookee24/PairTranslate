@@ -143,7 +143,9 @@ export const BLOCK_TAGS = [
 export const EXCLUDED_SELECTORS = [
 	"script",
 	"code",
+	".code",
 	".highlight",
+	':is(pre, code)[class*="lang-"]',
 	"style",
 	"noscript",
 	"svg",
