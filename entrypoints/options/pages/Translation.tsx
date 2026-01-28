@@ -12,6 +12,7 @@ import {
 import { SectionResetButton } from "~/components/settings/SectionResetButton";
 import { SettingsCard } from "~/components/settings/SettingsCard";
 import { SettingsCheckbox } from "~/components/settings/SettingsCheckbox";
+import { SettingsToggle } from "~/components/settings/SettingsToggle";
 import { useSettings } from "~/hooks/settings";
 import { SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { t } from "~/utils/i18n";
@@ -163,6 +164,15 @@ export default (props: { navId: string }) => {
 					checked={localSettings.translateFullPage}
 					onChange={(e) =>
 						setLocalSettings("translateFullPage", e.target.checked)
+					}
+				/>
+
+				<SettingsToggle
+					label={t("settings.translation.inTextTranslateIcon")}
+					helperText={t("settings.translation.inTextTranslateIconDesc")}
+					checked={localSettings.inTextTranslateIconEnabled ?? true}
+					onChange={(e) =>
+						setLocalSettings("inTextTranslateIconEnabled", e.target.checked)
 					}
 				/>
 			</FormGrid>

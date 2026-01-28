@@ -159,6 +159,9 @@ const BatchRender = (props: BatchRenderProps) => {
 			(websiteRule.translateMode ?? settings.translate.translationMode) ===
 			"replace",
 	);
+	const showLanguageIcon = createMemo(
+		() => settings.translate.inTextTranslateIconEnabled ?? true,
+	);
 
 	return (
 		<For each={getter()}>
@@ -169,6 +172,7 @@ const BatchRender = (props: BatchRenderProps) => {
 					error={item.error?.message}
 					section={props.sections[index()][0]}
 					hideOriginal={hideOriginal()}
+					showLanguageIcon={showLanguageIcon()}
 					onRetry={() => {
 						if (getter().every((i) => i.error)) {
 							retry();
@@ -187,8 +191,9 @@ interface TranslationRenderProps {
 	text?: string;
 	loading?: boolean;
 	error?: string;
-	hideOriginal?: boolean;
+	hideOriginal: boolean;
 	section: DOMSection;
+	showLanguageIcon: boolean;
 	onRetry?: () => void;
 	onDelete?: () => void;
 }
@@ -225,6 +230,14 @@ const TranslationRender = (props: TranslationRenderProps) => {
 			((props.text || "").length > NEW_LINE_THRESHOLD ||
 				props.text?.includes("\n")),
 	);
+	const leadingContent = createMemo(() => {
+		if (props.loading) return <NativeLoading />;
+		if (props.error) return <CircleX style={ERROR_ICON_STYLE} size="12px" />;
+		if (props.showLanguageIcon) {
+			return <Languages style={ICON_STYLE} size="12px" />;
+		}
+		return <>&nbsp;</>
+	});
 
 	return (
 		<>
@@ -257,13 +270,7 @@ const TranslationRender = (props: TranslationRenderProps) => {
 					on:touchend={createTooltip}
 					style={{ display: "inline-block" }}
 				>
-					{props.loading ? (
-						<NativeLoading />
-					) : props.error ? (
-						<CircleX style={ERROR_ICON_STYLE} size="12px" />
-					) : (
-						<Languages style={ICON_STYLE} size="12px" />
-					)}
+					{leadingContent()}
 				</span>
 				{!props.loading && !props.error && (
 					<span {...{ [DATA_TRANSLATION_TEXT]: "" }}>

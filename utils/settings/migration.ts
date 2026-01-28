@@ -38,6 +38,7 @@ type LegacyTranslateSettings = {
 	maxBatchSize: number;
 	cacheSize: number;
 	translationMode: "parallel" | "replace";
+	inTextTranslateIconEnabled?: boolean;
 	translateFullPage: boolean;
 	inTextTranslateModel?: string;
 	floatingTranslateModel?: string;
@@ -161,11 +162,15 @@ function getModernTranslateSettings(
 		return generateTranslateSettings();
 	}
 
+	const defaults = generateTranslateSettings();
 	const { concurrentRequests, maxBatchSize, cacheSize, ...rest } = legacy;
 	void concurrentRequests;
 	void maxBatchSize;
 	void cacheSize;
-	return rest;
+	return {
+		...defaults,
+		...rest,
+	};
 }
 
 function buildQueueSettings(

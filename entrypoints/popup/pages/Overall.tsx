@@ -325,6 +325,27 @@ export default () => {
 					<p class="text-[0.65rem] text-base-content/60">
 						{t("settings.translation.styleBackgroundDesc")}
 					</p>
+					<div class="flex items-center gap-2">
+						<span class="text-xs font-semibold">
+							{t("settings.translation.inTextTranslateIcon")}
+						</span>
+						<div class="flex-1" />
+						<input
+							type="checkbox"
+							class="toggle"
+							checked={settings.translate.inTextTranslateIconEnabled ?? true}
+							onChange={(e) =>
+								setSettings(
+									"translate",
+									"inTextTranslateIconEnabled",
+									e.target.checked,
+								)
+							}
+						/>
+					</div>
+					<p class="text-[0.65rem] text-base-content/60">
+						{t("settings.translation.inTextTranslateIconDesc")}
+					</p>
 				</Card.Body>
 			</Card.Root>
 		</div>
