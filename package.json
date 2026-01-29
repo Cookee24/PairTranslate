@@ -35,7 +35,7 @@
 		"reflect-metadata": "^0.2.2",
 		"remark-math": "^6.0.0",
 		"remark-parse": "^11.0.0",
-		"solid-js": "^1.9.10",
+		"solid-js": "^1.9.11",
 		"solid-router": "^0.3.3",
 		"tailwind-merge": "^3.4.0",
 		"tailwind-variants": "^3.2.2",
