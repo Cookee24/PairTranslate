@@ -31,7 +31,7 @@
 		"mathml-to-latex": "^1.5.0",
 		"monaco-editor-core": "^0.55.1",
 		"motion": "^12.29.0",
-		"openai": "^6.16.0",
+		"openai": "^6.21.0",
 		"reflect-metadata": "^0.2.2",
 		"remark-math": "^6.0.0",
 		"remark-parse": "^11.0.0",
