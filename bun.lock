@@ -36,7 +36,7 @@
         "@types/mdast": "^4.0.4",
         "@wxt-dev/auto-icons": "^1.1.0",
         "@wxt-dev/module-solid": "^1.1.4",
-        "daisyui": "^5.5.14",
+        "daisyui": "^5.5.18",
         "tailwindcss": "^4.1.18",
         "typescript": "^5.9.3",
         "wxt": "^0.20.13",
@@ -540,7 +540,7 @@
 
     "csstype": ["csstype@3.1.3", "", {}, "sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw=="],
 
-    "daisyui": ["daisyui@5.5.14", "", {}, "sha512-L47rvw7I7hK68TA97VB8Ee0woHew+/ohR6Lx6Ah/krfISOqcG4My7poNpX5Mo5/ytMxiR40fEaz6njzDi7cuSg=="],
+    "daisyui": ["daisyui@5.5.18", "", {}, "sha512-VVzjpOitMGB6DWIBeRSapbjdOevFqyzpk9u5Um6a4tyId3JFrU5pbtF0vgjXDth76mJZbueN/j9Ok03SPrh/og=="],
 
     "data-uri-to-buffer": ["data-uri-to-buffer@4.0.1", "", {}, "sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A=="],
 

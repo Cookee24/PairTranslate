@@ -50,7 +50,7 @@
 		"@types/mdast": "^4.0.4",
 		"@wxt-dev/auto-icons": "^1.1.0",
 		"@wxt-dev/module-solid": "^1.1.4",
-		"daisyui": "^5.5.14",
+		"daisyui": "^5.5.18",
 		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
 		"wxt": "^0.20.13"
