@@ -20,7 +20,7 @@
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.71.2",
-		"@google/genai": "^1.38.0",
+		"@google/genai": "^1.41.0",
 		"@solid-primitives/deep": "^0.3.3",
 		"@solid-primitives/refs": "^1.1.2",
 		"@solidjs/router": "^0.15.4",
