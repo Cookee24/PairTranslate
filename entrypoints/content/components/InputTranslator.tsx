@@ -7,7 +7,9 @@ import { Select } from "~/components/Select";
 import { useSettings } from "~/hooks/settings";
 import { createTranslation } from "~/hooks/translation";
 import { PROMPT_ID, SUPPORTED_LANGUAGES } from "~/utils/constants";
+import { copyToClipboard } from "~/utils/copy";
 import { t } from "~/utils/i18n";
+import { isApple } from "~/utils/isapple";
 import { getPageContext } from "~/utils/page-context";
 import { usePopup } from "./Popup";
 
@@ -30,6 +32,7 @@ const TranslateElement = (props: {
 }) => {
 	let ref: HTMLDivElement | undefined;
 	const { settings, setSettings } = useSettings();
+	const copyShortcut = isApple() ? "Cmd+C" : "Ctrl+C";
 
 	const getText = () => {
 		const el = props.element;
@@ -73,6 +76,11 @@ const TranslateElement = (props: {
 
 		props.onClose?.();
 	};
+	const handleCopy = () => {
+		const translated = data();
+		if (!translated || data.error) return;
+		void copyToClipboard(translated);
+	};
 
 	const handleLanguageChange = (e: Event) => {
 		const value = (e.target as HTMLSelectElement).value;
@@ -89,9 +97,15 @@ const TranslateElement = (props: {
 
 		const handleKeydown = (event: Event) => {
 			if (!(event instanceof KeyboardEvent)) return;
+			if (event.ctrlKey || event.metaKey || event.altKey) return;
+			const key = event.key.toLowerCase();
+			const shouldHandle =
+				key === "escape" || key === "c" || key === "enter" || key === "r";
+			if (!shouldHandle) return;
+
 			event.preventDefault();
 			event.stopPropagation();
-			switch (event.key.toLowerCase()) {
+			switch (key) {
 				case "escape":
 				case "c":
 					handleClose();
@@ -173,6 +187,14 @@ const TranslateElement = (props: {
 							{t("common.retry")}
 						</>
 					)}
+				</Button>
+				<Button
+					size="xs"
+					onClick={handleCopy}
+					disabled={!data() || !!data.error}
+				>
+					<kbd class="kbd kbd-xs text-base-content">{copyShortcut}</kbd>
+					{t("common.copy")}
 				</Button>
 				<Button variant="error" size="xs" onClick={handleClose}>
 					<kbd class="kbd kbd-xs">C</kbd>
