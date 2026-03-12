@@ -19,7 +19,7 @@
 		"postinstall": "wxt prepare"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "^0.71.2",
+		"@anthropic-ai/sdk": "^0.78.0",
 		"@google/genai": "^1.44.0",
 		"@solid-primitives/deep": "^0.3.5",
 		"@solid-primitives/refs": "^1.1.3",
