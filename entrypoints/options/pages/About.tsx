@@ -1,4 +1,4 @@
-import { ExternalLink, Github } from "lucide-solid";
+import { Code, ExternalLink } from "lucide-solid";
 import { type Accessor, Show } from "solid-js";
 import { browser } from "#imports";
 import { Button } from "~/components/Button";
@@ -80,7 +80,7 @@ export default (props: AboutProps) => {
 							rel="noopener noreferrer"
 							class="flex items-center gap-2 text-primary hover:underline"
 						>
-							<Github size={16} />
+							<Code size={16} />
 							{t("settings.about.sourceCode")}
 							<ExternalLink size={14} />
 						</a>
