@@ -105,6 +105,12 @@ export default (props: { navId: string }) => {
 							)}
 						</div>
 					)}
+					{service.extraBody && (
+						<div class="badge badge-ghost gap-1 p-3 text-xs">
+							<Box size={12} />
+							{t("settings.llmServices.serviceDetails.extraBody")}
+						</div>
+					)}
 				</div>
 
 				<QueueSummary queue={service.queue} defaults={settings.queue} />

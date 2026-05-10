@@ -270,6 +270,8 @@ api = "API"
 url = "URL"
 temperature = "Температура"
 thinkingBudget = "Бюджет на рассуждение"
+extraBody = "Дополнительное тело запроса"
+
 
 [settings.llmModal]
 addTitle = "Добавить Сервис LLM"
@@ -289,6 +291,8 @@ maxTokens = "Максимальные Токены"
 thinkingBudget = "Бюджет на рассуждение"
 thinkingBudgetDefault = "По умолчанию"
 customService = "Пользовательский"
+extraBody = "Дополнительное тело запроса"
+
 
 [settings.llmModal.thinkingBudgetOptions]
 off = "Выкл."

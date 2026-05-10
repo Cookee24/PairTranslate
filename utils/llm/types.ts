@@ -16,6 +16,7 @@ export interface ChatParams {
 	topP?: number;
 	topK?: number;
 	thinkingBudget?: ThinkingBudget;
+	extraBody?: Record<string, unknown>;
 }
 
 /**

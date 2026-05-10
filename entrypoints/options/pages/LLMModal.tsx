@@ -11,7 +11,7 @@ import {
 	Thermometer,
 } from "lucide-solid";
 import { createEffect, createSignal, on, Show } from "solid-js";
-import type z from "zod";
+import z from "zod";
 import { Button } from "~/components/Button";
 import { Modal } from "~/components/Modal";
 import { cn } from "~/utils/cn";
@@ -45,6 +45,7 @@ export default (props: LLMModalProps) => {
 		model: "",
 	};
 	const [formData, setFormData] = createSignal(props.modelInfo || DEFAULT);
+	const [extraBodyStr, setExtraBodyStr] = createSignal("");
 
 	const [validationErrors, setValidationErrors] =
 		createSignal<z.ZodError | null>(null);
@@ -57,10 +58,12 @@ export default (props: LLMModalProps) => {
 	const [apiKeyVisible, setApiKeyVisible] = createSignal(false);
 
 	createEffect(
-		on(
-			[() => props.modelInfo, () => props.open],
-			([info, open]) => open && setFormData(info || DEFAULT),
-		),
+		on([() => props.modelInfo, () => props.open], ([info, open]) => {
+			if (open) {
+				setFormData(info || DEFAULT);
+				setExtraBodyStr(info?.extraBody ? JSON.stringify(info.extraBody) : "");
+			}
+		}),
 	);
 
 	const handleTemplateChange = (templateName: string) => {
@@ -119,7 +122,28 @@ export default (props: LLMModalProps) => {
 
 	const handleSave = (e: Event) => {
 		e.preventDefault();
-		const result = LLMServiceSettings.safeParse(formData());
+		const currentData = { ...formData() };
+		const ebStr = extraBodyStr().trim();
+		if (ebStr) {
+			try {
+				currentData.extraBody = JSON.parse(ebStr);
+			} catch (_err) {
+				setValidationErrors(
+					new z.ZodError([
+						{
+							code: "custom",
+							path: ["extraBody"],
+							message: "Invalid JSON format",
+						},
+					]),
+				);
+				return;
+			}
+		} else {
+			delete currentData.extraBody;
+		}
+
+		const result = LLMServiceSettings.safeParse(currentData);
 		if (result.success) {
 			props.onSave(result.data);
 			props.onClose();
@@ -466,6 +490,28 @@ export default (props: LLMModalProps) => {
 								))}
 							</select>
 						</label>
+					</div>
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.extraBody")}
+							</span>
+						</div>
+						<label
+							class={cn("input input-bordered flex items-center gap-2", {
+								"input-error": getFieldError(["extraBody"]),
+							})}
+						>
+							<Box size={16} class="text-base-content/60" />
+							<input
+								type="text"
+								class="grow bg-transparent"
+								value={extraBodyStr()}
+								onChange={(e) => setExtraBodyStr(e.currentTarget.value)}
+								placeholder='{"top_k": 3}'
+							/>
+						</label>
+						{renderError(["extraBody"])}
 					</div>
 				</div>
 

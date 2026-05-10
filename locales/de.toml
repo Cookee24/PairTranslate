@@ -270,6 +270,8 @@ api = "API"
 url = "URL"
 temperature = "Temperatur"
 thinkingBudget = "Denkbudget"
+extraBody = "Zusätzlicher Body"
+
 
 [settings.llmModal]
 addTitle = "LLM-Dienst hinzufügen"
@@ -289,6 +291,8 @@ maxTokens = "Maximale Token"
 thinkingBudget = "Denkbudget"
 thinkingBudgetDefault = "Standard"
 customService = "Benutzerdefiniert"
+extraBody = "Zusätzlicher Body"
+
 
 [settings.llmModal.thinkingBudgetOptions]
 off = "Aus"

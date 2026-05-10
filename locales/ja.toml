@@ -270,6 +270,8 @@ api = "API"
 url = "URL"
 temperature = "温度"
 thinkingBudget = "推論予算"
+extraBody = "追加リクエストボディ"
+
 
 [settings.llmModal]
 addTitle = "LLMサービスを追加"
@@ -289,6 +291,8 @@ maxTokens = "最大トークン数"
 thinkingBudget = "推論予算"
 thinkingBudgetDefault = "デフォルト"
 customService = "カスタム"
+extraBody = "追加リクエストボディ"
+
 
 [settings.llmModal.thinkingBudgetOptions]
 off = "オフ"

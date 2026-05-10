@@ -64,6 +64,7 @@ export const LLMServiceSettings = BaseServiceSettings.extend({
 	temperature: z.number().optional(),
 	maxOutputTokens: z.number().optional(),
 	thinkingBudget: z.enum(THINKING_BUDGET_LEVELS).optional(),
+	extraBody: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const TraditionalServiceSettings = BaseServiceSettings.extend({

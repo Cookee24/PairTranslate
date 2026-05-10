@@ -883,6 +883,7 @@ const PromptPage = () => {
 					temperature: service.temperature,
 					maxTokens: service.maxOutputTokens,
 					thinkingBudget: service.thinkingBudget,
+					extraBody: service.extraBody,
 				};
 
 				try {
