@@ -43,7 +43,7 @@ export default (props: Props) => {
 
 		const selection = props.event.selection;
 		const textContext = extractContextFromSelection(selection);
-		if (!textContext || !textContext.text) return;
+		if (!textContext?.text) return;
 
 		addPopup({
 			...pos,
