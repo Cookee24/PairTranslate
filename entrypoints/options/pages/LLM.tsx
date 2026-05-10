@@ -97,6 +97,14 @@ export default (props: { navId: string }) => {
 							{service.temperature}
 						</div>
 					)}
+					{service.thinkingBudget && (
+						<div class="badge badge-ghost gap-1 p-3 text-xs">
+							{t("settings.llmServices.serviceDetails.thinkingBudget")}{" "}
+							{t(
+								`settings.llmModal.thinkingBudgetOptions.${service.thinkingBudget}`,
+							)}
+						</div>
+					)}
 				</div>
 
 				<QueueSummary queue={service.queue} defaults={settings.queue} />

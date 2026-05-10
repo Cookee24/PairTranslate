@@ -1,4 +1,5 @@
 import z from "zod";
+import { THINKING_BUDGET_LEVELS } from "../llm/thinking";
 import { getDefaultModifierKey, SELECTION_MODIFIER_KEYS } from "../modifier";
 
 export const SETTINGS_VERSION = 3;
@@ -62,6 +63,7 @@ export const LLMServiceSettings = BaseServiceSettings.extend({
 	model: z.string().optional(),
 	temperature: z.number().optional(),
 	maxOutputTokens: z.number().optional(),
+	thinkingBudget: z.enum(THINKING_BUDGET_LEVELS).optional(),
 });
 
 export const TraditionalServiceSettings = BaseServiceSettings.extend({

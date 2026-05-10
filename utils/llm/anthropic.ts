@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { autoStripMarkdown } from "../json-autocomplete";
+import { getAnthropicThinkingConfig } from "./thinking";
 import type {
 	ChatRequest,
 	ClientConfig,
@@ -90,13 +91,21 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 		>(request: ChatRequest, schema?: S, signal?: AbortSignal) {
 			try {
 				const [systemMessage, messages] = convertMessages(request.messages);
+				const maxTokens = request.maxTokens || 2 ** 16;
+				const thinking = getAnthropicThinkingConfig(
+					request.thinkingBudget,
+					maxTokens,
+				);
 
 				const response = await client.beta.messages.create(
 					{
 						model: request.model,
 						messages,
 						system: systemMessage,
-						max_tokens: request.maxTokens || 2 ** 16,
+						max_tokens: maxTokens,
+						...(thinking && {
+							thinking,
+						}),
 						...(schema && {
 							betas: ["structured-outputs-2025-11-13"],
 							output_format: {
@@ -143,14 +152,22 @@ export function createAnthropicClient(config: ClientConfig): LLMClient {
 		): AsyncGenerator<StreamChunk, EndResponse> {
 			try {
 				const [systemMessage, messages] = convertMessages(request.messages);
+				const maxTokens = request.maxTokens || 2 ** 16;
+				const thinking = getAnthropicThinkingConfig(
+					request.thinkingBudget,
+					maxTokens,
+				);
 
 				const responseStream = await client.beta.messages.create(
 					{
 						model: request.model,
 						messages,
 						system: systemMessage,
-						max_tokens: request.maxTokens || 2 ** 16,
+						max_tokens: maxTokens,
 						stream: true,
+						...(thinking && {
+							thinking,
+						}),
 						...(schema && {
 							betas: ["structured-outputs-2025-11-13"],
 							output_format: {

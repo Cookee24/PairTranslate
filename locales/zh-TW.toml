@@ -269,6 +269,7 @@ model = "模型"
 api = "API"
 url = "URL"
 temperature = "溫度"
+thinkingBudget = "思考強度"
 
 [settings.llmModal]
 addTitle = "添加 LLM 服務"
@@ -285,7 +286,16 @@ modelName = "模型名稱"
 modelNamePlaceholder = "gpt-3.5-turbo, claude-3-sonnet, 等"
 temperature = "溫度"
 maxTokens = "最大令牌數"
+thinkingBudget = "思考強度"
+thinkingBudgetDefault = "預設"
 customService = "自定義"
+
+[settings.llmModal.thinkingBudgetOptions]
+off = "關閉"
+low = "低"
+medium = "中"
+high = "高"
+xhigh = "極高"
 
 [settings.llmModal.apiSpecs]
 openai = "OpenAI 兼容"

@@ -269,6 +269,7 @@ model = "モデル"
 api = "API"
 url = "URL"
 temperature = "温度"
+thinkingBudget = "推論予算"
 
 [settings.llmModal]
 addTitle = "LLMサービスを追加"
@@ -285,7 +286,16 @@ modelName = "モデル名"
 modelNamePlaceholder = "gpt-3.5-turbo、claude-3-sonnetなど"
 temperature = "温度"
 maxTokens = "最大トークン数"
+thinkingBudget = "推論予算"
+thinkingBudgetDefault = "デフォルト"
 customService = "カスタム"
+
+[settings.llmModal.thinkingBudgetOptions]
+off = "オフ"
+low = "低"
+medium = "中"
+high = "高"
+xhigh = "非常に高い"
 
 [settings.llmModal.apiSpecs]
 openai = "OpenAI互換"

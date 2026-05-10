@@ -123,6 +123,7 @@ const createChatRequest = (
 	messages,
 	temperature: service.temperature,
 	maxTokens: service.maxOutputTokens,
+	thinkingBudget: service.thinkingBudget,
 	...overrides,
 });
 

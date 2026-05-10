@@ -1,3 +1,5 @@
+import type { ThinkingBudget } from "./thinking";
+
 export type MessageRole = "user" | "assistant" | "system";
 
 export interface Message {
@@ -13,6 +15,7 @@ export interface ChatParams {
 	maxTokens?: number;
 	topP?: number;
 	topK?: number;
+	thinkingBudget?: ThinkingBudget;
 }
 
 /**

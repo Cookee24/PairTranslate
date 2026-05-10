@@ -1,5 +1,6 @@
 import { type Content, GoogleGenAI, type Part } from "@google/genai";
 import { autoStripMarkdown } from "../json-autocomplete";
+import { getGoogleThinkingConfig } from "./thinking";
 import type {
 	ChatRequest,
 	ClientConfig,
@@ -105,9 +106,11 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 						maxOutputTokens: request.maxTokens,
 						topP: request.topP,
 						topK: request.topK,
-						thinkingConfig: {
-							includeThoughts: true,
-						},
+						thinkingConfig: getGoogleThinkingConfig(
+							request.model,
+							request.thinkingBudget,
+							request.maxTokens,
+						),
 						abortSignal: signal,
 						...(schema && {
 							responseMimeType: "application/json",
@@ -161,9 +164,11 @@ export function createGoogleClient(config: ClientConfig): LLMClient {
 						maxOutputTokens: request.maxTokens,
 						topP: request.topP,
 						topK: request.topK,
-						thinkingConfig: {
-							includeThoughts: true,
-						},
+						thinkingConfig: getGoogleThinkingConfig(
+							request.model,
+							request.thinkingBudget,
+							request.maxTokens,
+						),
 						abortSignal: signal,
 						...(schema && {
 							responseMimeType: "application/json",

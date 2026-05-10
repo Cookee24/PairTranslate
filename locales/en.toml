@@ -269,6 +269,7 @@ model = "Model"
 api = "API"
 url = "URL"
 temperature = "Temperature"
+thinkingBudget = "Thinking Budget"
 
 [settings.llmModal]
 addTitle = "Add LLM Service"
@@ -285,7 +286,16 @@ modelName = "Model Name"
 modelNamePlaceholder = "gpt-3.5-turbo, claude-3-sonnet, etc."
 temperature = "Temperature"
 maxTokens = "Max Tokens"
+thinkingBudget = "Thinking Budget"
+thinkingBudgetDefault = "Default"
 customService = "Custom"
+
+[settings.llmModal.thinkingBudgetOptions]
+off = "Off"
+low = "Low"
+medium = "Medium"
+high = "High"
+xhigh = "XHigh"
 
 [settings.llmModal.apiSpecs]
 openai = "OpenAI Compatible"

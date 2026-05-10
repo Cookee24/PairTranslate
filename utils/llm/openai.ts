@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { autoStripMarkdown } from "../json-autocomplete";
+import { getOpenAIReasoningConfig } from "./thinking";
 import type {
 	ChatRequest,
 	ClientConfig,
@@ -88,6 +89,9 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 		) {
 			try {
 				const messages = request.messages;
+				const reasoningConfig = getOpenAIReasoningConfig(
+					request.thinkingBudget,
+				);
 
 				const response = await client.chat.completions.create(
 					{
@@ -96,6 +100,12 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 						temperature: request.temperature,
 						max_tokens: request.maxTokens,
 						top_p: request.topP,
+						...(reasoningConfig.reasoningEffort && {
+							reasoning_effort: reasoningConfig.reasoningEffort,
+						}),
+						...(reasoningConfig.extraBody && {
+							extra_body: reasoningConfig.extraBody,
+						}),
 						...(schema && {
 							response_format: {
 								type: "json_schema",
@@ -142,6 +152,9 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 		): AsyncGenerator<StreamChunk, EndResponse> {
 			try {
 				const messages = request.messages;
+				const reasoningConfig = getOpenAIReasoningConfig(
+					request.thinkingBudget,
+				);
 
 				const stream = await client.chat.completions.create(
 					{
@@ -150,6 +163,12 @@ export function createOpenAIClient(config: ClientConfig): LLMClient {
 						temperature: request.temperature,
 						max_tokens: request.maxTokens,
 						top_p: request.topP,
+						...(reasoningConfig.reasoningEffort && {
+							reasoning_effort: reasoningConfig.reasoningEffort,
+						}),
+						...(reasoningConfig.extraBody && {
+							extra_body: reasoningConfig.extraBody,
+						}),
 						stream: true,
 						stream_options: { include_usage: true },
 						...(schema && {

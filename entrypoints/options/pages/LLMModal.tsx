@@ -6,6 +6,7 @@ import {
 	KeyRound,
 	Package,
 	RefreshCcw,
+	Scale,
 	SquarePen,
 	Thermometer,
 } from "lucide-solid";
@@ -16,6 +17,7 @@ import { Modal } from "~/components/Modal";
 import { cn } from "~/utils/cn";
 import { t } from "~/utils/i18n";
 import { createLLMClient } from "~/utils/llm";
+import { THINKING_BUDGET_LEVELS } from "~/utils/llm/thinking";
 import {
 	LLMServiceSettings,
 	type QueueControlSettings,
@@ -430,6 +432,39 @@ export default (props: LLMModalProps) => {
 								}
 								placeholder="2048"
 							/>
+						</label>
+					</div>
+					<div class="form-control">
+						<div class="label pb-1">
+							<span class="label-text text-xs font-semibold uppercase text-base-content/60">
+								{t("settings.llmModal.thinkingBudget")}
+							</span>
+						</div>
+						<label class="select select-bordered flex items-center gap-2">
+							<Scale size={16} class="text-base-content/60" />
+							<select
+								class="grow"
+								value={formData().thinkingBudget ?? ""}
+								onChange={(e) =>
+									setFormData({
+										...formData(),
+										thinkingBudget:
+											e.currentTarget.value === ""
+												? undefined
+												: (e.currentTarget
+														.value as (typeof THINKING_BUDGET_LEVELS)[number]),
+									})
+								}
+							>
+								<option value="">
+									{t("settings.llmModal.thinkingBudgetDefault")}
+								</option>
+								{THINKING_BUDGET_LEVELS.map((level) => (
+									<option value={level}>
+										{t(`settings.llmModal.thinkingBudgetOptions.${level}`)}
+									</option>
+								))}
+							</select>
 						</label>
 					</div>
 				</div>

@@ -882,6 +882,7 @@ const PromptPage = () => {
 					messages: snapshotConversation(conversation),
 					temperature: service.temperature,
 					maxTokens: service.maxOutputTokens,
+					thinkingBudget: service.thinkingBudget,
 				};
 
 				try {
