@@ -11,7 +11,7 @@ import {
 	UNARY,
 } from "~/utils/prompt";
 import type * as s from "./def";
-import { SETTINGS_VERSION } from "./def";
+import { SETTINGS_VERSION } from "./version";
 
 /**
  * Generate default basic settings

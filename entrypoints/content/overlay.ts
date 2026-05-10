@@ -11,7 +11,7 @@ export const mountOverlay = (app: () => JSX.Element) => {
 	const root = container.attachShadow({ mode: "open" });
 
 	const stylePromise =
-		import.meta.env.Mode === "production"
+		import.meta.env.MODE === "production"
 			? // This will not auto reload in dev mode
 				window.rpc.getContentStyles()
 			: import("~/utils/css").then(({ getContentStyles }) =>

@@ -1,8 +1,9 @@
 import z from "zod";
 import { THINKING_BUDGET_LEVELS } from "../llm/thinking";
 import { getDefaultModifierKey, SELECTION_MODIFIER_KEYS } from "../modifier";
+import { SETTINGS_VERSION } from "./version";
 
-export const SETTINGS_VERSION = 3;
+export * from "./version";
 
 export const FloatingBallPosition = z.object({
 	side: z.enum(["left", "right"]).default("right"),

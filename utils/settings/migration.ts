@@ -1,11 +1,12 @@
 import type { ServicesSettings } from "./def";
-import { SETTINGS_VERSION, SettingsSchema } from "./def";
+import { SettingsSchema } from "./def";
 import {
 	generateDebugSettings,
 	generatePromptSettings,
 	generateQueueControlSettings,
 	generateTranslateSettings,
 } from "./default";
+import { SETTINGS_VERSION } from "./version";
 
 type LegacyLLMService = {
 	name: string;
