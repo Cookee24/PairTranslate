@@ -168,6 +168,12 @@ export const LLMServiceTemplates = [
 	},
 	{
 		type: "llm" as const,
+		name: t("templates.llm.requesty"),
+		baseUrl: "https://router.requesty.ai/v1",
+		apiSpec: "openai" as const,
+	},
+	{
+		type: "llm" as const,
 		name: t("templates.llm.cohere"),
 		baseUrl: "https://api.cohere.com",
 		apiSpec: "openai" as const,
