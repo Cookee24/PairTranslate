@@ -30,6 +30,7 @@ import { createTranslation } from "~/hooks/translation";
 import { cn } from "~/utils/cn";
 import { t } from "~/utils/i18n";
 import { autoParseJson, jsonAutocomplete } from "~/utils/json-autocomplete";
+import { getTextDirection } from "~/utils/language";
 import { getPageContext } from "~/utils/page-context";
 import type { ExplainOutput } from "~/utils/prompt";
 import type { TextContext } from "~/utils/types";
@@ -129,7 +130,9 @@ const Explain = (props: { textContext: TextContext }) => {
 						title={t("floatingTranslator.sections.contextExplanation")}
 						icon={<Newspaper size={16} />}
 					>
-						<MdStyled text={data()} />
+						<div dir={getTextDirection(settings.translate.targetLang)}>
+							<MdStyled text={data()} />
+						</div>
 					</ExplainSection>
 				)}
 			</Show>
@@ -139,7 +142,9 @@ const Explain = (props: { textContext: TextContext }) => {
 						title={t("floatingTranslator.sections.textExplanation")}
 						icon={<ScrollText size={16} />}
 					>
-						<MdStyled text={data()} />
+						<div dir={getTextDirection(settings.translate.targetLang)}>
+							<MdStyled text={data()} />
+						</div>
 					</ExplainSection>
 				)}
 			</Show>
@@ -157,7 +162,9 @@ const Explain = (props: { textContext: TextContext }) => {
 											{index + 1}
 										</Badge>
 										<MdStyled text={item().text} />
-										<MdStyled text={item().translation} />
+										<div dir={getTextDirection(settings.translate.targetLang)}>
+											<MdStyled text={item().translation} />
+										</div>
 									</li>
 								)}
 							</Index>
@@ -227,7 +234,14 @@ const Translate = (props: { textContext: TextContext }) => {
 					<Languages size={16} />
 					{t("floatingTranslator.sections.translation")}
 				</div>
-				{data() && <span class="text-sm font-s">{data()}</span>}
+				{data() && (
+					<p
+						dir={getTextDirection(settings.translate.targetLang)}
+						class="text-sm font-s"
+					>
+						{data()}
+					</p>
+				)}
 				<Show when={data.reasoning}>
 					{(reasoning) => (
 						<div class="mt-3 rounded-box border border-base-300 p-3">
