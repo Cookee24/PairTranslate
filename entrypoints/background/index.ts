@@ -59,7 +59,9 @@ export default defineBackground(() => {
 		return true;
 	});
 
-	browser.commands.onCommand.addListener((command) => {
+	// Firefox for Android has no commands API; throwing here would abort the
+	// rest of the background script.
+	browser.commands?.onCommand.addListener((command) => {
 		if (command === OPEN_TRANSLATOR_POPUP_COMMAND) {
 			openTranslatorPopup().catch((error) => {
 				console.error("Failed to open translator popup via command", {
