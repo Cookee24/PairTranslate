@@ -9,7 +9,6 @@ import {
 } from "lucide-solid";
 import type { JSX } from "solid-js";
 import { createEffect, createMemo, Match, Switch } from "solid-js";
-import { browser } from "#imports";
 import { getThemeClass } from "@/utils/theme";
 import { Button } from "~/components/Button";
 import { Loading } from "~/components/Loading";
@@ -17,6 +16,7 @@ import { SettingsRecoveryBanner } from "~/components/SettingsRecoveryBanner";
 import { SettingsProvider, useSettings } from "~/hooks/settings";
 import { createTheme } from "~/hooks/theme";
 import { t } from "~/utils/i18n";
+import { openOptionsPage } from "~/utils/options-page";
 import { openTranslatorPopup } from "~/utils/translator-window";
 import { getCurrentDomain } from "./get-current";
 import Overall from "./pages/Overall";
@@ -47,7 +47,7 @@ const Content = (props: { children?: JSX.Element }) => {
 				<SettingsRecoveryBanner />
 				{props.children}
 			</div>
-			<div class="flex gap-2">
+			<div class="flex flex-wrap gap-2">
 				<Button
 					class="btn-circle tooltip tooltip-right z-2"
 					size="sm"
@@ -80,10 +80,7 @@ const Content = (props: { children?: JSX.Element }) => {
 						</Button>
 					</Match>
 				</Switch>
-				<Button
-					variant="ghost"
-					on:click={() => browser.runtime.openOptionsPage()}
-				>
+				<Button variant="ghost" on:click={openOptionsPage}>
 					<ExternalLink size={16} />
 					{t("popup.navigation.openOptions")}
 				</Button>

@@ -7,6 +7,11 @@ export const getTranslatorPopupUrl = (): string =>
 	browser.runtime.getURL("/translator.html");
 
 export const openTranslatorPopup = async (): Promise<void> => {
+	// Firefox for Android has no windows API, so fall back to a tab.
+	if (!browser.windows?.create) {
+		await browser.tabs.create({ url: getTranslatorPopupUrl() });
+		return;
+	}
 	await browser.windows.create({
 		type: "popup",
 		url: getTranslatorPopupUrl(),

@@ -14,6 +14,9 @@ export function TranslateNodePortal(props: {
 	section: DOMSection;
 	ref?: (el: HTMLDivElement) => void;
 	hideOriginal?: boolean;
+	dir?: "rtl" | "ltr";
+	/** Render as its own block so it can align to its own direction. */
+	block?: boolean;
 	children: JSX.Element;
 }) {
 	let content: undefined | (() => JSX.Element);
@@ -30,6 +33,18 @@ export function TranslateNodePortal(props: {
 
 		const container = document.createElement("div");
 		container.setAttribute(DATA_CONTAINER, "");
+		if (props.dir) container.dir = props.dir;
+		if (props.block) {
+			// The container is `display: contents` by default, which leaves the
+			// text aligned by the page's paragraph.
+			container.style.display = "block";
+			// A physical alignment (e.g. `left`) inherited from the page would
+			// pin RTL text to the wrong side; follow the translation's direction.
+			const align = getComputedStyle(parent).textAlign;
+			if (align === "left" || align === "right") {
+				container.style.textAlign = "start";
+			}
+		}
 
 		// Hack to enable event bubbling through the portal in Solid
 		Object.defineProperty(container, "_$host", {
