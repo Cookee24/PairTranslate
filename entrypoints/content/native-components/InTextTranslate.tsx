@@ -15,6 +15,7 @@ import { createBatchTranslation } from "~/hooks/translation";
 import { useWebsiteRule } from "~/hooks/website-rule";
 import { DATA_TRANSLATION_TEXT } from "~/utils/constants";
 import { copyToClipboard } from "~/utils/copy";
+import { getTextDirection } from "~/utils/language";
 import { getMarkdownFromSection } from "~/utils/markdown";
 import { getPageContext } from "~/utils/page-context";
 import type { DOMSection } from "~/utils/parser/types";
@@ -162,6 +163,9 @@ const BatchRender = (props: BatchRenderProps) => {
 	const showLanguageIcon = createMemo(
 		() => settings.translate.inTextTranslateIconEnabled ?? true,
 	);
+	const dir = createMemo(() =>
+		getTextDirection(websiteRule.targetLang || settings.translate.targetLang),
+	);
 
 	return (
 		<For each={getter()}>
@@ -173,6 +177,7 @@ const BatchRender = (props: BatchRenderProps) => {
 					section={props.sections[index()][0]}
 					hideOriginal={hideOriginal()}
 					showLanguageIcon={showLanguageIcon()}
+					dir={dir()}
 					onRetry={() => {
 						if (getter().every((i) => i.error)) {
 							retry();
@@ -194,6 +199,7 @@ interface TranslationRenderProps {
 	hideOriginal: boolean;
 	section: DOMSection;
 	showLanguageIcon: boolean;
+	dir: "rtl" | "ltr";
 	onRetry?: () => void;
 	onDelete?: () => void;
 }
@@ -230,6 +236,19 @@ const TranslationRender = (props: TranslationRenderProps) => {
 			((props.text || "").length > NEW_LINE_THRESHOLD ||
 				props.text?.includes("\n")),
 	);
+	// Text in a direction other than the page's paragraph needs its own block
+	// to align to its own side.
+	const parentDir = createMemo(() => {
+		const parent = props.section[0].parentElement;
+		return parent ? getComputedStyle(parent).direction : "ltr";
+	});
+	const block = createMemo(
+		() =>
+			!props.loading &&
+			!props.error &&
+			(swapLine() || props.hideOriginal) &&
+			props.dir !== parentDir(),
+	);
 	const leadingContent = createMemo(() => {
 		if (props.loading) return <NativeLoading />;
 		if (props.error) return <CircleX style={ERROR_ICON_STYLE} size="12px" />;
@@ -263,8 +282,10 @@ const TranslationRender = (props: TranslationRenderProps) => {
 			<TranslateNodePortal
 				section={props.section}
 				hideOriginal={props.hideOriginal && !props.loading && !props.error}
+				dir={props.dir}
+				block={block()}
 			>
-				{swapLine() && <br />}
+				{swapLine() && !block() && <br />}
 				<span
 					on:mouseenter={createTooltip}
 					on:touchend={createTooltip}
