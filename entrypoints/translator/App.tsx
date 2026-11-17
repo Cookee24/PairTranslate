@@ -32,6 +32,7 @@ import { createTranslation } from "~/hooks/translation";
 import { getNativeName, SUPPORTED_LANGUAGES } from "~/utils/constants";
 import { t } from "~/utils/i18n";
 import { isApple } from "~/utils/isapple";
+import { getTextDirection } from "~/utils/language";
 import { selectServicesByType } from "~/utils/settings/services";
 import {
 	addSidebarHistoryEntry,
@@ -395,7 +396,10 @@ const SidebarContent = () => {
 								</Button>
 							</div>
 						</div>
-						<div class="bg-base-200 text-md rounded-box p-3 whitespace-pre-wrap max-h-96 overflow-auto">
+						<div
+							dir={getTextDirection(targetLang())}
+							class="bg-base-200 text-md rounded-box p-3 whitespace-pre-wrap max-h-96 overflow-auto"
+						>
 							<Show
 								when={renderMarkdown() && translation()}
 								fallback={
