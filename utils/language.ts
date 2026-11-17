@@ -59,3 +59,21 @@ export function getLanguageName(code: string): string | null {
 	const language = SUPPORTED_LANGUAGES.find((lang) => lang.code === code);
 	return language?.name || null;
 }
+
+const RTL_LANGUAGES = new Set([
+	"ar",
+	"he",
+	"fa",
+	"ur",
+	"yi",
+	"ps",
+	"dv",
+	"ckb",
+]);
+
+/**
+ * Get the writing direction of a language code
+ */
+export function getTextDirection(code: string): "rtl" | "ltr" {
+	return RTL_LANGUAGES.has(code.split("-")[0].toLowerCase()) ? "rtl" : "ltr";
+}
